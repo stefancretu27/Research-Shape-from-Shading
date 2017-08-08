@@ -6,74 +6,94 @@
 using namespace std;
 
 //SIRfS operations
-void conv2mat(int maskRows, int maskCols, Matrix2D<int>& input_filter, Matrix2D<double> result)
+void conv2mat(int maskRows, int maskCols, Matrix2D<int> input_filter, Matrix2D<double>& result)
 {
-    int x, y, f, counterNaN = 0, counterNonZero = 0;
+    int x, y, index, counter_dim = 0, min_index_array_dim = 0;
     int matrix_linear_size = maskRows*maskCols;                         //also referred as n in matlab code
-    Matrix2D<int> F(input_filter.getRows(), input_filter.getCols());
+    Matrix2D<int> F(input_filter.getRows(), input_filter.getCols(), 0);
+
+    //reverse values from the input_filter and store them in F matrix
     F.reverseMatrix(input_filter);
 
-    vector<int> idx0(matrix_linear_size), i0(matrix_linear_size), j0( matrix_linear_size), i(matrix_linear_size), j( matrix_linear_size), idx(matrix_linear_size), fs(F.getRows(), F.getCols());
-    vector<bool>  keep( matrix_linear_size, 0);
-    //vector that contains for each filter F a vector of NaN of  matrix_linear_size dimensions each (250x200)
-    vector< vector<double> > nan( F.getRows()*F.getCols(), vector<double>(matrix_linear_size,numeric_limits<double>::quiet_NaN()));
-    vector< vector<int> > idxs( F.getRows()*F.getCols(), vector<int>(matrix_linear_size));
+    vector<int> i0(matrix_linear_size, 0), j0( matrix_linear_size, 0), idx0(matrix_linear_size, 0);
+    vector<int> i(matrix_linear_size, 0), j( matrix_linear_size, 0), idx(matrix_linear_size, 0);
 
-    //indeces of non-zero elements in an all logical one matrix. The indeces are stored in 2 vectors. Theyb are used as follows A(i0[0], j0[0])
+    //this vector stores non zero values from each input_filter(F)
+    vector<int> fs;                                                                //(F.getRows(), F.getCols());
+    //for each such a non-zero value, store how many values do not fit in the range when computing the vector containing indeces
+    vector<int> counter_zero_indeces;
+    //this vector contains the dimensions of each index-vector computed for each non-zero value in input_filter (F). Might not be necesary
+    vector<int> dims;
+
+    //vector<bool> keep(matrix_linear_size, 0);
+    //vector that contains for each filter F a vector of NaN of  matrix_linear_size dimensions each (250x200)
+    vector< vector<int> > idxs;                                         //( F.getRows()*F.getCols(), vector<int>(matrix_linear_size));
+
+    //indeces of non-zero elements in a matrix that contains only logical ones . The indeces are stored in 2 vectors. They are used as follows A(i0[0], j0[0])
     for(x = 0; x < maskRows; x++)
         for(y = 0; y < maskCols; y++)
         {
             i0[x + y*maskRows] = x;
-            j0[x*maskCols + y] = y;
+            j0[x + y*maskRows] = y;
             //linearize the matrix indexing
             idx0[x*maskCols + y] = x*maskCols + y;
         }
 
         for(int oi = 0; oi < F.getRows(); oi++)
             for(int oj = 0; oj < F.getCols(); oj++)
-        {
-            f = F(oi, oj);
-            if(f == 0)
             {
-                continue;
-            }
-            counterNonZero++;  //maybe used for resizeing fs and idxs
-
-
-            for(x = 0; x < maskRows; x++)
-                for(y = 0; y < maskCols; y++)
+                if(F.getMatrixValue(oi, oj) != 0)
                 {
-                    i[x + y*maskRows] = i0[x + y*maskRows] + oi;
-                    j[x*maskCols + y] = j0[x*maskCols + y] + oj;
+                    //used to count how many 0 values will be in idx array. It is reset to 0 for each new non-zero value of F matrix
+                    counter_zero_indeces.push_back(0);
 
-                    if(i[x + y*maskRows] < maskRows && j[x*maskCols + y] < maskCols)
+                    for(index = 0; index < matrix_linear_size; index++)
                     {
-                        //keep is a already initialized to 0
-                        keep[x*maskCols + y] = 1;
+                        i[index] = i0[index] + oi ;
+                        j[index] = j0[index] + oj ;
 
-                        //if(keep[x*maskCols + y == 1])   //redundant, but keep it for the original idea
-                        idx[x*maskCols + y] = i[keep[x*maskCols + y]]*maskCols + j[keep[x*maskCols + y]];
+                        //keep[index] = (i[index] < maskRows) & (j[index] < maskCols);
+
+                        //check if the newly computed indeces are in the given range. Don't need to use 'keep' vector for this, but it's similar to verifying if keep[index] == 1
+                        if((i[index] < maskRows) & (j[index] < maskCols))
+                        {
+                            //Matlab's sub2ind  loops firstly on each rows then on columns
+                            idx[index] = i[index] + maskRows * j[index];
+                        }
+                        else
+                        {
+                            idx[index] = 0;
+                            counter_zero_indeces[counter_dim]++;
+                        }
                     }
+
+                    //replace 0 values in idx with -1. Normally, there should be NaN values, but since they represent indeces, negative values work as well in order to distinguish them
+                    if(counter_zero_indeces[counter_dim] != 0)
+                    {
+                        for(int k = 0; k < idx.size(); k++)
+                        {
+                            if(idx[k] == 0)
+                            {
+                                idx[k] = -1;
+                            }
+                        }
+                    }
+
+                    //idxs.push_back(idx);
+                    idxs.push_back(idx);
+                    fs.push_back(F.getMatrixValue(oi, oj)) ;
+                    dims.push_back(idx.size() - counter_zero_indeces[counter_dim]);
+                    counter_dim++;
                 }
-                //integrate  keep checking, which is a mask
-            idxs[oi*F.getCols() + oj] = idx;                                //??? Here from 50000 lines it gets 49104, don't know how. I need to revise this
-            fs[oi*F.getCols() + oj] = f;
-        }
+            }
 
         Matrix2D<int> idxsMat( idx.size(), idxs.size());
         convertVectorOfVectorsToMatrix(idxs, idxsMat);
 
-        //for(x = 0; x < idxsMat.getRows(); x++)
-            for(y = 0; y < idxsMat.getCols(); y++)
-        {
-            if(idxsMat(1, y) == numeric_limits<double>::quiet_NaN())
-            {
-                counterNaN++;
-            }
-        }
+        min_index_array_dim = *std::min_element(dims.begin(), dims.end());
 
-        Matrix2D<int> idxsMat_noNaN( idx.size()-counterNaN, idxs.size());
-
+        Matrix2D<int> idxsMat_noNaN( min_index_array_dim, idxs.size());
+        /*
         for(x = 0; x < idxsMat.getRows()-counterNaN; x++)
             for(y = 0; y < idxsMat.getCols(); y++)
             {
@@ -93,6 +113,7 @@ void conv2mat(int maskRows, int maskCols, Matrix2D<int>& input_filter, Matrix2D<
             }
             A = A + sparse;
         }
+        */
 }
 
 
@@ -180,17 +201,18 @@ void medianFilterMatMask(Matrix2D<bool>& input_mask, int half_width, Matrix2D<do
     Matrix2D<double> d_input_mask(input_mask.getRows(), input_mask.getCols()), conv_res(input_mask.getRows(), input_mask.getCols());
     vector<double> R(input_mask.getRows()*input_mask.getCols());
     vector<bool>  keep(input_mask.getRows()*input_mask.getCols(), 0);
-    vector<Matrix2D<double> > A;            //the max size is fs_size
+    Matrix2D<double>  *A = new Matrix2D<double>[fs_size];            //the max size is fs_size
 
     //How to use A: A.push_back(Matrix<double>(2, 2, false));
 
-    for(int k = 0; k < fs_size; k++)
+    //for(int k = 0; k < fs_size; k++)    //k = 0:11
+    int k = 0;
     {
         if(do_remove[k] == 0)
         {
             //work with fs[k]
-            /*conv2mat(input_mask.getRows(), input_mask.getCols(), fs[k], A[i]);
-            Matrix2D<double> f( fs[k].getRows(), fs[k].getCols(), 0);
+            conv2mat(input_mask.getRows(), input_mask.getCols(), fs[k], A[k]);
+            /*Matrix2D<double> f( fs[k].getRows(), fs[k].getCols(), 0);
             checkMatrixAgainstTreshold( fs[k], f, 0);
 
             convertBoolToDoubleMatrix2D(input_mask, d_input_mask);

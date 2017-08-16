@@ -9,46 +9,49 @@ using namespace std;
 void conv2mat(int maskRows, int maskCols, Matrix2D<int> input_filter, Matrix2D<double>& result)
 {
     int x, y, index, counter_dim = 0, min_index_array_dim = 0;
-    int matrix_linear_size = maskRows*maskCols;                         //also referred as n in matlab code
+    int mask_matrix_linear_size = maskRows*maskCols;                         //also referred as n in matlab code
     Matrix2D<int> F(input_filter.getRows(), input_filter.getCols(), 0);
 
     //reverse values from the input_filter and store them in F matrix
     F.reverseMatrix(input_filter);
 
-    vector<int> i0(matrix_linear_size, 0), j0( matrix_linear_size, 0), idx0(matrix_linear_size, 0);
-    vector<int> i(matrix_linear_size, 0), j( matrix_linear_size, 0), idx(matrix_linear_size, 0);
-
+    //vectors used to store indeces before applying filter
+    vector<int> i0(mask_matrix_linear_size, 0), j0( mask_matrix_linear_size, 0), idx0(mask_matrix_linear_size, 0);
+    //vectors used to store indeces after applying filter
+    vector<int> i(mask_matrix_linear_size, 0), j( mask_matrix_linear_size, 0), idx(mask_matrix_linear_size, 0);
     //this vector stores non zero values from each input_filter(F)
-    vector<int> fs;                                                                //(F.getRows(), F.getCols());
+    vector<int> fs;     //(F.getRows(), F.getCols());
     //for each such a non-zero value, store how many values do not fit in the range when computing the vector containing indeces
-    vector<int> counter_zero_indeces;
+    vector<int> count_out_of_range_indeces;
     //this vector contains the dimensions of each index-vector computed for each non-zero value in input_filter (F). Might not be necesary
     vector<int> dims;
-
     //vector<bool> keep(matrix_linear_size, 0);
     //vector that contains for each filter F a vector of NaN of  matrix_linear_size dimensions each (250x200)
-    vector< vector<int> > idxs;                                         //( F.getRows()*F.getCols(), vector<int>(matrix_linear_size));
+    vector< vector<int> > idxs;   //( F.getRows()*F.getCols(), vector<int>(matrix_linear_size));
 
     //indeces of non-zero elements in a matrix that contains only logical ones . The indeces are stored in 2 vectors. They are used as follows A(i0[0], j0[0])
     for(x = 0; x < maskRows; x++)
         for(y = 0; y < maskCols; y++)
         {
+            //firstly, compute 2 vectors that store indeces for the input mask
             i0[x + y*maskRows] = x;
             j0[x + y*maskRows] = y;
-            //linearize the matrix indexing
+            //linearize the mask matrix indexing
             idx0[x*maskCols + y] = x*maskCols + y;
         }
 
         for(int oi = 0; oi < F.getRows(); oi++)
             for(int oj = 0; oj < F.getCols(); oj++)
             {
+                //for each non zero value in the reversed input filter compute an array of indeces
                 if(F.getMatrixValue(oi, oj) != 0)
                 {
                     //used to count how many 0 values will be in idx array. It is reset to 0 for each new non-zero value of F matrix
-                    counter_zero_indeces.push_back(0);
+                    count_out_of_range_indeces.push_back(0);
 
-                    for(index = 0; index < matrix_linear_size; index++)
+                    for(index = 0; index < mask_matrix_linear_size; index++)
                     {
+                        //the reversed filter is applied to the mask so, new vectors storing the updated indeces are computed
                         i[index] = i0[index] + oi ;
                         j[index] = j0[index] + oj ;
 
@@ -57,20 +60,22 @@ void conv2mat(int maskRows, int maskCols, Matrix2D<int> input_filter, Matrix2D<d
                         //check if the newly computed indeces are in the given range. Don't need to use 'keep' vector for this, but it's similar to verifying if keep[index] == 1
                         if((i[index] < maskRows) & (j[index] < maskCols))
                         {
-                            //Matlab's sub2ind  loops firstly on each rows then on columns
+                            //If the updated indeces are within the mask matrix dimensions range, linearize them and store them in a vector (idx)
+                            // Matlab's sub2ind  loops firstly on each rows then on columns thus the linearization below
                             idx[index] = i[index] + maskRows * j[index];
                         }
                         else
                         {
+                            //if the updated indeces are out of range, store 0 as linear index and increase counter
                             idx[index] = 0;
-                            counter_zero_indeces[counter_dim]++;
+                            count_out_of_range_indeces[counter_dim]++;
                         }
                     }
 
                     //replace 0 values in idx with -1. Normally, there should be NaN values, but since they represent indeces, negative values work as well in order to distinguish them
-                    if(counter_zero_indeces[counter_dim] != 0)
+                    if(count_out_of_range_indeces[counter_dim] != 0)
                     {
-                        for(int k = 0; k < idx.size(); k++)
+                        for(unsigned int k = 0; k < idx.size(); k++)
                         {
                             if(idx[k] == 0)
                             {
@@ -79,41 +84,81 @@ void conv2mat(int maskRows, int maskCols, Matrix2D<int> input_filter, Matrix2D<d
                         }
                     }
 
-                    //idxs.push_back(idx);
+                    //store the newly computed vector (the new idx) in the vector of vectors
                     idxs.push_back(idx);
+                    //store each non zero value found in the reversed input filter (F)
                     fs.push_back(F.getMatrixValue(oi, oj)) ;
-                    dims.push_back(idx.size() - counter_zero_indeces[counter_dim]);
+                    //store the size of each newly computed vector (idx).
+                    //If all updated indeces are within mask matrix range, the size of idx vector will be mask_matrix_linear_size. Otherwise, it will be less, depending
+                    dims.push_back(idx.size() - count_out_of_range_indeces[counter_dim]);
+                    //count how many non zero values are in the reversed input filter F
                     counter_dim++;
                 }
             }
 
-        Matrix2D<int> idxsMat( idx.size(), idxs.size());
+        //the vectors computed in the previous double loop are stored in a vector of vectors (idxs) which is now converted into a matrix
+        Matrix2D<int> idxsMat( mask_matrix_linear_size, idxs.size());
         convertVectorOfVectorsToMatrix(idxs, idxsMat);
 
+        //find the minmum value of the sizes of all vectors in idxs
         min_index_array_dim = *std::min_element(dims.begin(), dims.end());
 
+        //a new matrix is computed. It stores all the lines in the idxsMat that do not have a Nan (-1) value.
+        //Thus, it's number of lines equals the number of lines of the vectors in idxs with the most Nan values (-1)
         Matrix2D<int> idxsMat_noNaN( min_index_array_dim, idxs.size());
-        /*
-        for(x = 0; x < idxsMat.getRows()-counterNaN; x++)
-            for(y = 0; y < idxsMat.getCols(); y++)
+        vector<int> nan_values_line_index(min_index_array_dim);
+        int nan_line_index_size = 0, nan_counter = 0;
+
+        //iterate over the maximum number of lines
+        for(x = 0; x < mask_matrix_linear_size; x++)
+        {
+            //loop over the elements of each line to check for -1 values
+            for( y = 0; y < (int) idxs.size(); y++)
             {
-                idxsMat_noNaN.setMatrixValue(x, y, idxsMat.getMatrixValue(x, y));
+                //find the first -1 value and store its line index and increase the counter
+                if(idxsMat.getMatrixValue(x, y) == -1)
+                {
+                    nan_values_line_index[nan_line_index_size++] = x;
+                    nan_counter++;
+                    break;
+                }
             }
 
-        //int m = idxsMat_noNaN.getRows();
-        Matrix2D<double> A(matrix_linear_size, matrix_linear_size);         //matrix_linear_size = 50000, but I noticed the rows are 49104 , value that depends on the instruction above that has ???
-        Matrix2D<double> sparse(matrix_linear_size, matrix_linear_size, 0);
+            //if the current line does not contain any -1 (nan) values, copy it to idxsMat_noNaN
+            if(x != nan_values_line_index[nan_line_index_size-1])
+            {
+                for( y = 0; y < (int) idxs.size(); y++)
+                {
+                    idxsMat_noNaN(x - nan_counter, y) = idxsMat(x, y);
+                }
+            }
+        }
+
+       int m = idxsMat_noNaN.getRows();
+
+       //almost 50k by 50k it takes some time to allocate it (0.5 to 1.2 sec more), especially if it contains double values. I set it to int
+        Matrix2D<int> A(m, mask_matrix_linear_size, 0);
+        //matrix initialization takes almost 15-16 secs
+
+        //Matrix2D<int> sparse(m, mask_matrix_linear_size, 0);
+        //Instead of store a sparse matrix, use a vector for saving memory.
+        //By this way, the idea of sparse matrix from Matlab is preveserved, as it is meant to save memory by not storing 0 values
+        vector<int> sparse_vec(mask_matrix_linear_size, 0);
+        int temp_idx;
 
         for(y = 0; y < idxsMat_noNaN.getCols(); y++)
         {
-            for(x = 0; x < matrix_linear_size; x++)
-                //for(int k = 0; k < matrix_linear_size; k++)
+            //m values are stored in mask_matrix_linear_size sized array, where m <= mask_matrix_linear_size
+            //the values do not necessarily start with 0, as they might start indexing from 502, for instance
+            for(x = 0; x < m; x++)
             {
-                sparse.setMatrixValue(x, x, fs[y]);
+                //sparse.setMatrixValue(x, idxsMat, fs[y]);
+                temp_idx = idxsMat_noNaN(x, y);
+                sparse_vec[temp_idx] = fs[y];
+
+                A(x, temp_idx) += sparse_vec[temp_idx];
             }
-            A = A + sparse;
         }
-        */
 }
 
 

@@ -2,11 +2,12 @@
 
 #include "templates/matrix2D.cpp"
 #include "matlab/matlab_vector.cpp"
+//#include "matlab/matlab_matrix.cpp"
 
 using namespace std;
 
 //SIRfS operations
-void conv2mat(int maskRows, int maskCols, Matrix2D<int> input_filter, Matrix2D<double>& result)
+void conv2mat(int maskRows, int maskCols, Matrix2D<int> input_filter, Matrix2D<KeysValue<double> >& result, int mat_x_size)
 {
     int x, y, index, counter_dim = 0, min_index_array_dim = 0;
     int mask_matrix_linear_size = maskRows*maskCols;                         //also referred as n in matlab code
@@ -115,7 +116,7 @@ void conv2mat(int maskRows, int maskCols, Matrix2D<int> input_filter, Matrix2D<d
             //loop over the elements of each line to check for -1 values
             for( y = 0; y < (int) idxs.size(); y++)
             {
-                //find the first -1 value and store its line index and increase the counter
+                //find the first -1 value, store its line index and increase the counter
                 if(idxsMat.getMatrixValue(x, y) == -1)
                 {
                     nan_values_line_index[nan_line_index_size++] = x;
@@ -136,19 +137,23 @@ void conv2mat(int maskRows, int maskCols, Matrix2D<int> input_filter, Matrix2D<d
 
        int m = idxsMat_noNaN.getRows();
 
-       //almost 50k by 50k it takes some time to allocate it (0.5 to 1.2 sec more), especially if it contains double values. I set it to int
-        Matrix2D<int> A(m, mask_matrix_linear_size, 0);
-        //matrix initialization takes almost 15-16 secs
+       //almost 50k by 50k it takes some time to allocate it, especially if it contains double values. I set it to float
+       //matrix initialization takes almost 15-16 secs
+        //Matrix2D<float> A(m, mask_matrix_linear_size, 0);
+
+        //Since it is impossible to work with such bug matrices as the system goes out of RAM, use a matrix that stores only non zero values
+        //These values are actually  triples (keyX, keyY, value), hat are indices in a spare matrix and the afferent value
+        Matrix2D< KeysValue<double> > A(m, idxsMat_noNaN.getCols());
 
         //Matrix2D<int> sparse(m, mask_matrix_linear_size, 0);
         //Instead of store a sparse matrix, use a vector for saving memory.
-        //By this way, the idea of sparse matrix from Matlab is preveserved, as it is meant to save memory by not storing 0 values
+        //By this way, the idea of sparse matrix from Matlab is preserved, as it is meant to save memory by not storing 0 values
         vector<int> sparse_vec(mask_matrix_linear_size, 0);
         int temp_idx;
 
         for(y = 0; y < idxsMat_noNaN.getCols(); y++)
         {
-            //m values are stored in mask_matrix_linear_size sized array, where m <= mask_matrix_linear_size
+            //for each column in idxsMat_noNaN, m values are stored in mask_matrix_linear_size sized array, where m <= mask_matrix_linear_size
             //the values do not necessarily start with 0, as they might start indexing from 502, for instance
             for(x = 0; x < m; x++)
             {
@@ -156,9 +161,14 @@ void conv2mat(int maskRows, int maskCols, Matrix2D<int> input_filter, Matrix2D<d
                 temp_idx = idxsMat_noNaN(x, y);
                 sparse_vec[temp_idx] = fs[y];
 
-                A(x, temp_idx) += sparse_vec[temp_idx];
+                //A(x, temp_idx) += sparse_vec[temp_idx];
+                //if 2 or more values were on the same line, they will still be, as A stores on the lines x a number of y KeysValue triple
+                A(x, y).setKeysValue(x, temp_idx, sparse_vec[temp_idx]);
             }
         }
+
+        result = A;
+        mat_x_size = m;
 }
 
 
@@ -208,59 +218,64 @@ void medianFilterMatMask(Matrix2D<bool>& input_mask, int half_width, Matrix2D<do
     //fs size = 25.
     for(i = 0; i < fs_size; i++)
         for(j = i+1;  j < fs_size - i; j++)
-    {
-        //declare matrices whose values are the absolute values of the matrices contained by the vector fs
-        Matrix2D<int> absi(fs[i].getRows(), fs[i].getCols()), absj(fs[j].getRows(), fs[j].getCols());
-        absi.getAbsoluteValuesMatrix(fs[i]);
-        absj.getAbsoluteValuesMatrix(fs[j]);
-
-        //declare the matrix that will hold the convolution's result an dinitialize it to 0
-        Matrix2D<int> C(abs(fs[i].getRows() - fs[j].getRows()) + 1, abs(fs[i].getCols() - fs[j].getCols()) + 1);
-        C.initializeMatrixValues(0);
-        //create a result vector that contains values of 1 if in C is a column containing a value >=2
-        vector<int> res(C.getCols());
-
-        //2D convolution product between absi and absj only if the kernel's size can fit in the input matrix
-        if(fs[i].getRows() >= fs[j].getRows() && fs[i].getCols() >= fs[j].getCols())
         {
-            absi.conv2DValid(absj, C);
-            C.anyGreater(res, 1, 1);
-        }
-        else
-        {
-            fill(res.begin(), res.end(), 0);
-        }
+            //declare matrices whose values are the absolute values of the matrices contained by the vector fs
+            Matrix2D<int> absi(fs[i].getRows(), fs[i].getCols()), absj(fs[j].getRows(), fs[j].getCols());
+            absi.getAbsoluteValuesMatrix(fs[i]);
+            absj.getAbsoluteValuesMatrix(fs[j]);
 
-        for(int k = 0; k < C.getCols(); k++)
-        {
-            //find a non zero element in result vector
-            if(res[k] != 0)
+            //declare the matrix that will hold the convolution's result an dinitialize it to 0
+            Matrix2D<int> C(abs(fs[i].getRows() - fs[j].getRows()) + 1, abs(fs[i].getCols() - fs[j].getCols()) + 1);
+            C.initializeMatrixValues(0);
+            //create a result vector that contains values of 1 if in C is a column containing a value >=2
+            vector<int> res(C.getCols());
+
+            //2D convolution product between absi and absj only if the kernel's size can fit in the input matrix
+            if(fs[i].getRows() >= fs[j].getRows() && fs[i].getCols() >= fs[j].getCols())
             {
-                do_remove[j] = 1;
+                absi.conv2DValid(absj, C);
+                C.anyGreater(res, 1, 1);
             }
-            break;
+            else
+            {
+                fill(res.begin(), res.end(), 0);
+            }
+
+            for(int k = 0; k < C.getCols(); k++)
+            {
+                //find a non zero element in result vector
+                if(res[k] != 0)
+                {
+                    do_remove[j] = 1;
+                }
+                break;
+            }
         }
 
-    }
-
-    Matrix2D<double> d_input_mask(input_mask.getRows(), input_mask.getCols()), conv_res(input_mask.getRows(), input_mask.getCols());
-    vector<double> R(input_mask.getRows()*input_mask.getCols());
+    //all float data sets should have been double, but in order to save some memory...
+    Matrix2D<float> d_input_mask(input_mask.getRows(), input_mask.getCols());
+    Matrix2D<float> conv_res(input_mask.getRows(), input_mask.getCols());
+    vector<float> R(input_mask.getRows()*input_mask.getCols());
     vector<bool>  keep(input_mask.getRows()*input_mask.getCols(), 0);
-    Matrix2D<double>  *A = new Matrix2D<double>[fs_size];            //the max size is fs_size
+    //array of 2D matrices that store triples (keyX, keyY, value), hat are indices in a spare matrix and the afferent value
+    Matrix2D<KeysValue<double> > *A = new Matrix2D<KeysValue<double> >[fs_size];            //cannot store fs_size (divided by 2) 50k by 50k matrices
+    //for each such a matrix in the above vector, store its # of rows
+    vector<int> A_x_size(fs_size);
+    //Matrix2D< KeysValue<double> > A_temp;
 
     //How to use A: A.push_back(Matrix<double>(2, 2, false));
 
-    //for(int k = 0; k < fs_size; k++)    //k = 0:11
-    int k = 0;
+    for(int k = 0; k < fs_size; k++)    //k = 0:11
     {
         if(do_remove[k] == 0)
         {
             //work with fs[k]
-            conv2mat(input_mask.getRows(), input_mask.getCols(), fs[k], A[k]);
-            /*Matrix2D<double> f( fs[k].getRows(), fs[k].getCols(), 0);
+            conv2mat(input_mask.getRows(), input_mask.getCols(), fs[k], A[k], A_x_size[k]);
+
+            Matrix2D<double> f( fs[k].getRows(), fs[k].getCols(), 0);
             checkMatrixAgainstTreshold( fs[k], f, 0);
 
-            convertBoolToDoubleMatrix2D(input_mask, d_input_mask);
+            /*convertBoolToDoubleMatrix2D(input_mask, d_input_mask);
             //conv2(double(invalid), f, 'valid');
 
             //do reshape
@@ -273,5 +288,4 @@ void medianFilterMatMask(Matrix2D<bool>& input_mask, int half_width, Matrix2D<do
             */
         }
     }
-
 }

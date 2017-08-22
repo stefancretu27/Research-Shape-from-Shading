@@ -51,7 +51,7 @@ int main()
 
     //data.true.im
     Data data;
-   data.getDataTrue().getInputImage() = grayImage;
+    data.getDataTrue().getInputImage() = grayImage;
 
     //im
     Matrix2D<double> im(grayImage);
@@ -76,7 +76,7 @@ int main()
     data.getDataTrue().getMask() = valid;
     //cout<<setprecision(15)<<fixed<<data.getDataTrue().getMask().getMatrixValue(74,23)<<endl;
 
-    medianFilterMatMask(negated_valid,  params.getZMedianHalfwidth(), data.getZMedianFilterMatrix());
+    //medianFilterMatMask(negated_valid,  params.getZMedianHalfwidth(), data.getZMedianFilterMatrix());
     //medianFilterMatMask(negated_valid,  params.getAMedianHalfwidth(), data.getAMedianFilterMatrix());
 
     return 0;

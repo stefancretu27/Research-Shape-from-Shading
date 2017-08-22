@@ -102,6 +102,7 @@
 		<Unit filename="prior/reflectance/gray/grayMA.h" />
 		<Unit filename="range.h" />
 		<Unit filename="templates/dataFile.h" />
+		<Unit filename="templates/keyValue.h" />
 		<Unit filename="templates/matrix2D.cpp">
 			<Option weight="0" />
 		</Unit>

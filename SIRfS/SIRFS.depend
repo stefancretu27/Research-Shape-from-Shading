@@ -522,7 +522,7 @@
 1500916068 c:\users\stefa_000\documents\codeblocks_projects\sirfs\matlab\matlab_vector.cpp
 	"matlab_vector.h"
 
-1501159016 source:c:\users\stefa_000\documents\githublocalrepos\research-shape-from-shading\sirfs\templates\matrix2d.cpp
+1503147341 source:c:\users\stefa_000\documents\githublocalrepos\research-shape-from-shading\sirfs\templates\matrix2d.cpp
 	"matrix2D.h"
 
 1500979686 c:\users\stefa_000\documents\githublocalrepos\research-shape-from-shading\sirfs\templates\matrix2d.h
@@ -537,7 +537,7 @@
 	<iostream>
 	"Matrix2D.h"
 
-1500733997 source:c:\users\stefa_000\documents\githublocalrepos\research-shape-from-shading\sirfs\main.cpp
+1503323590 source:c:\users\stefa_000\documents\githublocalrepos\research-shape-from-shading\sirfs\main.cpp
 	<iostream>
 	<stdlib.h>
 	<math.h>
@@ -683,7 +683,7 @@
 	"../../../../../range.h"
 	"../../../../../templates/dataFile.h"
 
-1501159016 c:\users\stefa_000\documents\githublocalrepos\research-shape-from-shading\sirfs\templates\matrix2d.cpp
+1503147341 c:\users\stefa_000\documents\githublocalrepos\research-shape-from-shading\sirfs\templates\matrix2d.cpp
 	"matrix2D.h"
 
 1498744054 c:\users\stefa_000\documents\githublocalrepos\research-shape-from-shading\sirfs\templates\matrix3d.cpp
@@ -700,16 +700,17 @@
 	<iostream>
 	<math.h>
 
-1501875539 c:\users\stefa_000\documents\githublocalrepos\research-shape-from-shading\sirfs\sirfs_functions.h
+1503336368 c:\users\stefa_000\documents\githublocalrepos\research-shape-from-shading\sirfs\sirfs_functions.h
 	<algorithm>
 	"matlab/matlab_vector.h"
 	"matlab/matlab_matrix.h"
+	"templates/keyValue.h"
 
 1502022514 c:\users\stefa_000\documents\githublocalrepos\research-shape-from-shading\sirfs\matlab\matlab_vector.h
 	<vector>
 	"../templates/matrix2D.h"
 
-1500729465 c:\users\stefa_000\documents\githublocalrepos\research-shape-from-shading\sirfs\matlab\matlab_matrix.h
+1503340962 c:\users\stefa_000\documents\githublocalrepos\research-shape-from-shading\sirfs\matlab\matlab_matrix.h
 	<vector>
 	<limits>
 	"../templates/matrix2D.h"
@@ -771,11 +772,13 @@
 1500662468 source:c:\users\stefa_000\documents\githublocalrepos\research-shape-from-shading\sirfs\prior\reflectance\gray\grayma.cpp
 	"grayMA.h"
 
-1502739986 source:c:\users\stefa_000\documents\githublocalrepos\research-shape-from-shading\sirfs\sirfs_functions.cpp
+1503323398 source:c:\users\stefa_000\documents\githublocalrepos\research-shape-from-shading\sirfs\sirfs_functions.cpp
 	"SIRfS_Functions.h"
 	"templates/matrix2D.cpp"
 	"matlab/matlab_vector.cpp"
 
 1500916068 c:\users\stefa_000\documents\githublocalrepos\research-shape-from-shading\sirfs\matlab\matlab_vector.cpp
 	"matlab_vector.h"
+
+1503335602 c:\users\stefa_000\documents\githublocalrepos\research-shape-from-shading\sirfs\templates\keyvalue.h
 

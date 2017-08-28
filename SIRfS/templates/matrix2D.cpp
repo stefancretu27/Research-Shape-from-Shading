@@ -373,7 +373,7 @@ void Matrix2D<Type>::reshapeToVector(vector<Type>& dest)
     for(int j = 0; j < this->getCols(); j++)
         for(int i = 0; i < this->getRows(); i++)
         {
-            dest[j*this->getCols() + i] = this->matrix2d[i][j];
+            dest[i + j*this->getRows()] = this->matrix2d[i][j];
         }
 }
 
@@ -383,14 +383,16 @@ void Matrix2D<Type>::reverseMatrix(Matrix2D<Type>& source)
 {
     Type temp;
 
-    for(int i = 0; i < source.getRows()/2 ; i++)
+    for(int i = 0; i < source.getRows()/2 + 1; i++)
         for(int j = 0; j < source.getCols(); j++)
     {
         //for matrices with odd number of lines, for the middle line stop indexing columns before it achieves the half of columns number
         if(source.getRows()%2 != 0 && i == (int) source.getRows()/2)
         {
             if(j == source.getCols())
+            {
                 break;
+            }
         }
 
         temp = source(i,j);

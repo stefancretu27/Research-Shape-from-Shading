@@ -62,7 +62,7 @@ void conv2mat(int maskRows, int maskCols, Matrix2D<int> input_filter, Matrix2D<K
                         if((i[index] < maskRows) & (j[index] < maskCols))
                         {
                             //If the updated indeces are within the mask matrix dimensions range, linearize them and store them in a vector (idx)
-                            // Matlab's sub2ind  loops firstly on each rows then on columns thus the linearization below
+                            // Matlab's sub2ind  loops firstly on each row, then on columns thus the linearization below (reads column by column, not line by line)
                             idx[index] = i[index] + maskRows * j[index];
                         }
                         else
@@ -109,6 +109,7 @@ void conv2mat(int maskRows, int maskCols, Matrix2D<int> input_filter, Matrix2D<K
         Matrix2D<int> idxsMat_noNaN( min_index_array_dim, idxs.size());
         vector<int> nan_values_line_index(min_index_array_dim);
         int nan_line_index_size = 0, nan_counter = 0;
+
 
         //iterate over the maximum number of lines
         for(x = 0; x < mask_matrix_linear_size; x++)
@@ -169,6 +170,7 @@ void conv2mat(int maskRows, int maskCols, Matrix2D<int> input_filter, Matrix2D<K
 
         result = A;
         mat_x_size = m;
+
 }
 
 
@@ -253,9 +255,7 @@ void medianFilterMatMask(Matrix2D<bool>& input_mask, int half_width, Matrix2D<do
         }
 
     //all float data sets should have been double, but in order to save some memory...
-    Matrix2D<float> d_input_mask(input_mask.getRows(), input_mask.getCols());
-    Matrix2D<float> conv_res(input_mask.getRows(), input_mask.getCols());
-    vector<float> R(input_mask.getRows()*input_mask.getCols());
+    Matrix2D<double> d_input_mask(input_mask.getRows(), input_mask.getCols());
     vector<bool>  keep(input_mask.getRows()*input_mask.getCols(), 0);
     //array of 2D matrices that store triples (keyX, keyY, value), hat are indices in a spare matrix and the afferent value
     Matrix2D<KeysValue<double> > *A = new Matrix2D<KeysValue<double> >[fs_size];            //cannot store fs_size (divided by 2) 50k by 50k matrices
@@ -265,7 +265,7 @@ void medianFilterMatMask(Matrix2D<bool>& input_mask, int half_width, Matrix2D<do
 
     //How to use A: A.push_back(Matrix<double>(2, 2, false));
 
-    for(int k = 0; k < fs_size; k++)    //k = 0:11
+    for(int k = 0; k < 1 /*fs_size*/; k++)    //k = 0:11
     {
         if(do_remove[k] == 0)
         {
@@ -273,19 +273,24 @@ void medianFilterMatMask(Matrix2D<bool>& input_mask, int half_width, Matrix2D<do
             conv2mat(input_mask.getRows(), input_mask.getCols(), fs[k], A[k], A_x_size[k]);
 
             Matrix2D<double> f( fs[k].getRows(), fs[k].getCols(), 0);
+            //if a value is not zero, store 1, else store 1 in the new matrix f
             checkMatrixAgainstTreshold( fs[k], f, 0);
+            //convert matrix input_mask to double
+            convertBoolToDoubleMatrix2D(input_mask, d_input_mask);
 
-            /*convertBoolToDoubleMatrix2D(input_mask, d_input_mask);
-            //conv2(double(invalid), f, 'valid');
+            //Apply convolution between filters f and input_mask (after converted to double). Store the result in the matrix conv_res
+            Matrix2D<double> conv_res( abs(d_input_mask.getRows() - f.getRows() + 1), abs(d_input_mask.getCols() - f.getCols() + 1) );
+            d_input_mask.conv2DValid(f, conv_res);
+            //reshape conv_res matrix to vector
+            vector<double> R(conv_res.getRows()*conv_res.getCols(), 0);
+            conv_res.reshapeToVector(R);
 
-            //do reshape
-            d_input_mask.reshapeToVector(R);
             //compute 'keep' mask vector
-            createVectorMask(R, keep, 0);
+            //createVectorMask(R, keep, 0);
 
             //A{i} has already values set by conv2mat and is a sparse matrix (many 0)
             //didn't understand this Matlab code A{i} = A{i}(keep,:);
-            */
+
         }
     }
 }

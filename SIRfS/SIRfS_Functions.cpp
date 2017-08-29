@@ -256,9 +256,9 @@ void medianFilterMatMask(Matrix2D<bool>& input_mask, int half_width, Matrix2D<do
 
     //all float data sets should have been double, but in order to save some memory...
     Matrix2D<double> d_input_mask(input_mask.getRows(), input_mask.getCols());
-    vector<bool>  keep(input_mask.getRows()*input_mask.getCols(), 0);
     //array of 2D matrices that store triples (keyX, keyY, value), hat are indices in a spare matrix and the afferent value
     Matrix2D<KeysValue<double> > *A = new Matrix2D<KeysValue<double> >[fs_size];            //cannot store fs_size (divided by 2) 50k by 50k matrices
+    Matrix2D<KeysValue<double> > temp_A;
     //for each such a matrix in the above vector, store its # of rows
     vector<int> A_x_size(fs_size);
     //Matrix2D< KeysValue<double> > A_temp;
@@ -270,7 +270,7 @@ void medianFilterMatMask(Matrix2D<bool>& input_mask, int half_width, Matrix2D<do
         if(do_remove[k] == 0)
         {
             //work with fs[k]
-            conv2mat(input_mask.getRows(), input_mask.getCols(), fs[k], A[k], A_x_size[k]);
+            conv2mat(input_mask.getRows(), input_mask.getCols(), fs[k], temp_A, A_x_size[k]);
 
             Matrix2D<double> f( fs[k].getRows(), fs[k].getCols(), 0);
             //if a value is not zero, store 1, else store 1 in the new matrix f
@@ -279,17 +279,34 @@ void medianFilterMatMask(Matrix2D<bool>& input_mask, int half_width, Matrix2D<do
             convertBoolToDoubleMatrix2D(input_mask, d_input_mask);
 
             //Apply convolution between filters f and input_mask (after converted to double). Store the result in the matrix conv_res
-            Matrix2D<double> conv_res( abs(d_input_mask.getRows() - f.getRows() + 1), abs(d_input_mask.getCols() - f.getCols() + 1) );
+            Matrix2D<double> conv_res( abs(d_input_mask.getRows() - f.getRows() + 1), abs(d_input_mask.getCols() - f.getCols() + 1), 0);
             d_input_mask.conv2DValid(f, conv_res);
-            //reshape conv_res matrix to vector
+            //reshape conv_res matrix to vector R
             vector<double> R(conv_res.getRows()*conv_res.getCols(), 0);
             conv_res.reshapeToVector(R);
 
             //compute 'keep' mask vector
-            //createVectorMask(R, keep, 0);
+            vector<bool>  keep(R.size(), false);
+            createVectorMask(R, keep, 0);
 
             //A{i} has already values set by conv2mat and is a sparse matrix (many 0)
-            //didn't understand this Matlab code A{i} = A{i}(keep,:);
+            //It seems to keep only the lines in A{i} corresponding to 1 values in keep
+
+            int zero_values_in_A = 0;
+            for(int idx = 0; idx < keep.size(); idx++)
+            {
+                if(keep[idx] == false)
+                {
+                    zero_values_in_A++;
+                    for(int idy = 0; idy < temp_A.getCols(); idy++)
+                    {
+                        temp_A(idx, idy).setValue(0);
+                    }
+                }
+            }
+
+            cout<<zero_values_in_A;
+            //A[k] will store lines from temp_A whose elements are different from 0
 
         }
     }

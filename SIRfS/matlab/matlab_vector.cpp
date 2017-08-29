@@ -34,7 +34,7 @@ Type findLastNonZeroIndex(vector<Type>& source)
 */
 
 /*
-Input mask should be initialized to 0.
+Input mask should be initialized to false.
 */
 template <class Type>
 void createVectorMask(vector<Type>& source, vector<bool>& mask, int treshold)
@@ -42,7 +42,9 @@ void createVectorMask(vector<Type>& source, vector<bool>& mask, int treshold)
     for(unsigned int i = 0; i < source.size(); i++)
     {
         if(source[i] == treshold)
-            mask[i] = 1;
+            mask[i] = true;
+        else
+            mask[i] = false;
     }
 }
 

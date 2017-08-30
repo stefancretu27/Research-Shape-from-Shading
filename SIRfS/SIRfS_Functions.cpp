@@ -292,21 +292,43 @@ void medianFilterMatMask(Matrix2D<bool>& input_mask, int half_width, Matrix2D<do
             //A{i} has already values set by conv2mat and is a sparse matrix (many 0)
             //It seems to keep only the lines in A{i} corresponding to 1 values in keep
 
-            int zero_values_in_A = 0;
-            for(int idx = 0; idx < keep.size(); idx++)
+            int zero_lines_in_A = 0;
+            for(unsigned int idx = 0; idx < keep.size(); idx++)
             {
                 if(keep[idx] == false)
                 {
-                    zero_values_in_A++;
+                    //count number of lines containing 0
+                    zero_lines_in_A++;
                     for(int idy = 0; idy < temp_A.getCols(); idy++)
                     {
+                        //set to 0 all elemenys in the given line
                         temp_A(idx, idy).setValue(0);
                     }
                 }
             }
 
-            cout<<zero_values_in_A;
+            //cout<<zero_lines_in_A;
             //A[k] will store lines from temp_A whose elements are different from 0
+            for(int idx = 0; idx < temp_A.getRows(); idx++)
+            {
+                if(temp_A(idx, 0).getValue() == 0)
+                {
+                    for(int x_idx = idx + 1; x_idx < temp_A.getRows(); x_idx++)
+                    {
+                        if(temp_A(x_idx, 0).getValue() != 0)
+                        {
+                            //swap lines
+                            KeysValue<double> temp;
+                            for(int idy = 0; idy < temp_A.getCols(); idy++)
+                            {
+                                temp = temp_A(idx, idy);
+                                temp_A.setMatrixValue(idx, idy, temp_A.getMatrixValue(x_idx, idy));
+                                temp_A.setMatrixValue(x_idx, idy, temp);
+                            }
+                        }
+                    }
+                }
+            }
 
         }
     }

@@ -6,7 +6,9 @@
 class DataTrue
 {
 private:
-    Matrix2D<double> inputImage, im, log_im;
+    Matrix2D<double> inputImage;
+    Matrix2D<double> im;
+    Matrix2D<double> log_im;
     Matrix2D<bool> mask;
 
 public:

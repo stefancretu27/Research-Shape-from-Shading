@@ -40,8 +40,46 @@ Matrix2D<Type>::Matrix2D( int new_rows,  int new_cols, Type value)
 
     for(int rowsIdx = 0; rowsIdx < this->rows; rowsIdx++ )
         for(int colsIdx = 0; colsIdx < this->cols; colsIdx++)
+        {
+            this->matrix2d[rowsIdx][colsIdx] = value;
+        }
+}
+
+//copy constructor
+/*
+The calling matrix is a clone of the input matrix, being allocated and initialized to the latter's values
+*/
+template <class Type>
+Matrix2D<Type>::Matrix2D(const Matrix2D<Type>& new_matrix)
+{
+    this->rows = new_matrix.getRows();
+    this->cols = new_matrix.getCols();
+
+    //allocate memory for the rows. It is an array that contains pointers to Type.
+    this->matrix2d = new Type* [this->rows];
+    //allocate space for each column. That is, for each line, allocate space for each element in the matrix.
+    for(int rowsIdx = 0; rowsIdx < this->rows; rowsIdx++)
     {
-        this->matrix2d[rowsIdx][colsIdx] = value;
+        this->matrix2d[rowsIdx] = new Type[this->cols];
+    }
+
+    //copy elements
+    for( int rowsIdx = 0; rowsIdx < this->rows; rowsIdx++)
+        for( int colsIdx = 0; colsIdx < this->cols; colsIdx++)
+        {
+            this->matrix2d[rowsIdx][colsIdx] = new_matrix.getMatrixValue(rowsIdx, colsIdx);
+        }
+}
+
+template <class Type>
+void Matrix2D<Type>::allocateMemory(int dimX, int dimY)
+{
+    //allocate memory for the rows. It is an array that contains pointers to Type.
+    this->matrix2d = new Type* [dimX];
+    //allocate space for each column. That is, for each line, allocate space for each element in the matrix.
+    for( int rowsIdx = 0; rowsIdx < this->rows; rowsIdx++)
+    {
+        this->matrix2d[rowsIdx] = new Type[dimY];
     }
 }
 
@@ -63,7 +101,7 @@ Matrix2D<Type>::~Matrix2D()
 Overload attribution operators to allow for operatrions such as A = B, where A,B are Matrix2D instances
 */
 template <class Type>
-Matrix2D<Type>& Matrix2D<Type>::operator=(Matrix2D<Type>& new_matrix)
+Matrix2D<Type>& Matrix2D<Type>::operator=(const Matrix2D<Type>& new_matrix)
 {
     this->rows = new_matrix.getRows();
     this->cols = new_matrix.getCols();
@@ -79,9 +117,9 @@ Matrix2D<Type>& Matrix2D<Type>::operator=(Matrix2D<Type>& new_matrix)
     //copy elements
     for( int rowsIdx = 0; rowsIdx < this->rows; rowsIdx++)
         for( int colsIdx = 0; colsIdx < this->cols; colsIdx++)
-    {
-        this->matrix2d[rowsIdx][colsIdx] = new_matrix(rowsIdx, colsIdx);
-    }
+        {
+            this->matrix2d[rowsIdx][colsIdx] = new_matrix.getMatrixValue(rowsIdx, colsIdx);
+        }
 
     return *this;
 }
@@ -93,37 +131,11 @@ Matrix2D<Type>& Matrix2D<Type>::operator+(Matrix2D<Type>& new_matrix)
     //copy elements
     for( int rowsIdx = 0; rowsIdx < this->rows; rowsIdx++)
         for( int colsIdx = 0; colsIdx < this->cols; colsIdx++)
-    {
-        this->matrix2d[rowsIdx][colsIdx] += new_matrix.getMatrixValue(rowsIdx, colsIdx);
-    }
+        {
+            this->matrix2d[rowsIdx][colsIdx] += new_matrix.getMatrixValue(rowsIdx, colsIdx);
+        }
 
     return *this;
-}
-
-//copy constructor
-/*
-The calling matrix is a clone of the input matrix, being allocated and initialized to the latter's values
-*/
-template <class Type>
-Matrix2D<Type>::Matrix2D(Matrix2D<Type>& new_matrix)
-{
-    this->rows = new_matrix.getRows();
-    this->cols = new_matrix.getCols();
-
-    //allocate memory for the rows. It is an array that contains pointers to Type.
-    this->matrix2d = new Type* [this->rows];
-    //allocate space for each column. That is, for each line, allocate space for each element in the matrix.
-    for(int rowsIdx = 0; rowsIdx < this->rows; rowsIdx++)
-    {
-        this->matrix2d[rowsIdx] = new Type[this->cols];
-    }
-
-    //copy elements
-    for( int rowsIdx = 0; rowsIdx < this->rows; rowsIdx++)
-        for( int colsIdx = 0; colsIdx < this->cols; colsIdx++)
-    {
-        this->matrix2d[rowsIdx][colsIdx] = new_matrix(rowsIdx, colsIdx);
-    }
 }
 
 //matrix operations
@@ -137,6 +149,16 @@ void Matrix2D<Type>::initializeMatrixValues(Type value)
         }
 }
 
+template <class Type>
+void Matrix2D<Type>::copyElementsFromMatrix(Matrix2D<Type>& source)
+{
+    for( int rowsIdx = 0; rowsIdx < this->rows; rowsIdx++)
+        for( int colsIdx = 0; colsIdx < this->cols; colsIdx++)
+        {
+            //this->matrix2d[rowsIdx][colsIdx] = source(rowsIdx, colsIdx);
+            this->setMatrixValue(rowsIdx, colsIdx, source.getMatrixValue(rowsIdx, colsIdx));
+        }
+}
 
 /*
 It gets as input a matrix mask (only 1 and 0 values) and sets the calling matrix's values to negated source's values

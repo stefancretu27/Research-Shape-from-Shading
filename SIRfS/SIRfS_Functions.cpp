@@ -7,7 +7,7 @@
 using namespace std;
 
 //SIRfS operations
-void conv2mat(int maskRows, int maskCols, Matrix2D<int> input_filter, Matrix2D<KeysValue<double> >& result, int mat_x_size)
+void conv2mat(int maskRows, int maskCols, Matrix2D<int> input_filter, Matrix2D<KeysValue<double> >& result)
 {
     int x, y, index, counter_dim = 0, min_index_array_dim = 0;
     int mask_matrix_linear_size = maskRows*maskCols;                         //also referred as n in matlab code
@@ -138,7 +138,7 @@ void conv2mat(int maskRows, int maskCols, Matrix2D<int> input_filter, Matrix2D<K
 
        int m = idxsMat_noNaN.getRows();
 
-       //almost 50k by 50k it takes some time to allocate it, especially if it contains double values. I set it to float
+       //almost 50k by 50k it takes some time to allocate it, especially if it contains double values.
        //matrix initialization takes almost 15-16 secs
         //Matrix2D<float> A(m, mask_matrix_linear_size, 0);
 
@@ -169,8 +169,6 @@ void conv2mat(int maskRows, int maskCols, Matrix2D<int> input_filter, Matrix2D<K
         }
 
         result = A;
-        mat_x_size = m;
-
 }
 
 
@@ -257,20 +255,20 @@ void medianFilterMatMask(Matrix2D<bool>& input_mask, int half_width, Matrix2D<do
     //all float data sets should have been double, but in order to save some memory...
     Matrix2D<double> d_input_mask(input_mask.getRows(), input_mask.getCols());
     //array of 2D matrices that store triples (keyX, keyY, value), hat are indices in a spare matrix and the afferent value
-    Matrix2D<KeysValue<double> > *A = new Matrix2D<KeysValue<double> >[fs_size];            //cannot store fs_size (divided by 2) 50k by 50k matrices
-    Matrix2D<KeysValue<double> > temp_A;
-    //for each such a matrix in the above vector, store its # of rows
-    vector<int> A_x_size(fs_size);
-    //Matrix2D< KeysValue<double> > A_temp;
+    Matrix2D<KeysValue<double> > *A_vec = new Matrix2D<KeysValue<double> >[fs_size];            //cannot store fs_size (divided by 2) 50k by 50k matrices
+    //use it as temporary matrix
+    Matrix2D<KeysValue<double> > A;
+    int A_idx = 0;
 
-    //How to use A: A.push_back(Matrix<double>(2, 2, false));
+    vector< Matrix2D <KeysValue<double> >* >  Av;
 
-    for(int k = 0; k < 1 /*fs_size*/; k++)    //k = 0:11
+    ////How to use A: A.push_back(Matrix<double>(2, 2, false));
+
+    for(int k = 0; k < fs_size; k++)    //k = 0:11
     {
         if(do_remove[k] == 0)
         {
-            //work with fs[k]
-            conv2mat(input_mask.getRows(), input_mask.getCols(), fs[k], temp_A, A_x_size[k]);
+            conv2mat(input_mask.getRows(), input_mask.getCols(), fs[k], A);
 
             Matrix2D<double> f( fs[k].getRows(), fs[k].getCols(), 0);
             //if a value is not zero, store 1, else store 1 in the new matrix f
@@ -278,10 +276,10 @@ void medianFilterMatMask(Matrix2D<bool>& input_mask, int half_width, Matrix2D<do
             //convert matrix input_mask to double
             convertBoolToDoubleMatrix2D(input_mask, d_input_mask);
 
-            //Apply convolution between filters f and input_mask (after converted to double). Store the result in the matrix conv_res
+            //Apply convolution between filter f and input_mask (after converted to double). Store the result in the matrix conv_res
             Matrix2D<double> conv_res( abs(d_input_mask.getRows() - f.getRows() + 1), abs(d_input_mask.getCols() - f.getCols() + 1), 0);
             d_input_mask.conv2DValid(f, conv_res);
-            //reshape conv_res matrix to vector R
+            //reshape conv_res matrix to vector R. R's dimension should be equal to A.getRows()
             vector<double> R(conv_res.getRows()*conv_res.getCols(), 0);
             conv_res.reshapeToVector(R);
 
@@ -292,44 +290,40 @@ void medianFilterMatMask(Matrix2D<bool>& input_mask, int half_width, Matrix2D<do
             //A{i} has already values set by conv2mat and is a sparse matrix (many 0)
             //It seems to keep only the lines in A{i} corresponding to 1 values in keep
 
-            int zero_lines_in_A = 0;
+            int notnull_lines_in_A = std::count(keep.begin(), keep.end(), true);
+            //temp_A stores the lines in A corresponding to true values in keep mask
+            Matrix2D<KeysValue<double> > temp_A(notnull_lines_in_A, A.getCols());
+
+            int t_idx = 0;
+
             for(unsigned int idx = 0; idx < keep.size(); idx++)
             {
-                if(keep[idx] == false)
+                if(keep[idx] == true)
                 {
-                    //count number of lines containing 0
-                    zero_lines_in_A++;
-                    for(int idy = 0; idy < temp_A.getCols(); idy++)
+                    //store in temp_A the lines in A corresponding to true values in keep mask
+                    for(int idy = 0; idy < A.getCols(); idy++)
                     {
-                        //set to 0 all elemenys in the given line
-                        temp_A(idx, idy).setValue(0);
+                        //temp_A.setMatrixValue(t_idx, idy, A.getMatrixValue(idx, idy));
+                        temp_A(t_idx, idy).setKeysValue( A(idx, idy).getKeyX(),  A(idx, idy).getKeyY(), A(idx, idy).getValue());
                     }
+
+                    t_idx++;
                 }
             }
 
-            //cout<<zero_lines_in_A;
-            //A[k] will store lines from temp_A whose elements are different from 0
-            for(int idx = 0; idx < temp_A.getRows(); idx++)
-            {
-                if(temp_A(idx, 0).getValue() == 0)
-                {
-                    for(int x_idx = idx + 1; x_idx < temp_A.getRows(); x_idx++)
-                    {
-                        if(temp_A(x_idx, 0).getValue() != 0)
-                        {
-                            //swap lines
-                            KeysValue<double> temp;
-                            for(int idy = 0; idy < temp_A.getCols(); idy++)
-                            {
-                                temp = temp_A(idx, idy);
-                                temp_A.setMatrixValue(idx, idy, temp_A.getMatrixValue(x_idx, idy));
-                                temp_A.setMatrixValue(x_idx, idy, temp);
-                            }
-                        }
-                    }
-                }
-            }
+            //crashes because of copy constructor that fails because of double (nested) templates
+            //A_vec[A_idx] = temp_A;
+            //sometimes crashes here
+            Av.push_back(&temp_A);
+
+            cout<<Av[k]->getRows()<<" "<<Av[k]->getCols()<<"  |  "<<temp_A.getRows()<<" "<<temp_A.getCols()<<endl;
+            cout<<temp_A(0,0).getKeyX()<<" "<<temp_A(0,0).getKeyY()<<" "<<temp_A(0, 0).getValue()<<endl;
+            cout<<Av[k]->getMatrixValue(0,0).getKeyX()<<" "<<Av[k]->getMatrixValue(0,0).getKeyY()<<" "<<Av[k]->getMatrixValue(0,0).getValue()<<endl;
+            cout<<endl;
 
         }
     }
+
+    //Matrix2D<KeysValue<double> > cat_A(A_vec[A_idx-1].getRows(), A_idx * A_vec[A_idx-1].getCols());
+    //cout<<cat_A.getRows()<<" "<<cat_A.getCols()<<endl;
 }

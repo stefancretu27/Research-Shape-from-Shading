@@ -9,9 +9,17 @@ private:
      int keyX, keyY;
 
 public:
-    //constructor
+    //constructor: does nothing
     KeysValue(){};
+    //copy constructor
+    KeysValue(const KeysValue<Type>& source )
+    {
+        this->value = source.getValue();
+        this->keyX = source.getKeyX();
+        this->keyY = source.getKeyY();
+    }
 
+    //setters
     void setKeysValue(int new_keyX, int new_keyY, Type new_value)
     {
         value = new_value;
@@ -30,11 +38,13 @@ public:
         value = new_value;
     };
 
-    int getKeyX(){return keyX;};
-    int getKeyY(){return keyY;};
-    Type getValue(){return value;};
+    //getters
+    inline int getKeyX() const {return keyX;};
+    inline int getKeyY()const {return keyY;};
+    inline Type getValue() const{return value;};
 
-    KeysValue& operator=(KeysValue<Type>& new_kv)
+    //operators' overloading
+    KeysValue& operator=(const KeysValue<Type>& new_kv)
     {
         value = new_kv.getValue();
         keyX = new_kv.getKeyX();

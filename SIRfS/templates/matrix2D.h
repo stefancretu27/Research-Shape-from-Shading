@@ -17,16 +17,16 @@ public:
     Matrix2D(){};                                                                                       //does nothing
     Matrix2D( int new_rows,  int new_cols);
     Matrix2D( int new_rows,  int new_cols, Type value);
-    Matrix2D(Matrix2D& new_matrix);
+    Matrix2D(const Matrix2D<Type>& new_matrix);
     //destructor
     ~Matrix2D();
 
     //getters
-    inline int getRows(){return this->rows;};                                           //inline tells compiler to replace function with its definition => faster execution as there is less linking
-    inline int getCols(){return this->cols;};
+    inline int getRows() const {return this->rows;};                                           //inline tells compiler to replace function with its definition => faster execution as there is less linking
+    inline int getCols() const {return this->cols;};
     inline int getDim(){return this->rows*this->cols;};
     inline Type** getMat2D(){return this->matrix2d;};
-    inline Type getMatrixValue(int i, int j){return this->matrix2d[i][j];};
+    inline Type getMatrixValue(int i, int j) const {return this->matrix2d[i][j];};
     //setters
     inline void setRows(int new_rows){this->rows = new_rows;};
     inline void setCols(int new_cols){this->cols = new_cols;};
@@ -37,10 +37,12 @@ public:
     {
         return this->matrix2d[rowsIdx][colsIdx];
     };
-    Matrix2D& operator=(Matrix2D& new_matrix);
-    Matrix2D& operator+(Matrix2D& new_matrix);
+    Matrix2D& operator=(const Matrix2D<Type>& new_matrix);
+    Matrix2D& operator+(Matrix2D<Type>& new_matrix);
 
     //matrix operations. They are the C++ implementations for Matlab library functions for 2D matrices
+    void allocateMemory(int dimX, int dimY);
+    void copyElementsFromMatrix(Matrix2D<Type>& source);
     void initializeMatrixValues(Type value);
     void negateMatrixMask(Matrix2D<Type>& sourceMask);
     void logNatMatrix(Matrix2D<Type>& source);

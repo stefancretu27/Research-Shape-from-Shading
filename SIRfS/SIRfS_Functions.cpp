@@ -175,7 +175,7 @@ void conv2mat(int maskRows, int maskCols, Matrix2D<int> input_filter, Matrix2D<K
 /*
 Compute median filter
 */
-void medianFilterMatMask(Matrix2D<bool>& input_mask, int half_width, Matrix2D<double>& output)
+void medianFilterMatMask(Matrix2D<bool>& input_mask, int half_width, Matrix2D< KeysValue<double> >& output)
 {
     int width = 2*half_width + 1;
     int fs_size = width*width - 1;                  //Might be necessary to do -1,a s it is actually 24 not 25
@@ -255,12 +255,17 @@ void medianFilterMatMask(Matrix2D<bool>& input_mask, int half_width, Matrix2D<do
     //all float data sets should have been double, but in order to save some memory...
     Matrix2D<double> d_input_mask(input_mask.getRows(), input_mask.getCols());
     //array of 2D matrices that store triples (keyX, keyY, value), hat are indices in a spare matrix and the afferent value
-    Matrix2D<KeysValue<double> > *A_vec = new Matrix2D<KeysValue<double> >[fs_size];            //cannot store fs_size (divided by 2) 50k by 50k matrices
+    //Matrix2D<KeysValue<double> > *A_vec = new Matrix2D<KeysValue<double> >[fs_size];            //cannot store fs_size (divided by 2) 50k by 50k matrices
     //use it as temporary matrix
     Matrix2D<KeysValue<double> > A;
-    int A_idx = 0;
-
+    //vector of matrices stored in the above object
     vector< Matrix2D <KeysValue<double> >* >  Av;
+
+    //declare temp matrix only once
+    Matrix2D<KeysValue<double> > prev_temp_A(1,1);
+    Matrix2D<KeysValue<double> > next_temp_A(1,1);
+    //keep track of the vectors length
+    int Av_idx = 0;
 
     ////How to use A: A.push_back(Matrix<double>(2, 2, false));
 
@@ -273,12 +278,14 @@ void medianFilterMatMask(Matrix2D<bool>& input_mask, int half_width, Matrix2D<do
             Matrix2D<double> f( fs[k].getRows(), fs[k].getCols(), 0);
             //if a value is not zero, store 1, else store 1 in the new matrix f
             checkMatrixAgainstTreshold( fs[k], f, 0);
+
             //convert matrix input_mask to double
             convertBoolToDoubleMatrix2D(input_mask, d_input_mask);
 
             //Apply convolution between filter f and input_mask (after converted to double). Store the result in the matrix conv_res
             Matrix2D<double> conv_res( abs(d_input_mask.getRows() - f.getRows() + 1), abs(d_input_mask.getCols() - f.getCols() + 1), 0);
             d_input_mask.conv2DValid(f, conv_res);
+
             //reshape conv_res matrix to vector R. R's dimension should be equal to A.getRows()
             vector<double> R(conv_res.getRows()*conv_res.getCols(), 0);
             conv_res.reshapeToVector(R);
@@ -291,9 +298,10 @@ void medianFilterMatMask(Matrix2D<bool>& input_mask, int half_width, Matrix2D<do
             //It seems to keep only the lines in A{i} corresponding to 1 values in keep
 
             int notnull_lines_in_A = std::count(keep.begin(), keep.end(), true);
+
             //temp_A stores the lines in A corresponding to true values in keep mask
             Matrix2D<KeysValue<double> > temp_A(notnull_lines_in_A, A.getCols());
-
+            //number of lines in temp_A
             int t_idx = 0;
 
             for(unsigned int idx = 0; idx < keep.size(); idx++)
@@ -311,19 +319,27 @@ void medianFilterMatMask(Matrix2D<bool>& input_mask, int half_width, Matrix2D<do
                 }
             }
 
-            //crashes because of copy constructor that fails because of double (nested) templates
-            //A_vec[A_idx] = temp_A;
-            //sometimes crashes here
+            //append matrix to the vector of matrices
             Av.push_back(&temp_A);
+            //keep track of the total number of lines, as it is needed afterwards
+            Av_idx+= Av[k]->getRows();
 
-            cout<<Av[k]->getRows()<<" "<<Av[k]->getCols()<<"  |  "<<temp_A.getRows()<<" "<<temp_A.getCols()<<endl;
-            cout<<temp_A(0,0).getKeyX()<<" "<<temp_A(0,0).getKeyY()<<" "<<temp_A(0, 0).getValue()<<endl;
-            cout<<Av[k]->getMatrixValue(0,0).getKeyX()<<" "<<Av[k]->getMatrixValue(0,0).getKeyY()<<" "<<Av[k]->getMatrixValue(0,0).getValue()<<endl;
-            cout<<endl;
+            //cout<<Av[k]->getRows()<<" "<<Av[k]->getCols()<<"  |  "<<temp_A.getRows()<<" "<<temp_A.getCols()<<endl;
+            //cout<<temp_A(0,0).getKeyX()<<" "<<temp_A(0,0).getKeyY()<<" "<<temp_A(0, 0).getValue()<<endl;
+            //cout<<Av[k]->getMatrixValue(0,0).getKeyX()<<" "<<Av[k]->getMatrixValue(0,0).getKeyY()<<" "<<Av[k]->getMatrixValue(0,0).getValue()<<endl;
+
+            if(prev_temp_A.getDim() == 1)
+            {
+                prev_temp_A = temp_A;
+            }
+            else
+            {
+                next_temp_A = appendMatrixBelow(prev_temp_A, temp_A);
+                prev_temp_A = next_temp_A;
+            }
 
         }
     }
 
-    //Matrix2D<KeysValue<double> > cat_A(A_vec[A_idx-1].getRows(), A_idx * A_vec[A_idx-1].getCols());
-    //cout<<cat_A.getRows()<<" "<<cat_A.getCols()<<endl;
 }
+

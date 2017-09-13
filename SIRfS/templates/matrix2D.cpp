@@ -419,6 +419,7 @@ void Matrix2D<Type>::reverseMatrix(Matrix2D<Type>& source)
 
         temp = source(i,j);
         this->setMatrixValue(i, j, source(source.getRows()-i-1, source.getCols()-j-1));
-        this->setMatrixValue(source.getRows()-i-1, source.getCols()-j-1, temp);
+        this->setMatrixValue(source.getRows() - i - 1, source.getCols() - j - 1, temp);
     }
 }
+

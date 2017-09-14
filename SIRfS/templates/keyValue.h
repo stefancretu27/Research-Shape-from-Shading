@@ -22,33 +22,34 @@ public:
     //setters
     void setKeysValue(int new_keyX, int new_keyY, Type new_value)
     {
-        value = new_value;
-        keyX = new_keyX;
-        keyY = new_keyY;
+        this->value = new_value;
+        this->keyX = new_keyX;
+        this->keyY = new_keyY;
     };
 
     void setKeys(int new_keyX, int new_keyY)
     {
-        keyX = new_keyX;
-        keyY = new_keyY;
+        this->keyX = new_keyX;
+        this->keyY = new_keyY;
     };
 
     void setValue(Type new_value)
     {
-        value = new_value;
+        this->value = new_value;
     };
 
     //getters
     inline int getKeyX() const {return keyX;};
     inline int getKeyY()const {return keyY;};
     inline Type getValue() const{return value;};
+    inline KeysValue& getKeysValue() const{return *this;};
 
     //operators' overloading
     KeysValue& operator=(const KeysValue<Type>& new_kv)
     {
-        value = new_kv.getValue();
-        keyX = new_kv.getKeyX();
-        keyY = new_kv.getKeyY();
+        this->value = new_kv.getValue();
+        this->keyX = new_kv.getKeyX();
+        this->keyY = new_kv.getKeyY();
 
         return *this;
     }

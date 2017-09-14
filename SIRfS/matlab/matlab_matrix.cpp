@@ -75,23 +75,25 @@ void convertBoolToDoubleMatrix2D(Matrix2D<bool>& source, Matrix2D<double>& dest)
         }
 }
 
-Matrix2D<KeysValue<double> > appendMatrixBelow(Matrix2D<KeysValue<double> >& source1, Matrix2D<KeysValue<double> >& source2)
+Matrix2D<KeysValue<double>* >* appendMatrixBelow(Matrix2D<KeysValue<double>* >& source1, Matrix2D<KeysValue<double>* >& source2)
 {
     //create the result matrix: allocate memory + set sizes
-    Matrix2D<KeysValue<double> > result(source1.getRows() + source2.getRows(), source1.getCols());
+    Matrix2D<KeysValue<double>* >* result = new Matrix2D<KeysValue<double>* >(source1.getRows() + source2.getRows(), source1.getCols());
 
     int idx, idy;
 
     for(idx = 0; idx < source1.getRows(); idx++)
         for(idy = 0; idy < source1.getCols(); idy++)
     {
-        result(idx, idy).setKeysValue(source1(idx, idy).getKeyX(), source1(idx, idy).getKeyY(), source1(idx, idy).getValue());
+        (*result)(idx, idy) = new KeysValue<double>();
+        (*result)(idx, idy)->setKeysValue(source1(idx, idy)->getKeyX(), source1(idx, idy)->getKeyY(), source1(idx, idy)->getValue());
     }
 
-    for(idx = source1.getRows(); idx < result.getRows(); idx++)
+    for(idx = source1.getRows(); idx < result->getRows(); idx++)
         for(idy = 0; idy < source2.getCols(); idy++)
     {
-        result(idx, idy).setKeysValue( source2(idx - source1.getRows(), idy).getKeyX(), source2(idx - source1.getRows(), idy).getKeyY(), source2(idx - source1.getRows(), idy).getValue());
+        (*result)(idx, idy) = new KeysValue<double>();
+        (*result)(idx, idy)->setKeysValue( source2(idx - source1.getRows(), idy)->getKeyX(), source2(idx - source1.getRows(), idy)->getKeyY(), source2(idx - source1.getRows(), idy)->getValue());
     }
 
     return result;

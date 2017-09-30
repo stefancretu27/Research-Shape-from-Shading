@@ -5,6 +5,8 @@
 #include <iostream>
 #include <math.h>
 
+#include "keyValue.h"
+
 template <class Type>
 class Matrix2D
 {
@@ -18,6 +20,7 @@ public:
     Matrix2D( int new_rows,  int new_cols);
     Matrix2D( int new_rows,  int new_cols, Type value);
     Matrix2D(const Matrix2D<Type>& new_matrix);
+
     //destructor
     ~Matrix2D();
 
@@ -37,26 +40,33 @@ public:
     {
         return this->matrix2d[rowsIdx][colsIdx];
     };
+
     Matrix2D& operator=(const Matrix2D<Type>& new_matrix);
     Matrix2D& operator+(Matrix2D<Type>& new_matrix);
 
-    //matrix operations. They are the C++ implementations for Matlab library functions for 2D matrices
+    //separate functions from constructors, used for memory allocation, initialization and data copying
     void allocateMemory(int dimX, int dimY);
     void copyElementsFromMatrix(Matrix2D<Type>& source);
     void initializeMatrixValues(Type value);
+
+    //matrix operations. They are the C++ implementations for Matlab library functions for 2D matrices
+    //mask related operations
     void negateMatrixMask(Matrix2D<Type>& sourceMask);
+    //basic math-operations related
+    void getAbsoluteValuesMatrix(Matrix2D<Type>& source);
     void logNatMatrix(Matrix2D<Type>& source);
     void findFirstNonEqualElement(int &x_first, int &y_first, Type value);
     void findLastNonEqualElement(int &x_last, int &y_last, Type value);
     void anyNonZero(std::vector<int>& result, int direction);
-    void getSubMatrix(Matrix2D<Type>& source, int x_first, int x_last, int y_first, int y_last);
-    void getAbsoluteValuesMatrix(Matrix2D<Type>& source);
-    void conv2DFull(Matrix2D<Type>& kernel, Matrix2D<Type>& result);
-    void conv2DValid(Matrix2D<Type>& kernel, Matrix2D<Type>& result);
     bool checkNonZero();
     void anyGreater(std::vector<int>& result, int direction, int treshold);
+    //matrix conversions
     void reshapeToVector(std::vector<Type>& dest);
+    void getSubMatrix(Matrix2D<Type>& source, int x_first, int x_last, int y_first, int y_last);
     void reverseMatrix(Matrix2D<Type>& source);
+    //convolution
+    void conv2DFull(Matrix2D<Type>& kernel, Matrix2D<Type>& result);
+    void conv2DValid(Matrix2D<Type>& kernel, Matrix2D<Type>& result);
 
     //for debug purposes
     void printMatrixValues()
@@ -71,5 +81,7 @@ public:
         }
     }
 };
+
+
 
 #endif // MATRIX2D_H_INCLUDED

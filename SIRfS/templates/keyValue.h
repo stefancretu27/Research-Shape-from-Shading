@@ -11,6 +11,13 @@ private:
 public:
     //constructor: does nothing
     KeysValue(){};
+    //constructor with parameters
+    KeysValue(int new_keyX, int new_keyY, Type new_value)
+    {
+        this->value = new_value;
+        this->keyX = new_keyX;
+        this->keyY = new_keyY;
+    };
     //copy constructor
     KeysValue(const KeysValue<Type>& source )
     {
@@ -54,5 +61,4 @@ public:
         return *this;
     }
 };
-
 #endif // KEYVALUE_H_INCLUDED

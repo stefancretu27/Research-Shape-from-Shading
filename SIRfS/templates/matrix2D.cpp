@@ -98,7 +98,7 @@ Matrix2D<Type>::~Matrix2D()
 }
 
 /*
-Overload attribution operators to allow for operatrions such as A = B, where A,B are Matrix2D instances
+Overload attribution operator to allow for operatrions such as A = B, where A,B are Matrix2D instances
 */
 template <class Type>
 Matrix2D<Type>& Matrix2D<Type>::operator=(const Matrix2D<Type>& new_matrix)
@@ -422,4 +422,3 @@ void Matrix2D<Type>::reverseMatrix(Matrix2D<Type>& source)
         this->setMatrixValue(source.getRows() - i - 1, source.getCols() - j - 1, temp);
     }
 }
-

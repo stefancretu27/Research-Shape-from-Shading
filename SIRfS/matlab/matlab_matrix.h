@@ -14,5 +14,6 @@ void checkMatrixAgainstTreshold(Matrix2D<int>& source, Matrix2D<double>& result,
 void convertBoolToDoubleMatrix2D(Matrix2D<bool>& source, Matrix2D<double>& dest);
 void copyKeysValueMatrix(Matrix2D<KeysValue<double>* >& source, Matrix2D<KeysValue<double> *>& dest);
 Matrix2D<KeysValue<double>* >* appendMatrixBelow(Matrix2D<KeysValue<double>* >& source1, Matrix2D<KeysValue<double> *>& source2);
+void applyVectorMask(std::vector<bool>& mask, Matrix2D<KeysValue<double> >** source, Matrix2D<KeysValue<double> > *dest);
 
 #endif // MATLAB_MATRIX_H_INCLUDED

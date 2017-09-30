@@ -1,15 +1,18 @@
 #include "SIRfS_Functions.h"
 
 #include "templates/matrix2D.cpp"
+//#include "templates/KVmatrix2D.cpp"
 #include "matlab/matlab_vector.cpp"
 //#include "matlab/matlab_matrix.cpp"
 
 using namespace std;
 
 //SIRfS operations
-void conv2mat(int maskRows, int maskCols, Matrix2D<int> input_filter, Matrix2D<KeysValue<double> >& result)
+//conv2mat return of output would fail due to =operator failure as it doesn't know hoe to assign pointers to KeyValue.
+//Instead use an adress of a pointer declared in medianFilterMatMask, which is allocated  inside conv2mat
+void conv2mat(int maskRows, int maskCols, Matrix2D<int> input_filter, Matrix2D<KeysValue<double>  >** output)
 {
-    int x, y, index, counter_dim = 0, min_index_array_dim = 0;
+    int x, y, index, counter_dim = 0;
     int mask_matrix_linear_size = maskRows*maskCols;                         //also referred as n in matlab code
     Matrix2D<int> F(input_filter.getRows(), input_filter.getCols(), 0);
 
@@ -25,8 +28,8 @@ void conv2mat(int maskRows, int maskCols, Matrix2D<int> input_filter, Matrix2D<K
     //for each such a non-zero value, store how many values do not fit in the range when computing the vector containing indeces
     vector<int> count_out_of_range_indeces;
     //this vector contains the dimensions of each index-vector computed for each non-zero value in input_filter (F). Might not be necesary
-    vector<int> dims;
-    //vector<bool> keep(matrix_linear_size, 0);
+    //vector<int> dims;
+    vector<bool> keep(mask_matrix_linear_size, 0);
     //vector that contains for each filter F a vector of NaN of  matrix_linear_size dimensions each (250x200)
     vector< vector<int> > idxs;   //( F.getRows()*F.getCols(), vector<int>(matrix_linear_size));
 
@@ -56,10 +59,10 @@ void conv2mat(int maskRows, int maskCols, Matrix2D<int> input_filter, Matrix2D<K
                         i[index] = i0[index] + oi ;
                         j[index] = j0[index] + oj ;
 
-                        //keep[index] = (i[index] < maskRows) & (j[index] < maskCols);
+                        keep[index] = (i[index] < maskRows) & (j[index] < maskCols);
 
                         //check if the newly computed indeces are in the given range. Don't need to use 'keep' vector for this, but it's similar to verifying if keep[index] == 1
-                        if((i[index] < maskRows) & (j[index] < maskCols))
+                        if(keep[index])
                         {
                             //If the updated indeces are within the mask matrix dimensions range, linearize them and store them in a vector (idx)
                             // Matlab's sub2ind  loops firstly on each row, then on columns thus the linearization below (reads column by column, not line by line)
@@ -91,7 +94,7 @@ void conv2mat(int maskRows, int maskCols, Matrix2D<int> input_filter, Matrix2D<K
                     fs.push_back(F.getMatrixValue(oi, oj)) ;
                     //store the size of each newly computed vector (idx).
                     //If all updated indeces are within mask matrix range, the size of idx vector will be mask_matrix_linear_size. Otherwise, it will be less, depending
-                    dims.push_back(idx.size() - count_out_of_range_indeces[counter_dim]);
+                    //dims.push_back(idx.size() - count_out_of_range_indeces[counter_dim]);
                     //count how many non zero values are in the reversed input filter F
                     counter_dim++;
                 }
@@ -101,15 +104,11 @@ void conv2mat(int maskRows, int maskCols, Matrix2D<int> input_filter, Matrix2D<K
         Matrix2D<int> idxsMat( mask_matrix_linear_size, idxs.size());
         convertVectorOfVectorsToMatrix(idxs, idxsMat);
 
-        //find the minmum value of the sizes of all vectors in idxs
-        min_index_array_dim = *std::min_element(dims.begin(), dims.end());
-
         //a new matrix is computed. It stores all the lines in the idxsMat that do not have a Nan (-1) value.
         //Thus, it's number of lines equals the number of lines of the vectors in idxs with the most Nan values (-1)
-        Matrix2D<int> idxsMat_noNaN( min_index_array_dim, idxs.size());
-        vector<int> nan_values_line_index(min_index_array_dim);
-        int nan_line_index_size = 0, nan_counter = 0;
-
+        Matrix2D<int> idxsMat_noNaN( mask_matrix_linear_size, idxs.size());
+        vector<int> nan_values_line_index(mask_matrix_linear_size);
+        int nan_counter = 0;
 
         //iterate over the maximum number of lines
         for(x = 0; x < mask_matrix_linear_size; x++)
@@ -120,14 +119,14 @@ void conv2mat(int maskRows, int maskCols, Matrix2D<int> input_filter, Matrix2D<K
                 //find the first -1 value, store its line index and increase the counter
                 if(idxsMat.getMatrixValue(x, y) == -1)
                 {
-                    nan_values_line_index[nan_line_index_size++] = x;
-                    nan_counter++;
+                   //push_back doesn't work as the vector is indexed outside this scope and it seems it gets deallocated
+                    nan_values_line_index[nan_counter++] = x;
                     break;
                 }
             }
 
             //if the current line does not contain any -1 (nan) values, copy it to idxsMat_noNaN
-            if(x != nan_values_line_index[nan_line_index_size-1])
+            if(x != nan_values_line_index[nan_counter-1])
             {
                 for( y = 0; y < (int) idxs.size(); y++)
                 {
@@ -136,15 +135,17 @@ void conv2mat(int maskRows, int maskCols, Matrix2D<int> input_filter, Matrix2D<K
             }
         }
 
-       int m = idxsMat_noNaN.getRows();
+        //the number of line for the output matrix is the linear size of the input mask subtsracting the # lines containing NaN values
+        int m = mask_matrix_linear_size - nan_counter;
 
        //almost 50k by 50k it takes some time to allocate it, especially if it contains double values.
        //matrix initialization takes almost 15-16 secs
         //Matrix2D<float> A(m, mask_matrix_linear_size, 0);
 
-        //Since it is impossible to work with such bug matrices as the system goes out of RAM, use a matrix that stores only non zero values
+        //Since it is impossible to work with such big matrices as the system goes out of RAM, use a matrix that stores only non zero values
         //These values are actually  triples (keyX, keyY, value), hat are indices in a spare matrix and the afferent value
-        Matrix2D< KeysValue<double> > A(m, idxsMat_noNaN.getCols());
+        //output is a double pointer as it can't be allocated outside this function, since its dimensions are only known here
+        *output = new Matrix2D<KeysValue<double> >(m, idxsMat_noNaN.getCols());
 
         //Matrix2D<int> sparse(m, mask_matrix_linear_size, 0);
         //Instead of store a sparse matrix, use a vector for saving memory.
@@ -164,18 +165,15 @@ void conv2mat(int maskRows, int maskCols, Matrix2D<int> input_filter, Matrix2D<K
 
                 //A(x, temp_idx) += sparse_vec[temp_idx];
                 //if 2 or more values were on the same line, they will still be, as A stores on the lines x a number of y KeysValue triple
-                A(x, y).setKeysValue(x, temp_idx, sparse_vec[temp_idx]);
+                (**output)(x, y) .setKeysValue(x, temp_idx, sparse_vec[temp_idx]);
             }
         }
-
-        result = A;
 }
-
 
 /*
 Compute median filter
 */
-void medianFilterMatMask(Matrix2D<bool>& input_mask, int half_width, Matrix2D< KeysValue<double> >& output)
+void medianFilterMatMask(Matrix2D<bool>& input_mask, int half_width, Matrix2D< KeysValue<double>* >& output)
 {
     int width = 2*half_width + 1;
     int fs_size = width*width - 1;                  //Might be necessary to do -1,a s it is actually 24 not 25
@@ -254,26 +252,19 @@ void medianFilterMatMask(Matrix2D<bool>& input_mask, int half_width, Matrix2D< K
 
     //all float data sets should have been double, but in order to save some memory...
     Matrix2D<double> d_input_mask(input_mask.getRows(), input_mask.getCols());
-    //array of 2D matrices that store triples (keyX, keyY, value), hat are indices in a spare matrix and the afferent value
-    //Matrix2D<KeysValue<double> > *A_vec = new Matrix2D<KeysValue<double> >[fs_size];            //cannot store fs_size (divided by 2) 50k by 50k matrices
-    //use it as temporary matrix
-    Matrix2D<KeysValue<double> > A;
-    //vector of matrices stored in the above object
-    vector< Matrix2D <KeysValue<double> >* >  Av;
 
-    //declare temp matrix only once
-    Matrix2D<KeysValue<double> > prev_temp_A(1,1);
-    Matrix2D<KeysValue<double> > next_temp_A(1,1);
-    //keep track of the vectors length
-    int Av_idx = 0;
+    //use it as temporary matrix, to store output from conv2mat, It is allocated and gets its values set inside conv2mat
+    Matrix2D<KeysValue<double> > *A;
+    //declare temp matrices only once. Used to append matrices
+    //KVMatrix2D< KeysValue<double>  > temp_A;
+    //Matrix2D<KeysValue<double> > *prev_temp_A;
+    //Matrix2D<KeysValue<double> > *next_temp_A;
 
-    ////How to use A: A.push_back(Matrix<double>(2, 2, false));
-
-    for(int k = 0; k < fs_size; k++)    //k = 0:11
+    for(int k = 0; k < fs_size; k++)    //k = 0:11     error: k = 3, 4, 8, 9
     {
         if(do_remove[k] == 0)
         {
-            conv2mat(input_mask.getRows(), input_mask.getCols(), fs[k], A);
+            conv2mat(input_mask.getRows(), input_mask.getCols(), fs[k], &A);
 
             Matrix2D<double> f( fs[k].getRows(), fs[k].getCols(), 0);
             //if a value is not zero, store 1, else store 1 in the new matrix f
@@ -293,53 +284,34 @@ void medianFilterMatMask(Matrix2D<bool>& input_mask, int half_width, Matrix2D< K
             //compute 'keep' mask vector
             vector<bool>  keep(R.size(), false);
             createVectorMask(R, keep, 0);
-
-            //A{i} has already values set by conv2mat and is a sparse matrix (many 0)
-            //It seems to keep only the lines in A{i} corresponding to 1 values in keep
-
-            int notnull_lines_in_A = std::count(keep.begin(), keep.end(), true);
+            int notnull_lines_in_A = count(keep.begin(), keep.end(), true);
 
             //temp_A stores the lines in A corresponding to true values in keep mask
-            Matrix2D<KeysValue<double> > temp_A(notnull_lines_in_A, A.getCols());
-            //number of lines in temp_A
-            int t_idx = 0;
+            Matrix2D<KeysValue<double> > temp_A(notnull_lines_in_A,  (*A).getCols());
+            //apply mask to A and  store in temp_A
+            applyVectorMask(keep, &A,  &temp_A);
 
-            for(unsigned int idx = 0; idx < keep.size(); idx++)
+            //delete dinamically allocated Matrix2D object
+             delete A;
+
+             //cout<<temp_A->getRows()<<" "<<temp_A->getCols()<<" "<< temp_A->getMatrixValue(0,0)->getKeyX()<<" "<< temp_A->getMatrixValue(0,0)->getKeyY()<<endl;
+            //if(prev_temp_A.getDim() == 1)
             {
-                if(keep[idx] == true)
-                {
-                    //store in temp_A the lines in A corresponding to true values in keep mask
-                    for(int idy = 0; idy < A.getCols(); idy++)
-                    {
-                        //temp_A.setMatrixValue(t_idx, idy, A.getMatrixValue(idx, idy));
-                        temp_A(t_idx, idy).setKeysValue( A(idx, idy).getKeyX(),  A(idx, idy).getKeyY(), A(idx, idy).getValue());
-                    }
-
-                    t_idx++;
-                }
+                //prev_temp_A = temp_A;
+                //cout<<prev_temp_A->getRows()<<" "<<prev_temp_A->getCols()<<" "<< prev_temp_A->getMatrixValue(0,0)<<endl;
             }
-
-            //append matrix to the vector of matrices
-            Av.push_back(&temp_A);
-            //keep track of the total number of lines, as it is needed afterwards
-            Av_idx+= Av[k]->getRows();
-
-            //cout<<Av[k]->getRows()<<" "<<Av[k]->getCols()<<"  |  "<<temp_A.getRows()<<" "<<temp_A.getCols()<<endl;
-            //cout<<temp_A(0,0).getKeyX()<<" "<<temp_A(0,0).getKeyY()<<" "<<temp_A(0, 0).getValue()<<endl;
-            //cout<<Av[k]->getMatrixValue(0,0).getKeyX()<<" "<<Av[k]->getMatrixValue(0,0).getKeyY()<<" "<<Av[k]->getMatrixValue(0,0).getValue()<<endl;
-
-            if(prev_temp_A.getDim() == 1)
+            /*else
             {
-                prev_temp_A = temp_A;
-            }
-            else
-            {
-                next_temp_A = appendMatrixBelow(prev_temp_A, temp_A);
+                //compute the next temp_A by appending the newly computed temp_A to the previous version of temp_A
+                next_temp_A = *appendMatrixBelow(prev_temp_A, temp_A);
+                //each new interation e new temp_A is computed and is appended to next_temp_A. Thus, for the next iteration the current next_temp_A will be prev_temp_A
                 prev_temp_A = next_temp_A;
             }
-
+            */
         }
     }
 
+    //the final version of next_temp_A is copied in the output matrix
+    //output = next_temp_A;
 }
 

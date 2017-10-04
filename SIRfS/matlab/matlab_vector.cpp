@@ -2,37 +2,6 @@
 
 using namespace std;
 
-//vector operations
-/*template <class Type>
-Type findFirstNonZeroIndex(vector<Type>& source)
-{
-    //for(std::vector<int>::iterator i = source.begin(); i != source.end(); i++)
-    for(unsigned int i = 0; i < source.size(); i++)
-    {
-        if(source[i] != 0)
-        {
-            return i;
-        }
-
-    }
-
-    return -1;
-}
-
-template <class Type>
-Type findLastNonZeroIndex(vector<Type>& source)
-{
-    for(int i = source.size(); i > 0; i--)
-    {
-        if(source[i] != 0)
-        {
-            return i;
-        }
-    }
-    return -1;
-}
-*/
-
 /*
 Input mask should be initialized to false.
 */

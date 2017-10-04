@@ -12,7 +12,7 @@
 
 //This header contains the signatures of SIRfS functions
 void conv2mat(int maskRows, int maskCols, Matrix2D<int> input_filter, Matrix2D<KeysValue<double> >** output);
-void medianFilterMatMask(Matrix2D<bool>& input_mask, int half_width, Matrix2D<KeysValue<double>* >& output);
+void medianFilterMatMask(Matrix2D<bool>& input_mask, int half_width, Matrix2D<KeysValue<double> >** output);
 
 
 #endif // SIRFS_FUNCTIONS_H_INCLUDED

@@ -76,8 +76,8 @@ int main()
     data.getDataTrue().getMask() = valid;
     //cout<<setprecision(15)<<fixed<<data.getDataTrue().getMask().getMatrixValue(74,23)<<endl;
 
-    medianFilterMatMask(negated_valid,  params.getZMedianHalfwidth(), data.getZMedianFilterMatrix());
-    //cout<<data.getZMedianFilterMatrix().getRows()<<" "<<data.getZMedianFilterMatrix().getCols()<<endl;
+    medianFilterMatMask(negated_valid,  params.getZMedianHalfwidth(), data.getZMedianFilterMatrixAddress());
+    //cout<<endl<<data.getZMedianFilterMatrix()->getRows()<<" "<<data.getZMedianFilterMatrix()->getCols()<<endl;
     //data.getZMedianFilterMatrix().getMatrixValue(0,0);
     //medianFilterMatMask(negated_valid,  params.getAMedianHalfwidth(), data.getAMedianFilterMatrix());
 

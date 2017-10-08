@@ -61,6 +61,7 @@ public:
     bool checkNonZero();
     void anyGreater(std::vector<int>& result, int direction, int treshold);
     //matrix conversions
+    void getTranspose(Matrix2D<Type>& kernel, Matrix2D<Type>& result);
     void reshapeToVector(std::vector<Type>& dest);
     void getSubMatrix(Matrix2D<Type>& source, int x_first, int x_last, int y_first, int y_last);
     void reverseMatrix(Matrix2D<Type>& source);

@@ -61,25 +61,19 @@ int main()
     //construct ~valid
     Matrix2D<bool>negated_valid(valid.getRows(), valid.getCols());
     negated_valid.negateMatrixMask(valid);
-    //insert replace 0 with NaN in im
+    //replace 0 with NaN in im
     insertNaNValues(im, negated_valid);
-    //cout<<setprecision(15)<<fixed<<im.getMatrixValue(74,23)<<endl;
 
     Matrix2D<double>log_im(im.getRows(), im.getCols());
     log_im.logNatMatrix(im);
-   //cout<<setprecision(15)<<fixed<<log_im.getMatrixValue(74,23)<<endl;
 
     data.getDataTrue().getIm() = im;
     data.getDataTrue().getLogIm() = log_im;
-    //cout<<setprecision(15)<<fixed<<data.getDataTrue().getLogIm().getMatrixValue(74,23)<<endl;
     data.getValid() = valid;
     data.getDataTrue().getMask() = valid;
-    //cout<<setprecision(15)<<fixed<<data.getDataTrue().getMask().getMatrixValue(74,23)<<endl;
 
-    medianFilterMatMask(negated_valid,  params.getZMedianHalfwidth(), data.getZMedianFilterMatrixAddress());
-    //cout<<endl<<data.getZMedianFilterMatrix()->getRows()<<" "<<data.getZMedianFilterMatrix()->getCols()<<endl;
-    //data.getZMedianFilterMatrix().getMatrixValue(0,0);
-    //medianFilterMatMask(negated_valid,  params.getAMedianHalfwidth(), data.getAMedianFilterMatrix());
+    medianFilterMatMask(negated_valid,  params.getZMedianHalfwidth(), &data.ZMedianFilterMat);
+    medianFilterMatMask(negated_valid,  params.getAMedianHalfwidth(), &data.AMedianFilterMat);
 
     return 0;
 }

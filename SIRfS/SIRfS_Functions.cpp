@@ -255,13 +255,16 @@ void medianFilterMatMask(Matrix2D<bool>& input_mask, int half_width, Matrix2D< K
 
     //use it as temporary matrix, to store output from conv2mat, It is allocated and gets its values set inside conv2mat
     Matrix2D<KeysValue<double> > *A;
+    //vector of matrices
+    vector<Matrix2D<KeysValue<double> > > Av;
     //declare pointers to Matrix2D used for matrix append. They are initialized to 1 double object
-    Matrix2D<KeysValue<double> > *prev_temp_A = new Matrix2D<KeysValue<double> >(1,1);
+    //Matrix2D<KeysValue<double> > *prev_temp_A = new Matrix2D<KeysValue<double> >(1,1);
 
     for(int k = 0; k < fs_size; k++)    //k = 0:11     error: k = 3, 4, 8, 9
     {
         if(do_remove[k] == 0)
         {
+            //A is dynamically allocated in conv2mat
             conv2mat(input_mask.getRows(), input_mask.getCols(), fs[k], &A);
 
             Matrix2D<double> f( fs[k].getRows(), fs[k].getCols(), 0);
@@ -293,24 +296,19 @@ void medianFilterMatMask(Matrix2D<bool>& input_mask, int half_width, Matrix2D< K
             //delete dinamically allocated Matrix2D object
              delete A;
 
-             //if prev_temp_A is used for the 1st time in this iteration
-            if(prev_temp_A->getDim() == 1)
-            {
-                *prev_temp_A = temp_A;
-                //cout<<temp_A.getRows()<<" "<<temp_A.getCols()<<" "<<temp_A.getMatrixValue(0,1).getKeyX()<<" "<<temp_A.getMatrixValue(0,1).getKeyY()<<" "<<temp_A.getMatrixValue(0,1).getValue()<<endl;
-                //cout<<prev_temp_A->getRows()<<" "<<prev_temp_A->getCols()<<" "<<prev_temp_A->getMatrixValue(0,1).getKeyX()<<" "<<prev_temp_A->getMatrixValue(0,1).getKeyY()<<" "<<temp_A.getMatrixValue(0,1).getValue()<<endl;
-            }
-            else
-            {
-                //compute the next temp_A by appending the newly computed temp_A to the previous version of temp_A
-                *output = appendMatrixBelow(prev_temp_A, temp_A);
-                cout<<(*output)->getRows()<<" "<<(*output)->getCols()<<endl;
-                //each new interation e new temp_A is computed and is appended to next_temp_A. Thus, for the next iteration the current next_temp_A will be prev_temp_A
-                prev_temp_A = *output;
-            }
+             Av.push_back(temp_A);
         }
     }
 
-    delete prev_temp_A;
+    int output_rows_nr = 0;
+    for(unsigned int idx = 0; idx < Av.size(); idx++)
+    {
+        output_rows_nr += Av[idx].getRows();
+    }
+
+    *output = new Matrix2D<KeysValue<double> >(output_rows_nr, Av[0].getCols());
+
+    //input is vector of matrices, output is a matrix whose number of rows is the sum of all matrices rows from the vector  = appended below
+    appendMatrixBelow(Av,  output);
 }
 

@@ -95,24 +95,31 @@ void applyVectorMask(std::vector<bool>& mask, Matrix2D<KeysValue<double> >** sou
     }
 }
 
-Matrix2D<KeysValue<double> >* appendMatrixBelow(Matrix2D<KeysValue<double> >* source1, Matrix2D<KeysValue<double> >& source2)
+void appendMatrixBelow(vector< Matrix2D<KeysValue<double> > > source, Matrix2D< KeysValue<double> >** dest)
 {
-    //create the result matrix: allocate memory + set sizes
-    Matrix2D<KeysValue<double> >* result = new Matrix2D<KeysValue<double> >(source1->getRows() + source2.getRows(), source1->getCols());
-
-    int idx, idy;
-
-    for(idx = 0; idx < (*source1).getRows(); idx++)
-        for(idy = 0; idy < (*source1).getCols(); idy++)
+    int start, finish;
+    //iterate through the vector of matrices
+    for(unsigned int id = 0; id < source.size(); id++)
     {
-        (*result)(idx, idy).setKeysValue((*source1)(idx, idy).getKeyX(), (*source1)(idx, idy).getKeyY(), (*source1)(idx, idy).getValue());
-    }
+        //for the first matrix, start indexing output's rows from 0
+        if(id == 0)
+        {
+            start = 0;
+            finish = source[0].getRows();
+        }
+        //for the rest of matrices, the index starts with the sum of the previous matrices rows
+        else
+        {
+            start += source[id-1].getRows();
+            finish  = start + source[id].getRows();
+        }
 
-    for(idx = (*source1).getRows(); idx < result->getRows(); idx++)
-        for(idy = 0; idy < source2.getCols(); idy++)
-    {
-        (*result)(idx, idy).setKeysValue( source2(idx - (*source1).getRows(), idy).getKeyX(), source2(idx - (*source1).getRows(), idy).getKeyY(), source2(idx - (*source1).getRows(), idy).getValue());
+        for(int idx = start; idx < finish; idx++)
+        {
+            for(int idy = 0; idy < (*dest)->getCols(); idy++)
+            {
+                (*dest)->setMatrixValue(idx, idy, source[id].getMatrixValue(idx-start, idy));
+            }
+        }
     }
-
-    return result;
 }

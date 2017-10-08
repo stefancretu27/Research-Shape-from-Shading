@@ -6,20 +6,29 @@
 
 class Data
 {
-private:
+public:
     DataTrue dt;
-    Matrix2D< KeysValue <double> >* ZMedianFilterMatrix;
-    Matrix2D< KeysValue <double> >* AMedianFilterMatrix;
+    Matrix2D< KeysValue <double> >* ZMedianFilterMat;
+    Matrix2D< KeysValue <double> >* AMedianFilterMat;
+    //Matrix2D< KeysValue <double> >* ZMedianFilterMatT;
+    //Matrix2D< KeysValue <double> >* AMedianFilterMatT;
     Matrix2D<bool> valid;
 
-public:
-    Data(): valid(1,1){};       //ZMedianFilterMatrix(1,1), AMedianFilterMatrix(1,1),
+    Data(): valid(1,1)
+    {
+        ZMedianFilterMat = new Matrix2D< KeysValue <double> >(1,1);
+        AMedianFilterMat = new Matrix2D< KeysValue <double> >(1,1);
+    };       //ZMedianFilterMatrix(1,1), AMedianFilterMatrix(1,1),
+
+    //getters
     inline DataTrue& getDataTrue(){return this->dt;};
     inline Matrix2D<bool>& getValid(){return this->valid;};
-    inline Matrix2D<KeysValue<double> >** getZMedianFilterMatrixAddress(){return &ZMedianFilterMatrix;};
-    inline Matrix2D<KeysValue<double> >** getAMedianFilterMatrixAddress(){return &AMedianFilterMatrix;};
-    inline Matrix2D<KeysValue<double> >* getZMedianFilterMatrix(){return ZMedianFilterMatrix;};
-    inline Matrix2D<KeysValue<double> >* getAMedianFilterMatrix(){return AMedianFilterMatrix;};
+    inline Matrix2D<KeysValue<double> >** getZMedianFilterMatAddress(){return &ZMedianFilterMat;};
+    inline Matrix2D<KeysValue<double> >** getAMedianFilterMatAddress(){return &AMedianFilterMat;};
+    inline Matrix2D<KeysValue<double> >* getZMedianFilterMat(){return ZMedianFilterMat;};
+    inline Matrix2D<KeysValue<double> >* getAMedianFilterMat(){return AMedianFilterMat;};
+    //inline Matrix2D<KeysValue<double> >* getZMedianFilterMatT(){return ZMedianFilterMatT;};
+    //inline Matrix2D<KeysValue<double> >* getAMedianFilterMatT(){return AMedianFilterMatT;};
 };
 
 #endif // DATA_H_INCLUDED

@@ -60,5 +60,12 @@ public:
 
         return *this;
     }
+
+    friend std::ostream& operator<<(std::ostream& out, KeysValue& kv)
+    {
+        out<<kv.getKeyX()<<" "<<kv.getKeyY()<<" "<<kv.getValue();
+
+        return out;
+    };
 };
 #endif // KEYVALUE_H_INCLUDED

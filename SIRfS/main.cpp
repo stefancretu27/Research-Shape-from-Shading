@@ -58,7 +58,7 @@ int main()
     //valid
     Matrix2D<bool>valid(inputMask);
 
-    //construct ~valid
+    //build ~valid matrix
     Matrix2D<bool>negated_valid(valid.getRows(), valid.getCols());
     negated_valid.negateMatrixMask(valid);
     //replace 0 with NaN in im
@@ -67,13 +67,23 @@ int main()
     Matrix2D<double>log_im(im.getRows(), im.getCols());
     log_im.logNatMatrix(im);
 
+    //set some fields of the "data" structure
     data.getDataTrue().getIm() = im;
     data.getDataTrue().getLogIm() = log_im;
     data.getValid() = valid;
     data.getDataTrue().getMask() = valid;
 
-    medianFilterMatMask(negated_valid,  params.getZMedianHalfwidth(), &data.ZMedianFilterMat);
-    medianFilterMatMask(negated_valid,  params.getAMedianHalfwidth(), &data.AMedianFilterMat);
+    //the output matrices are written at the address given as input
+    medianFilterMatMask(negated_valid,  params.getZMedianHalfwidth(), data.getZMedianFilterMatAddress());
+    //cout<<data.getZMedianFilterMat()->getRows()<<" "<<data.getZMedianFilterMat()->getCols()<<" "<<endl;
+    //cout<<data.getZMedianFilterMat()->getMatrixValue(210000,0).getKeyX()<<" "<<data.getZMedianFilterMat()->getMatrixValue(210000,0).getKeyY()<<" "<<data.getZMedianFilterMat()->getMatrixValue(210000,0).getValue()<<endl;
+    medianFilterMatMask(negated_valid,  params.getAMedianHalfwidth(), data.getAMedianFilterMatAddress());
+
+    //compute transposes for the above matrices. Since they store they KeysValue they might not be necessary, as the original can be used, but keep them till determining their usefulness
+    data.getZMedianFilterMat()->getTranspose(data.getZMedianFilterMatTAddress());
+    //cout<<data.getZMedianFilterMatT()->getRows()<<" "<<data.getZMedianFilterMatT()->getCols()<<" "<<endl;
+    //cout<<data.getZMedianFilterMatT()->getMatrixValue(0, 210000).getKeyX()<<" "<<data.getZMedianFilterMatT()->getMatrixValue(0, 210000).getKeyY()<<" "<<data.getZMedianFilterMatT()->getMatrixValue(0, 210000).getValue()<<endl;
+    data.getAMedianFilterMat()->getTranspose(data.getAMedianFilterMatTAddress());
 
     return 0;
 }

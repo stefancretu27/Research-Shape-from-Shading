@@ -2,10 +2,10 @@
 
 using namespace std;
 
-//constructors
 /*
-Creates a matrix2D with specified dimensions
+*Constructors
 */
+//Creates a matrix2D with specified dimensions
 template <class Type>
 Matrix2D<Type>::Matrix2D( int new_rows,  int new_cols)//:rows(new_rows), cols(new_cols)
 {
@@ -21,9 +21,7 @@ Matrix2D<Type>::Matrix2D( int new_rows,  int new_cols)//:rows(new_rows), cols(ne
     }
 }
 
-/*
-This constructor creates a matrix2D that has the specified dimensions and whose elements are initialized to value
-*/
+//Constructor with data initializations: this constructor creates a matrix2D that has the specified dimensions and whose elements are initialized to value
 template <class Type>
 Matrix2D<Type>::Matrix2D( int new_rows,  int new_cols, Type value)
 {
@@ -45,10 +43,7 @@ Matrix2D<Type>::Matrix2D( int new_rows,  int new_cols, Type value)
         }
 }
 
-//copy constructor
-/*
-The calling matrix is a clone of the input matrix, being allocated and initialized to the latter's values
-*/
+//Copy constructor: The calling matrix is a clone of the input matrix, being allocated and initialized to the latter's values
 template <class Type>
 Matrix2D<Type>::Matrix2D(const Matrix2D<Type>& new_matrix)
 {
@@ -71,19 +66,7 @@ Matrix2D<Type>::Matrix2D(const Matrix2D<Type>& new_matrix)
         }
 }
 
-template <class Type>
-void Matrix2D<Type>::allocateMemory(int dimX, int dimY)
-{
-    //allocate memory for the rows. It is an array that contains pointers to Type.
-    this->matrix2d = new Type* [dimX];
-    //allocate space for each column. That is, for each line, allocate space for each element in the matrix.
-    for( int rowsIdx = 0; rowsIdx < this->rows; rowsIdx++)
-    {
-        this->matrix2d[rowsIdx] = new Type[dimY];
-    }
-}
-
-//destructor
+//Destructor
 template <class Type>
 Matrix2D<Type>::~Matrix2D()
 {
@@ -98,8 +81,9 @@ Matrix2D<Type>::~Matrix2D()
 }
 
 /*
-Overload attribution operator to allow for operatrions such as A = B, where A,B are Matrix2D instances
+Operators overloading
 */
+//Overload attribution operator to allow for operatrions such as A = B, where A,B are Matrix2D instances
 template <class Type>
 Matrix2D<Type>& Matrix2D<Type>::operator=(const Matrix2D<Type>& new_matrix)
 {
@@ -138,15 +122,19 @@ Matrix2D<Type>& Matrix2D<Type>::operator+(Matrix2D<Type>& new_matrix)
     return *this;
 }
 
-//matrix operations
+/*
+*helpers
+*/
 template <class Type>
-void Matrix2D<Type>::initializeMatrixValues(Type value)
+void Matrix2D<Type>::allocateMemory(int dimX, int dimY)
 {
+    //allocate memory for the rows. It is an array that contains pointers to Type.
+    this->matrix2d = new Type* [dimX];
+    //allocate space for each column. That is, for each line, allocate space for each element in the matrix.
     for( int rowsIdx = 0; rowsIdx < this->rows; rowsIdx++)
-        for( int colsIdx = 0; colsIdx < this->cols; colsIdx++)
-        {
-            this->setMatrixValue(rowsIdx, colsIdx, value);
-        }
+    {
+        this->matrix2d[rowsIdx] = new Type[dimY];
+    }
 }
 
 template <class Type>
@@ -160,159 +148,19 @@ void Matrix2D<Type>::copyElementsFromMatrix(Matrix2D<Type>& source)
         }
 }
 
-/*
-It gets as input a matrix mask (only 1 and 0 values) and sets the calling matrix's values to negated source's values
-*/
 template <class Type>
-void Matrix2D<Type>::negateMatrixMask(Matrix2D<Type>& sourceMask)
+void Matrix2D<Type>::initializeMatrixValues(Type value)
 {
-    for(int i = 0; i < this->getRows(); i++)
-        for(int j = 0; j < this->getCols(); j++)
-    {
-        this->matrix2d[i][j] = 1 - sourceMask.getMatrixValue(i,j) ;
-    }
-}
-
-/*
-For the calling matrix object, it computes the natural logarithm of each element of the input matrix object.
-Both matrices have same dimensions.
-*/
-template <class Type>
-void Matrix2D<Type>::logNatMatrix(Matrix2D<Type>& source)
-{
-    for(int i = 0; i < this->getRows(); i++)
-        for(int j = 0; j < this->getCols(); j++)
+    for( int rowsIdx = 0; rowsIdx < this->rows; rowsIdx++)
+        for( int colsIdx = 0; colsIdx < this->cols; colsIdx++)
         {
-            this->matrix2d[i][j] = log(source.getMatrixValue(i,j));
+            this->setMatrixValue(rowsIdx, colsIdx, value);
         }
 }
 
-template <class Type>
-void Matrix2D<Type>::findFirstNonEqualElement(int &x_first, int &y_first, Type value)
-{
-    for(int i = 0; i < this->rows; i++)
-        for(int j = 0; j < this->cols; j++)
-    {
-        if(this->matrix2d[i][j] != value)
-        {
-            x_first = i;
-            y_first = j;
-            return;
-        }
-    }
-
-    return;
-}
-
-template <class Type>
-void Matrix2D<Type>::findLastNonEqualElement(int &x_first, int &y_first, Type value)
-{
-    for(int i = this->rows - 1; i>=0; i--)
-        for(int j = this->cols - 1; j>=0; j--)
-    {
-        if(this->matrix2d[i][j] != value)
-        {
-            x_first = i;
-            y_first = j;
-            return ;
-        }
-    }
-
-    return;
-}
-
 /*
-Returns 1 if a row/column has at least a non-zero value, else it returns 0 for that row/column. The output is a vector
-Direction: 1 = check on columns
-                2 = check on rows
+*Convolution
 */
-template <class Type>
-void Matrix2D<Type>::anyNonZero(vector<int>& result, int direction)
-{
-    if(direction == 1)
-    {
-        for(int j = 0; j < this->getCols(); j++)
-            for(int i = 0; i < this->getRows(); i++)
-            {
-                if(this->getMatrixValue(i, j) != 0)
-                {
-                    result[j] = 1;
-                }
-            }
-    }
-
-    if(direction ==2)
-    {
-        for(int i = 0; i < this->getRows(); i++)
-            for(int j = 0; j < this->getCols(); j++)
-            {
-                if(this->getMatrixValue(i, j) != 0)
-                {
-                    result[i] = 1;
-                }
-            }
-    }
-}
-
-template <class Type>
-void Matrix2D<Type>::anyGreater(vector<int>& result, int direction, int treshold)
-{
-    //check if a column contains the given value
-    if(direction == 1)
-    {
-        for(int j = 0; j < this->getCols(); j++)
-            for(int i = 0; i < this->getRows(); i++)
-            {
-                if(this->getMatrixValue(i, j) > treshold)
-                {
-                    result[j] = 1;
-                }
-            }
-    }
-
-    //check if a row contains the given value
-    if(direction == 2)
-    {
-        for(int i = 0; i < this->getRows(); i++)
-            for(int j = 0; j < this->getCols(); j++)
-            {
-                if(this->getMatrixValue(i, j) > treshold)
-                {
-                    result[i] = 1;
-                }
-            }
-    }
-}
-
-/*
-The caller is a sub matrix of source input, taking elements between the specified indeces
-*/
-template <class Type>
-void Matrix2D<Type>::getSubMatrix(Matrix2D<Type>& source, int x_first, int x_last, int y_first, int y_last)
-{
-    int x_min = min(x_first, x_last);
-    int x_max = max(x_first, x_last);
-    int y_min = min(y_first, y_last);
-    int y_max = max(y_first, y_last);
-
-    for(int i = x_min; i <= x_max; i++)
-        for(int j = y_min; j <= y_max; j++)
-    {
-        //index the caller matrix from 0
-        this->setMatrixValue(i - x_min, j - y_min, source.getMatrixValue(i, j));
-    }
-}
-
-template <class Type>
-void Matrix2D<Type>::getAbsoluteValuesMatrix(Matrix2D<Type>& source)
-{
-    for(int i = 0; i < source.getRows(); i++)
-        for(int j = 0; j < source.getCols(); j++)
-    {
-        this->matrix2d[i][j] = abs(source.getMatrixValue(i,j));
-    }
-}
-
 template <class Type>
 void Matrix2D<Type>::conv2DFull(Matrix2D<Type>& kernel, Matrix2D<Type>& result)
 {
@@ -372,8 +220,138 @@ void Matrix2D<Type>::conv2DValid(Matrix2D<Type>& kernel, Matrix2D<Type>& result)
 }
 
 /*
-Check if calling matrix doesn't have only zeros
+* matrix operations
 */
+//It gets as input a matrix mask (only 1 and 0 values) and sets the calling matrix's values to negated source's values
+template <class Type>
+void Matrix2D<Type>::negateMatrixMask(Matrix2D<Type>& sourceMask)
+{
+    for(int i = 0; i < this->getRows(); i++)
+        for(int j = 0; j < this->getCols(); j++)
+    {
+        this->matrix2d[i][j] = 1 - sourceMask.getMatrixValue(i,j) ;
+    }
+}
+
+//Returns a matrix whose all values are >=0. The roginal values are those in the input "source"
+template <class Type>
+void Matrix2D<Type>::getAbsoluteValuesMatrix(Matrix2D<Type>& source)
+{
+    for(int i = 0; i < source.getRows(); i++)
+        for(int j = 0; j < source.getCols(); j++)
+    {
+        this->matrix2d[i][j] = abs(source.getMatrixValue(i,j));
+    }
+}
+
+//For the calling matrix object, it computes the natural logarithm of each element of the input matrix object. Both matrices have same dimensions.
+template <class Type>
+void Matrix2D<Type>::logNatMatrix(Matrix2D<Type>& source)
+{
+    for(int i = 0; i < this->getRows(); i++)
+        for(int j = 0; j < this->getCols(); j++)
+        {
+            this->matrix2d[i][j] = log(source.getMatrixValue(i,j));
+        }
+}
+
+//find first element in matrix that differs from the input value
+template <class Type>
+void Matrix2D<Type>::findFirstNonEqualElement(int &x_first, int &y_first, Type value)
+{
+    for(int i = 0; i < this->rows; i++)
+        for(int j = 0; j < this->cols; j++)
+    {
+        if(this->matrix2d[i][j] != value)
+        {
+            x_first = i;
+            y_first = j;
+            return;
+        }
+    }
+
+    return;
+}
+
+//find last element in matrix that differs from the input value
+template <class Type>
+void Matrix2D<Type>::findLastNonEqualElement(int &x_first, int &y_first, Type value)
+{
+    for(int i = this->rows - 1; i>=0; i--)
+        for(int j = this->cols - 1; j>=0; j--)
+    {
+        if(this->matrix2d[i][j] != value)
+        {
+            x_first = i;
+            y_first = j;
+            return ;
+        }
+    }
+
+    return;
+}
+
+//Returns 1 if a row/column has at least a non-zero value, else it returns 0 for that row/column. The output is a vector. Direction: 1 = check on columns; 2 = check on rows
+template <class Type>
+void Matrix2D<Type>::anyNonZero(vector<int>& result, int direction)
+{
+    if(direction == 1)
+    {
+        for(int j = 0; j < this->getCols(); j++)
+            for(int i = 0; i < this->getRows(); i++)
+            {
+                if(this->getMatrixValue(i, j) != 0)
+                {
+                    result[j] = 1;
+                }
+            }
+    }
+
+    if(direction ==2)
+    {
+        for(int i = 0; i < this->getRows(); i++)
+            for(int j = 0; j < this->getCols(); j++)
+            {
+                if(this->getMatrixValue(i, j) != 0)
+                {
+                    result[i] = 1;
+                }
+            }
+    }
+}
+
+//Result is a vector containing 1 if the line/column has  all elements grater than input value.Direction: 1 = check on columns; 2 = check on rows
+template <class Type>
+void Matrix2D<Type>::anyGreater(vector<int>& result, int direction, int treshold)
+{
+    //check if a column contains the given value
+    if(direction == 1)
+    {
+        for(int j = 0; j < this->getCols(); j++)
+            for(int i = 0; i < this->getRows(); i++)
+            {
+                if(this->getMatrixValue(i, j) > treshold)
+                {
+                    result[j] = 1;
+                }
+            }
+    }
+
+    //check if a row contains the given value
+    if(direction == 2)
+    {
+        for(int i = 0; i < this->getRows(); i++)
+            for(int j = 0; j < this->getCols(); j++)
+            {
+                if(this->getMatrixValue(i, j) > treshold)
+                {
+                    result[i] = 1;
+                }
+            }
+    }
+}
+
+//Check if calling matrix doesn't have only zeros
 template <class Type>
 bool Matrix2D<Type>::checkNonZero()
 {
@@ -386,9 +364,10 @@ bool Matrix2D<Type>::checkNonZero()
     return false;
 }
 
-
 /*
-Convert calling matrix to vector, by putting the columns one after another*/
+* matrix conversions
+*/
+//Convert calling matrix to vector, by putting the columns one after another
 template <class Type>
 void Matrix2D<Type>::reshapeToVector(vector<Type>& dest)
 {
@@ -399,7 +378,24 @@ void Matrix2D<Type>::reshapeToVector(vector<Type>& dest)
         }
 }
 
+//The caller is a matrix object whose value are a submatrix of "source" input. The indeces are considered those between the specified indeces
+template <class Type>
+void Matrix2D<Type>::getSubMatrix(Matrix2D<Type>& source, int x_first, int x_last, int y_first, int y_last)
+{
+    int x_min = min(x_first, x_last);
+    int x_max = max(x_first, x_last);
+    int y_min = min(y_first, y_last);
+    int y_max = max(y_first, y_last);
 
+    for(int i = x_min; i <= x_max; i++)
+        for(int j = y_min; j <= y_max; j++)
+    {
+        //index the caller matrix from 0
+        this->setMatrixValue(i - x_min, j - y_min, source.getMatrixValue(i, j));
+    }
+}
+
+//Reverse matrix elements: the first and the last lines are interchanged, the 2nd line with the 2nd-last one, but also th elements in the lines are reversed as the last becomes the first and viceversa
 template <class Type>
 void Matrix2D<Type>::reverseMatrix(Matrix2D<Type>& source)
 {
@@ -420,5 +416,18 @@ void Matrix2D<Type>::reverseMatrix(Matrix2D<Type>& source)
         temp = source(i,j);
         this->setMatrixValue(i, j, source(source.getRows()-i-1, source.getCols()-j-1));
         this->setMatrixValue(source.getRows() - i - 1, source.getCols() - j - 1, temp);
+    }
+}
+
+//unlike  other methods, this one takes as input the matrix in which the result shall be stored
+template <class Type>
+void Matrix2D<Type>::getTranspose(Matrix2D<Type>** output)
+{
+    *output = new Matrix2D<KeysValue<double> >(this->getCols(), this->getRows());
+
+    for(int idx = 0; idx < this->getRows(); idx++)
+        for(int idy = 0; idy < this->getCols(); idy++)
+    {
+        (**output).setMatrixValue(idy, idx, this->getMatrixValue(idx, idy));
     }
 }

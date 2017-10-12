@@ -44,10 +44,14 @@ public:
     Matrix2D& operator=(const Matrix2D<Type>& new_matrix);
     Matrix2D& operator+(Matrix2D<Type>& new_matrix);
 
-    //separate functions from constructors, used for memory allocation, initialization and data copying
+    //helpers: separate functions from constructors, used for memory allocation, initialization and data copying
     void allocateMemory(int dimX, int dimY);
     void copyElementsFromMatrix(Matrix2D<Type>& source);
     void initializeMatrixValues(Type value);
+
+    //convolution
+    void conv2DFull(Matrix2D<Type>& kernel, Matrix2D<Type>& result);
+    void conv2DValid(Matrix2D<Type>& kernel, Matrix2D<Type>& result);
 
     //matrix operations. They are the C++ implementations for Matlab library functions for 2D matrices
     //mask related operations
@@ -58,16 +62,13 @@ public:
     void findFirstNonEqualElement(int &x_first, int &y_first, Type value);
     void findLastNonEqualElement(int &x_last, int &y_last, Type value);
     void anyNonZero(std::vector<int>& result, int direction);
-    bool checkNonZero();
     void anyGreater(std::vector<int>& result, int direction, int treshold);
+    bool checkNonZero();
     //matrix conversions
-    void getTranspose(Matrix2D<Type>& kernel, Matrix2D<Type>& result);
     void reshapeToVector(std::vector<Type>& dest);
     void getSubMatrix(Matrix2D<Type>& source, int x_first, int x_last, int y_first, int y_last);
     void reverseMatrix(Matrix2D<Type>& source);
-    //convolution
-    void conv2DFull(Matrix2D<Type>& kernel, Matrix2D<Type>& result);
-    void conv2DValid(Matrix2D<Type>& kernel, Matrix2D<Type>& result);
+    void getTranspose(Matrix2D<Type>** result);
 
     //for debug purposes
     void printMatrixValues()

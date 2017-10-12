@@ -257,10 +257,8 @@ void medianFilterMatMask(Matrix2D<bool>& input_mask, int half_width, Matrix2D< K
     Matrix2D<KeysValue<double> > *A;
     //vector of matrices
     vector<Matrix2D<KeysValue<double> > > Av;
-    //declare pointers to Matrix2D used for matrix append. They are initialized to 1 double object
-    //Matrix2D<KeysValue<double> > *prev_temp_A = new Matrix2D<KeysValue<double> >(1,1);
 
-    for(int k = 0; k < fs_size; k++)    //k = 0:11     error: k = 3, 4, 8, 9
+    for(int k = 0; k < fs_size; k++)
     {
         if(do_remove[k] == 0)
         {
@@ -292,7 +290,6 @@ void medianFilterMatMask(Matrix2D<bool>& input_mask, int half_width, Matrix2D< K
             //apply mask to A and  store in temp_A
             applyVectorMask(keep, &A,  &temp_A);
 
-            //cout<<(*A).getRows()<<" "<<(*A).getCols()<<" "<<temp_A.getRows()<<" "<<temp_A.getCols()<<endl;
             //delete dinamically allocated Matrix2D object
              delete A;
 

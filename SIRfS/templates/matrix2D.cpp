@@ -165,37 +165,32 @@ template <class Type>
 void Matrix2D<Type>::conv2DFull(Matrix2D<Type>& kernel, Matrix2D<Type>& result)
 {
     Type temp;
-    int i, j, ii, jj, m, n, mm, nn;
+    int i, j, m, n, sourceIdx, sourceIdy;
     //find kernel center
-    int kCenterX = kernel.getCols()/2, kCenterY = kernel.getRows()/2;
+    int kCenterX = (kernel.getCols()+1)/2, kCenterY = (kernel.getRows()+1)/2;
 
-    for(i = 0; i < this->getRows(); i++)
+    for(i = 0; i < result.getRows(); i++)
     {
-        for(j = 0; j < this->getCols(); j++)                           // columns
+        for(j = 0; j < result.getCols(); j++)                           // columns
         {
-            for(m = kernel.getRows()-1; m>=0; m--)             // kernel rows
+            for(m = 0; m < kernel.getRows(); m++)
             {
-                mm = kernel.getRows() - 1 - m;                     // row index of flipped kernel
-
-                for(n = kernel.getCols(); n>=0; n--)             // kernel columns
+                for(n = 0; n < kernel.getCols() ; n++)
                 {
-                    nn = kernel.getRows() - 1 - n;                  // column index of flipped kernel
+                    sourceIdx = i + m - kCenterY;
+                    sourceIdy =  j + n - kCenterX;
 
-                    // index of input signal, used for checking boundary
-                    ii = i + mm;
-                    jj = j + nn;
-
-                    // ignore input samples which are out of bound
-                    if( ii >= 0 && ii < this->getRows() + kernel.getRows() -1 && jj >= 0 && jj < this->getCols() + kernel.getCols() -1 )
+                    if( sourceIdx < this->getRows() && sourceIdx >= 0 && sourceIdy  <  this->getCols() && sourceIdy  >= 0)
                     {
-                        temp = result.getMatrixValue(ii,jj) + this->matrix2d[i][j] * kernel.getMatrixValue(m, n);
-                        result.setMatrixValue(ii,jj, temp);
+                        temp = result.getMatrixValue(i, j) + this->getMatrixValue(sourceIdx, sourceIdy) * kernel.getMatrixValue(m, n);
+                        result.setMatrixValue(i, j, temp);
                     }
                 }
             }
         }
     }
 }
+
 
 template <class Type>
 void Matrix2D<Type>::conv2DValid(Matrix2D<Type>& kernel, Matrix2D<Type>& result)
@@ -219,18 +214,183 @@ void Matrix2D<Type>::conv2DValid(Matrix2D<Type>& kernel, Matrix2D<Type>& result)
     }
 }
 
+template <class Type>
+void Matrix2D<Type>::conv2DSame(Matrix2D<Type>& kernel, Matrix2D<Type>& result)
+{
+    Type temp;
+    int i, j, m, n, sourceIdx, sourceIdy;
+    //find kernel center
+    int kCenterX = (kernel.getCols()-1)/2, kCenterY = (kernel.getRows()-1)/2;
+
+    for(i = 0; i < this->getRows(); i++)
+    {
+        for(j = 0; j < this->getCols(); j++)                           // columns
+        {
+            for(m = 0; m < kernel.getRows(); m++)
+            {
+                for(n = 0; n < kernel.getCols() ; n++)
+                {
+                    sourceIdx = i + m - kCenterY;
+                    sourceIdy =  j + n - kCenterX;
+
+                    if( sourceIdx < this->getRows() && sourceIdx >= 0 && sourceIdy  <  this->getCols() && sourceIdy  >= 0)
+                    {
+                        temp = result.getMatrixValue(i, j) + this->getMatrixValue(sourceIdx, sourceIdy) * kernel.getMatrixValue(m, n);
+                        result.setMatrixValue(i, j, temp);
+                    }
+                }
+            }
+        }
+    }
+}
+
 /*
 * matrix operations
 */
-//It gets as input a matrix mask (only 1 and 0 values) and sets the calling matrix's values to negated source's values
+//the input si always a mask, whose Type == bool
 template <class Type>
-void Matrix2D<Type>::negateMatrixMask(Matrix2D<Type>& sourceMask)
+void Matrix2D<Type>::insertNaNValues(Matrix2D<bool>& mask)
+{
+    if(mask.getRows() != this->getRows() || mask.getCols() != this->getCols())
+    {
+        cout<<"Couldn't insert NaN values"<<endl;
+        exit(0);
+    }
+    else
+    {
+        for(int i = 0; i < mask.getRows(); i++)
+            for(int j = 0; j < mask.getCols(); j++)
+            {
+                //if the mask has value 1 at i(,j) index
+                if(mask.getMatrixValue(i,j) == 1)
+                {
+                    this->setMatrixValue(i, j, numeric_limits<double>::quiet_NaN());
+                }
+            }
+    }
+}
+
+//create mask by comparing caller's values to a given treshold. The result's Type == bool as it is always a mask
+template <class Type>
+void Matrix2D<Type>::compareValuesToTreshold(Matrix2D<bool>& result, Type treshold, Comparation comp)
+{
+    int i, j;
+
+    switch(comp)
+    {
+        case 0:
+            for(i = 0; i < this->getRows(); i++)
+                for(j = 0; j < this->getCols(); j++)
+                {
+                    if(this->getMatrixValue(i, j) == treshold)
+                    {
+                        result.setMatrixValue(i, j, 1);
+                    }
+                    else
+                    {
+                        result.setMatrixValue(i, j, 0);
+                    }
+                }
+            break;
+        case 1:
+            for(i = 0; i < this->getRows(); i++)
+                for(j = 0; j < this->getCols(); j++)
+                {
+                    if(this->getMatrixValue(i, j) != treshold)
+                    {
+                        result.setMatrixValue(i, j, 1);
+                    }
+                    else
+                    {
+                        result.setMatrixValue(i, j, 0);
+                    }
+                }
+            break;
+        case 2:
+            for(i = 0; i < this->getRows(); i++)
+                for(j = 0; j < this->getCols(); j++)
+                {
+                    if(this->getMatrixValue(i, j) < treshold)
+                    {
+                        result.setMatrixValue(i, j, 1);
+                    }
+                    else
+                    {
+                        result.setMatrixValue(i, j, 0);
+                    }
+                }
+            break;
+        case 3:
+            for(i = 0; i < this->getRows(); i++)
+                for(j = 0; j < this->getCols(); j++)
+                {
+                    if(this->getMatrixValue(i, j) <= treshold)
+                    {
+                        result.setMatrixValue(i, j, 1);
+                    }
+                    else
+                    {
+                        result.setMatrixValue(i, j, 0);
+                    }
+                }
+            break;
+        case 4:
+            for(i = 0; i < this->getRows(); i++)
+                for(j = 0; j < this->getCols(); j++)
+                {
+                    if(this->getMatrixValue(i, j) >= treshold)
+                    {
+                        result.setMatrixValue(i, j, 1);
+                    }
+                    else
+                    {
+                        result.setMatrixValue(i, j, 0);
+                    }
+                }
+            break;
+        case 5:
+            for(i = 0; i < this->getRows(); i++)
+                for(j = 0; j < this->getCols(); j++)
+                {
+                    if(this->getMatrixValue(i, j) > treshold)
+                    {
+                        result.setMatrixValue(i, j, 1);
+                    }
+                    else
+                    {
+                        result.setMatrixValue(i, j, 0);
+                    }
+                }
+            break;
+    }
+}
+
+//usually the caller's Type == bool, as it is a amsk which is negated
+template <class Type>
+void Matrix2D<Type>::negateMatrixMask(Matrix2D<bool>& result)
 {
     for(int i = 0; i < this->getRows(); i++)
         for(int j = 0; j < this->getCols(); j++)
     {
-        this->matrix2d[i][j] = 1 - sourceMask.getMatrixValue(i,j) ;
+        result.setMatrixValue(i, j, 1 - this->getMatrixValue(i,j));
     }
+}
+
+//Return the number of 1 values in the computed mask, which is obtained as logical and between input and caller, which usually are also masks (Type ==bool)
+template <class Type>
+int Matrix2D<Type>::logicalAnd(Matrix2D<bool>& result, Matrix2D<Type>& input)
+{
+    int i, j, counter;
+
+    for(i = 0; i < this->getRows(); i++)
+        for(j = 0; j < this->getCols(); j++)
+    {
+        result.setMatrixValue(i, j, this->getMatrixValue(i,j ) & input.getMatrixValue(i, j));
+        if(result.getMatrixValue(i, j) > 0)
+            counter++;
+    }
+
+    return counter;
 }
 
 //Returns a matrix whose all values are >=0. The roginal values are those in the input "source"
@@ -362,6 +522,23 @@ bool Matrix2D<Type>::checkNonZero()
                 return true;
         }
     return false;
+}
+
+template <class Type>
+void Matrix2D<Type>::findIndecesEqualToValue(Matrix2D<double>& result, Type value)
+{
+    int res_i = 0, i, j;
+
+    for(j = 0; j < this->getCols(); j++)
+        for(i = 0; i < this->getRows(); i++)
+    {
+        if(this->getMatrixValue(i, j) == value)
+        {
+            result.setMatrixValue(res_i, 0, (double) i);
+            result.setMatrixValue(res_i, 1, (double) j);
+            res_i++;
+        }
+    }
 }
 
 /*

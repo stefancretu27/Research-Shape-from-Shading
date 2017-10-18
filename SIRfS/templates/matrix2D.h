@@ -4,8 +4,18 @@
 #include <vector>
 #include <iostream>
 #include <math.h>
+#include <limits>
 
 #include "keyValue.h"
+enum Comparation
+{
+    NonEqual,
+    Equal,
+    LessThan,
+    LessThanOrEqual,
+    GreaterThanorEqual,
+    GreaterThan,
+};
 
 template <class Type>
 class Matrix2D
@@ -52,19 +62,35 @@ public:
     //convolution
     void conv2DFull(Matrix2D<Type>& kernel, Matrix2D<Type>& result);
     void conv2DValid(Matrix2D<Type>& kernel, Matrix2D<Type>& result);
+    void conv2DSame(Matrix2D<Type>& kernel, Matrix2D<Type>& result);
 
     //matrix operations. They are the C++ implementations for Matlab library functions for 2D matrices
-    //mask related operations
-    void negateMatrixMask(Matrix2D<Type>& sourceMask);
-    //basic math-operations related
+    /*
+    *mask related operations
+    */
+    //It gets as input a matrice's  mask and the changes are made to the caller
+    void insertNaNValues(Matrix2D<bool>& mask);
+    //creates a mask by comparing the caller's values to the given treshold
+    void compareValuesToTreshold(Matrix2D<bool>& result, Type treshold, Comparation comp);
+    void negateMatrixMask(Matrix2D<bool>& result);
+    //returns the # of non-zero elements
+    int logicalAnd(Matrix2D<bool>& result, Matrix2D<Type>& input);
+    /*
+    *basic math-operations
+    */
     void getAbsoluteValuesMatrix(Matrix2D<Type>& source);
     void logNatMatrix(Matrix2D<Type>& source);
     void findFirstNonEqualElement(int &x_first, int &y_first, Type value);
     void findLastNonEqualElement(int &x_last, int &y_last, Type value);
+    //for the following 2 functions, the output is a vector
     void anyNonZero(std::vector<int>& result, int direction);
     void anyGreater(std::vector<int>& result, int direction, int treshold);
     bool checkNonZero();
-    //matrix conversions
+    //the equivalent of  'find' Matlab function. The result's Type is forced to double. In case is needed for other type, create enum and proceed similar as in compareValuesToTreshold
+    void findIndecesEqualToValue(Matrix2D<double>& result, Type value);
+    /*
+    *matrix conversions
+    */
     void reshapeToVector(std::vector<Type>& dest);
     void getSubMatrix(Matrix2D<Type>& source, int x_first, int x_last, int y_first, int y_last);
     void reverseMatrix(Matrix2D<Type>& source);

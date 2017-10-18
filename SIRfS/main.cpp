@@ -23,7 +23,7 @@ int main()
 
     //create mask for the input image
     Matrix2D<bool> inputMask(250, 200);
-    computeMatrixMask(grayImage, inputMask, 0);
+    grayImage.compareValuesToTreshold(inputMask, 0, GreaterThan);
     //cout<<inputMask.getMatrixValue(74,23)<<endl;
 
     //Initialize SIRfS parameters. Replaces CONSTANTS file from Matlab.
@@ -60,9 +60,9 @@ int main()
 
     //build ~valid matrix
     Matrix2D<bool>negated_valid(valid.getRows(), valid.getCols());
-    negated_valid.negateMatrixMask(valid);
+    valid.negateMatrixMask(negated_valid);
     //replace 0 with NaN in im
-    insertNaNValues(im, negated_valid);
+    im.insertNaNValues(negated_valid);
 
     Matrix2D<double>log_im(im.getRows(), im.getCols());
     log_im.logNatMatrix(im);
@@ -84,6 +84,8 @@ int main()
     //cout<<data.getZMedianFilterMatT()->getRows()<<" "<<data.getZMedianFilterMatT()->getCols()<<" "<<endl;
     //cout<<data.getZMedianFilterMatT()->getMatrixValue(0, 210000).getKeyX()<<" "<<data.getZMedianFilterMatT()->getMatrixValue(0, 210000).getKeyY()<<" "<<data.getZMedianFilterMatT()->getMatrixValue(0, 210000).getValue()<<endl;
     data.getAMedianFilterMat()->getTranspose(data.getAMedianFilterMatTAddress());
+
+    getBorderNormals(data.getDataTrue().getMask());
 
     return 0;
 }

@@ -265,9 +265,12 @@ void medianFilterMatMask(Matrix2D<bool>& input_mask, int half_width, Matrix2D< K
             //A is dynamically allocated in conv2mat
             conv2mat(input_mask.getRows(), input_mask.getCols(), fs[k], &A);
 
-            Matrix2D<double> f( fs[k].getRows(), fs[k].getCols(), 0);
+            Matrix2D<bool> bool_f( fs[k].getRows(), fs[k].getCols());
             //if a value is not zero, store 1, else store 1 in the new matrix f
-            checkMatrixAgainstTreshold( fs[k], f, 0);
+            fs[k].compareValuesToTreshold(bool_f, 0, NonEqual);
+            //convert into double
+            Matrix2D<double> f( fs[k].getRows(), fs[k].getCols());
+            convertBoolToDoubleMatrix2D(bool_f, f);
 
             //convert matrix input_mask to double
             convertBoolToDoubleMatrix2D(input_mask, d_input_mask);
@@ -309,3 +312,43 @@ void medianFilterMatMask(Matrix2D<bool>& input_mask, int half_width, Matrix2D< K
     appendMatrixBelow(Av,  output);
 }
 
+void getBorderNormals(Matrix2D<bool> mask)
+{
+    int d = 5;
+
+    //build filter as a matrix of booleans
+    Matrix2D<double> filter(3, 3);
+    filter.setMatrixValue(0, 0, 0); filter.setMatrixValue(0, 1, 1), filter.setMatrixValue(0, 2, 0);
+    filter.setMatrixValue(1, 0, 1); filter.setMatrixValue(1, 1, 1), filter.setMatrixValue(1, 2, 1);
+    filter.setMatrixValue(2, 0, 0); filter.setMatrixValue(2, 1, 1), filter.setMatrixValue(2, 2, 0);
+    //it seems Matlab reverses filter when applies it
+    Matrix2D<double> reversed_filter(3, 3);
+    reversed_filter.reverseMatrix(filter);
+
+    //build ~mask matrix
+    Matrix2D<bool>negated_mask(mask.getRows(), mask.getCols());
+    mask.negateMatrixMask(negated_mask);
+    //convert the negated mask from bool to double
+    Matrix2D<double>d_negated_mask(mask.getRows(), mask.getCols());
+    convertBoolToDoubleMatrix2D(negated_mask, d_negated_mask);
+
+    //convolution result: conv_same returns a result with the same size as the input (calller)
+    Matrix2D<double> conv_same(mask.getRows(), mask.getCols(), 0);
+    d_negated_mask.conv2DSame(reversed_filter, conv_same);
+    //once convolution is computed, it checks which values are greater than 0, creating a bolean matrix storing the results (1 if greater, 0 else)
+    Matrix2D<bool> conv_greater_than(mask.getRows(), mask.getCols());
+    conv_same.compareValuesToTreshold(conv_greater_than, 0, GreaterThan);
+    //the obtained boolean matrix and the (input0 mask perform a logical and operation, storing the result in B and returning the number of non zero elements
+    Matrix2D<bool> B(mask.getRows(), mask.getCols());
+    int no_nonzeros_in_B = 0;
+    no_nonzeros_in_B = conv_greater_than.logicalAnd(B, mask);
+
+    //store the indeces of nonzero elements in this matrix
+    Matrix2D<double>P(no_nonzeros_in_B, 2);
+    B.findIndecesEqualToValue(P, 1);
+
+    Matrix2D<double>X_meshgrid(2*d +1, 2*d + 1);
+    Matrix2D<double>Y_meshgrid(2*d + 1, 2*d +1);
+
+    meshgrid(-d, d, -d, d, X_meshgrid, Y_meshgrid);
+}

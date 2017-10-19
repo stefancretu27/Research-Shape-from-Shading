@@ -13,13 +13,12 @@ void convertBoolToDoubleMatrix2D(Matrix2D<bool>& source, Matrix2D<double>& dest)
 }
 
 //store in dest the lines in sotrce corresponding to true values in  mask
-void applyVectorMask(std::vector<bool>& mask, Matrix2D<KeysValue<double> >** source, Matrix2D<KeysValue<double> > *dest)
+void applyMaskOnKeysValueMatrix(std::vector<bool>& mask, Matrix2D<KeysValue<double> >** source, Matrix2D<KeysValue<double> > *dest)
 {
     int t_idx = 0;
 
     //mask.getRows = source.getRows. For each line, check if mask is 1, then iterate through cols, allocate memory for KeyValue object, then set ts values
-    for(
-         int idx = 0; idx < (**source).getRows(); idx++)
+    for(int idx = 0; idx < (**source).getRows(); idx++)
     {
         if(mask[idx] == true)
         {

@@ -7,14 +7,24 @@
 #include <limits>
 
 #include "keyValue.h"
-enum Comparation
+enum Comparison
 {
-    NonEqual,
     Equal,
+    NonEqual,
     LessThan,
     LessThanOrEqual,
-    GreaterThanorEqual,
-    GreaterThan,
+    GreaterThanOrEqual,
+    GreaterThan
+};
+
+enum Operation
+{
+    Sum,
+    Substract,
+    Multiply,
+    Divide,
+    Pow,
+    Exp
 };
 
 template <class Type>
@@ -53,6 +63,7 @@ public:
 
     Matrix2D& operator=(const Matrix2D<Type>& new_matrix);
     Matrix2D& operator+(Matrix2D<Type>& new_matrix);
+    Matrix2D& operator-(Matrix2D<Type>& new_matrix);
 
     //helpers: separate functions from constructors, used for memory allocation, initialization and data copying
     void allocateMemory(int dimX, int dimY);
@@ -71,10 +82,13 @@ public:
     //It gets as input a matrice's  mask and the changes are made to the caller
     void insertNaNValues(Matrix2D<bool>& mask);
     //creates a mask by comparing the caller's values to the given treshold
-    void compareValuesToTreshold(Matrix2D<bool>& result, Type treshold, Comparation comp);
+    void compareValuesToTreshold(Matrix2D<bool>& result, Type treshold, Comparison comp);
     void negateMatrixMask(Matrix2D<bool>& result);
     //returns the # of non-zero elements
     int logicalAnd(Matrix2D<bool>& result, Matrix2D<Type>& input);
+    //only the number of columns has to be equal to size of vector
+    void compareMatrixColumnsToVector(Matrix2D<bool>& result, std::vector<Type>& input, Comparison comp);
+    void applyMask(Matrix2D<Type>& result, std::vector<bool> mask);
     /*
     *basic math-operations
     */
@@ -88,6 +102,8 @@ public:
     bool checkNonZero();
     //the equivalent of  'find' Matlab function. The result's Type is forced to double. In case is needed for other type, create enum and proceed similar as in compareValuesToTreshold
     void findIndecesEqualToValue(Matrix2D<double>& result, Type value);
+    void elementsOperation(Matrix2D<Type>& result, Type value, Operation op);
+    void allNonZero(std::vector<bool>& result, int direction);
     /*
     *matrix conversions
     */

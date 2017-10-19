@@ -39,7 +39,7 @@ Matrix2D<Type>::Matrix2D( int new_rows,  int new_cols, Type value)
     for(int rowsIdx = 0; rowsIdx < this->rows; rowsIdx++ )
         for(int colsIdx = 0; colsIdx < this->cols; colsIdx++)
         {
-            this->matrix2d[rowsIdx][colsIdx] = value;
+            this->setMatrixValue(rowsIdx, colsIdx, value);
         }
 }
 
@@ -62,7 +62,7 @@ Matrix2D<Type>::Matrix2D(const Matrix2D<Type>& new_matrix)
     for( int rowsIdx = 0; rowsIdx < this->rows; rowsIdx++)
         for( int colsIdx = 0; colsIdx < this->cols; colsIdx++)
         {
-            this->matrix2d[rowsIdx][colsIdx] = new_matrix.getMatrixValue(rowsIdx, colsIdx);
+            this->setMatrixValue(rowsIdx, colsIdx, new_matrix.getMatrixValue(rowsIdx, colsIdx));
         }
 }
 
@@ -102,21 +102,51 @@ Matrix2D<Type>& Matrix2D<Type>::operator=(const Matrix2D<Type>& new_matrix)
     for( int rowsIdx = 0; rowsIdx < this->rows; rowsIdx++)
         for( int colsIdx = 0; colsIdx < this->cols; colsIdx++)
         {
-            this->matrix2d[rowsIdx][colsIdx] = new_matrix.getMatrixValue(rowsIdx, colsIdx);
+            this->setMatrixValue(rowsIdx, colsIdx, new_matrix.getMatrixValue(rowsIdx, colsIdx));
         }
 
     return *this;
 }
 
-
 template <class Type>
 Matrix2D<Type>& Matrix2D<Type>::operator+(Matrix2D<Type>& new_matrix)
 {
+    Type sum = 0;
+
+    if(this->getRows() != new_matrix.getRows() || this->getCols() != new_matrix.getCols())
+    {
+        cout<<"Couldn't add matrices. They have different dimensions"<<endl;
+        exit(0);
+    }
+
     //copy elements
     for( int rowsIdx = 0; rowsIdx < this->rows; rowsIdx++)
         for( int colsIdx = 0; colsIdx < this->cols; colsIdx++)
         {
-            this->matrix2d[rowsIdx][colsIdx] += new_matrix.getMatrixValue(rowsIdx, colsIdx);
+            sum = this->getMatrixValue(rowsIdx, colsIdx) + new_matrix.getMatrixValue(rowsIdx, colsIdx);
+            this->setMatrixValue(rowsIdx, colsIdx, sum);
+        }
+
+    return *this;
+}
+
+template <class Type>
+Matrix2D<Type>& Matrix2D<Type>::operator-(Matrix2D<Type>& new_matrix)
+{
+    Type diff = 0;
+
+    if(this->getRows() != new_matrix.getRows() || this->getCols() != new_matrix.getCols())
+    {
+        cout<<"Couldn't substract matrices. They have different dimensions"<<endl;
+        exit(0);
+    }
+
+    //copy elements
+    for( int rowsIdx = 0; rowsIdx < this->rows; rowsIdx++)
+        for( int colsIdx = 0; colsIdx < this->cols; colsIdx++)
+        {
+            diff = this->getMatrixValue(rowsIdx, colsIdx) - new_matrix.getMatrixValue(rowsIdx, colsIdx);
+            this->setMatrixValue(rowsIdx, colsIdx, diff);
         }
 
     return *this;
@@ -270,9 +300,9 @@ void Matrix2D<Type>::insertNaNValues(Matrix2D<bool>& mask)
     }
 }
 
-//create mask by comparing caller's values to a given treshold. The result's Type == bool as it is always a mask
+//create mask by comparing caller's values to a given treshold, that is a single value. The result's Type == bool as it is always a mask
 template <class Type>
-void Matrix2D<Type>::compareValuesToTreshold(Matrix2D<bool>& result, Type treshold, Comparation comp)
+void Matrix2D<Type>::compareValuesToTreshold(Matrix2D<bool>& result, Type treshold, Comparison comp)
 {
     int i, j;
 
@@ -393,14 +423,135 @@ int Matrix2D<Type>::logicalAnd(Matrix2D<bool>& result, Matrix2D<Type>& input)
     return counter;
 }
 
-//Returns a matrix whose all values are >=0. The roginal values are those in the input "source"
+//Each element from a column of the caller matrix is compared to one value from the input vector. Elements from next column are compared to next value and so on till the end.
+//No of  caller matrix columns  = size of input vector
+template <class Type>
+void Matrix2D<Type>::compareMatrixColumnsToVector(Matrix2D<bool>& result, std::vector<Type>& input, Comparison comp)
+{
+    int i , j;
+
+    if((unsigned) this->getCols() != input.size())
+    {
+        cout<<"Comparison couldn't be done. Input vector's size doesn't match calle rmatrix number of columns."<<endl;
+        exit(0);
+    }
+
+    switch(comp)
+    {
+        case 0:
+            for(j = 0; j < this->getCols(); j++)
+                for(i = 0; i < this->getRows(); i++)
+                {
+                    if(this->getMatrixValue(i, j) == input[j])
+                    {
+                        result.setMatrixValue(i, j, 1);
+                    }
+                    else
+                    {
+                        result.setMatrixValue(i, j, 0);
+                    }
+                }
+            break;
+        case 1:
+            for(j = 0; j < this->getCols(); j++)
+                for(i = 0; i < this->getRows(); i++)
+                {
+                    if(this->getMatrixValue(i, j) != input[j])
+                    {
+                        result.setMatrixValue(i, j, 1);
+                    }
+                    else
+                    {
+                        result.setMatrixValue(i, j, 0);
+                    }
+                }
+            break;
+        case 2:
+            for(j = 0; j < this->getCols(); j++)
+                for(i = 0; i < this->getRows(); i++)
+                {
+                    if(this->getMatrixValue(i, j) < input[j])
+                    {
+                        result.setMatrixValue(i, j, 1);
+                    }
+                    else
+                    {
+                        result.setMatrixValue(i, j, 0);
+                    }
+                }
+            break;
+        case 3:
+            for(j = 0; j < this->getCols(); j++)
+                for(i = 0; i < this->getRows(); i++)
+                {
+                    if(this->getMatrixValue(i, j) <= input[j])
+                    {
+                        result.setMatrixValue(i, j, 1);
+                    }
+                    else
+                    {
+                        result.setMatrixValue(i, j, 0);
+                    }
+                }
+            break;
+        case 4:
+            for(j = 0; j < this->getCols(); j++)
+                for(i = 0; i < this->getRows(); i++)
+                {
+                    if(this->getMatrixValue(i, j) >= input[j])
+                    {
+                        result.setMatrixValue(i, j, 1);
+                    }
+                    else
+                    {
+                        result.setMatrixValue(i, j, 0);
+                    }
+                }
+            break;
+        case 5:
+            for(j = 0; j < this->getCols(); j++)
+                for(i = 0; i < this->getRows(); i++)
+                {
+                    if(this->getMatrixValue(i, j) > input[j])
+                    {
+                        result.setMatrixValue(i, j, 1);
+                    }
+                    else
+                    {
+                        result.setMatrixValue(i, j, 0);
+                    }
+                }
+            break;
+    }
+}
+
+template <class Type>
+void Matrix2D<Type>::applyMask(Matrix2D<Type>& result, std::vector<bool> mask)
+{
+    int t_idx = 0;
+
+    //mask.getRows = source.getRows. For each line, check if mask is 1, then iterate through cols, allocate memory for KeyValue object, then set ts values
+    for(int idx = 0; idx <this->getRows(); idx++)
+    {
+        if(mask[idx] == 1)
+        {
+            for( int idy = 0; idy < this->getCols(); idy++)
+            {
+                result.setMatrixValue(t_idx, idy, this->getMatrixValue(idx, idy));
+            }
+            t_idx++;
+        }
+    }
+}
+
+//Returns a matrix whose all values are >=0. The orginal values are those in the input "source"
 template <class Type>
 void Matrix2D<Type>::getAbsoluteValuesMatrix(Matrix2D<Type>& source)
 {
     for(int i = 0; i < source.getRows(); i++)
         for(int j = 0; j < source.getCols(); j++)
     {
-        this->matrix2d[i][j] = abs(source.getMatrixValue(i,j));
+        this->setMatrixValue(i, j, abs(source.getMatrixValue(i,j)));
     }
 }
 
@@ -411,7 +562,7 @@ void Matrix2D<Type>::logNatMatrix(Matrix2D<Type>& source)
     for(int i = 0; i < this->getRows(); i++)
         for(int j = 0; j < this->getCols(); j++)
         {
-            this->matrix2d[i][j] = log(source.getMatrixValue(i,j));
+            this->setMatrixValue(i, j, log(source.getMatrixValue(i,j)));
         }
 }
 
@@ -422,7 +573,7 @@ void Matrix2D<Type>::findFirstNonEqualElement(int &x_first, int &y_first, Type v
     for(int i = 0; i < this->rows; i++)
         for(int j = 0; j < this->cols; j++)
     {
-        if(this->matrix2d[i][j] != value)
+        if(this->getMatrixValue(i,j) != value)
         {
             x_first = i;
             y_first = j;
@@ -440,7 +591,7 @@ void Matrix2D<Type>::findLastNonEqualElement(int &x_first, int &y_first, Type va
     for(int i = this->rows - 1; i>=0; i--)
         for(int j = this->cols - 1; j>=0; j--)
     {
-        if(this->matrix2d[i][j] != value)
+        if(this->getMatrixValue(i,j) != value)
         {
             x_first = i;
             y_first = j;
@@ -518,7 +669,7 @@ bool Matrix2D<Type>::checkNonZero()
     for(int i = 0; i < this->getRows(); i++)
         for(int j = 0; j < this->getCols(); j++)
         {
-            if(this->matrix2d[i][j] != 0)
+            if(this->getMatrixValue(i, j) != 0)
                 return true;
         }
     return false;
@@ -541,6 +692,102 @@ void Matrix2D<Type>::findIndecesEqualToValue(Matrix2D<double>& result, Type valu
     }
 }
 
+template <class Type>
+void Matrix2D<Type>::elementsOperation(Matrix2D<Type>& result, Type value, Operation op)
+{
+    int i, j;
+
+    switch(op)
+    {
+    case 0:
+        for(i = 0; i < this->getRows(); i++)
+            for(j = 0; j < this->getCols(); j++)
+            {
+                result.setMatrixValue(i, j, this->getMatrixValue(i, j) + value);
+            }
+        break;
+    case 1:
+        for(i = 0; i < this->getRows(); i++)
+            for(j = 0; j < this->getCols(); j++)
+            {
+                result.setMatrixValue(i, j, this->getMatrixValue(i, j) - value);
+            }
+        break;
+    case 2:
+        for(i = 0; i < this->getRows(); i++)
+            for(j = 0; j < this->getCols(); j++)
+            {
+                result.setMatrixValue(i, j, this->getMatrixValue(i, j) * value);
+            }
+        break;
+    case 3:
+        for(i = 0; i < this->getRows(); i++)
+            for(j = 0; j < this->getCols(); j++)
+            {
+                result.setMatrixValue(i, j, this->getMatrixValue(i, j)/value);
+            }
+        break;
+    case 4:
+        for(i = 0; i < this->getRows(); i++)
+            for(j = 0; j < this->getCols(); j++)
+            {
+                result.setMatrixValue(i, j, pow(this->getMatrixValue(i, j), value));
+            }
+        break;
+    case 5:
+        for(i = 0; i < this->getRows(); i++)
+            for(j = 0; j < this->getCols(); j++)
+            {
+                result.setMatrixValue(i, j, exp(this->getMatrixValue(i, j)));
+            }
+        break;
+    }
+}
+
+//Returns 1 if a row/column has at least a non-zero value, else it returns 0 for that row/column. The output is a vector. Direction: 1 = check on columns; 2 = check on rows
+template <class Type>
+void Matrix2D<Type>::allNonZero(vector<bool>& result, int direction)
+{
+    if(direction == 1)
+    {
+        for(int j = 0; j < this->getCols(); j++)
+        {
+            //for each column, initially suppose all its elements are non zero
+            result[j] = 1;
+            //search for each element in the given column
+            for(int i = 0; i < this->getRows(); i++)
+            {
+                //if one is 0, set the result to 0 and continue with the next column
+                if(this->getMatrixValue(i, j) == 0)
+                {
+                    result[j] = 0;
+                    break;
+                }
+            }
+        }
+
+    }
+
+    if(direction ==2)
+    {
+        for(int i = 0; i < this->getRows(); i++)
+        {
+            //for each row, initially suppose all its elements are non zero
+            result[i] = 1;
+            //search for each element in the given row
+            for(int j = 0; j < this->getCols(); j++)
+            {
+                //if one is 0, set the result to 0 and continue with the next row
+                if(this->getMatrixValue(i, j) == 0)
+                {
+                    result[i] = 0;
+                    break;
+                }
+            }
+        }
+    }
+}
+
 /*
 * matrix conversions
 */
@@ -551,7 +798,7 @@ void Matrix2D<Type>::reshapeToVector(vector<Type>& dest)
     for(int j = 0; j < this->getCols(); j++)
         for(int i = 0; i < this->getRows(); i++)
         {
-            dest[i + j*this->getRows()] = this->matrix2d[i][j];
+            dest[i + j*this->getRows()] = this->getMatrixValue(i, j);
         }
 }
 

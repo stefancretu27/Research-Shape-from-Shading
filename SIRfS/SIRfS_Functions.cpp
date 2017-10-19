@@ -291,7 +291,7 @@ void medianFilterMatMask(Matrix2D<bool>& input_mask, int half_width, Matrix2D< K
             //temp_A stores the lines in A corresponding to true values in keep mask
             Matrix2D<KeysValue<double> > temp_A(notnull_lines_in_A,  (*A).getCols());
             //apply mask to A and  store in temp_A
-            applyVectorMask(keep, &A,  &temp_A);
+            applyMaskOnKeysValueMatrix(keep, &A,  &temp_A);
 
             //delete dinamically allocated Matrix2D object
              delete A;
@@ -317,38 +317,61 @@ void getBorderNormals(Matrix2D<bool> mask)
     int d = 5;
 
     //build filter as a matrix of booleans
-    Matrix2D<double> filter(3, 3);
+    Matrix2D<double> filter(3, 3), reversed_filter(3, 3);
     filter.setMatrixValue(0, 0, 0); filter.setMatrixValue(0, 1, 1), filter.setMatrixValue(0, 2, 0);
     filter.setMatrixValue(1, 0, 1); filter.setMatrixValue(1, 1, 1), filter.setMatrixValue(1, 2, 1);
     filter.setMatrixValue(2, 0, 0); filter.setMatrixValue(2, 1, 1), filter.setMatrixValue(2, 2, 0);
     //it seems Matlab reverses filter when applies it
-    Matrix2D<double> reversed_filter(3, 3);
     reversed_filter.reverseMatrix(filter);
 
     //build ~mask matrix
-    Matrix2D<bool>negated_mask(mask.getRows(), mask.getCols());
+    Matrix2D<bool>negated_mask(mask.getRows(), mask.getCols()), conv_greater_than(mask.getRows(), mask.getCols()), B(mask.getRows(), mask.getCols());
     mask.negateMatrixMask(negated_mask);
     //convert the negated mask from bool to double
-    Matrix2D<double>d_negated_mask(mask.getRows(), mask.getCols());
+    Matrix2D<double> d_negated_mask(mask.getRows(), mask.getCols()), conv_same(mask.getRows(), mask.getCols(), 0);
     convertBoolToDoubleMatrix2D(negated_mask, d_negated_mask);
-
     //convolution result: conv_same returns a result with the same size as the input (calller)
-    Matrix2D<double> conv_same(mask.getRows(), mask.getCols(), 0);
     d_negated_mask.conv2DSame(reversed_filter, conv_same);
     //once convolution is computed, it checks which values are greater than 0, creating a bolean matrix storing the results (1 if greater, 0 else)
-    Matrix2D<bool> conv_greater_than(mask.getRows(), mask.getCols());
     conv_same.compareValuesToTreshold(conv_greater_than, 0, GreaterThan);
     //the obtained boolean matrix and the (input0 mask perform a logical and operation, storing the result in B and returning the number of non zero elements
-    Matrix2D<bool> B(mask.getRows(), mask.getCols());
     int no_nonzeros_in_B = 0;
     no_nonzeros_in_B = conv_greater_than.logicalAnd(B, mask);
-
     //store the indeces of nonzero elements in this matrix
     Matrix2D<double>P(no_nonzeros_in_B, 2);
     B.findIndecesEqualToValue(P, 1);
 
-    Matrix2D<double>X_meshgrid(2*d +1, 2*d + 1);
-    Matrix2D<double>Y_meshgrid(2*d + 1, 2*d +1);
-
+    //create meshgrid
+    Matrix2D<double>X_meshgrid(2*d +1, 2*d + 1), Y_meshgrid(2*d + 1, 2*d +1), pow_X_meshgrid(2*d +1, 2*d + 1), pow_Y_meshgrid(2*d + 1, 2*d +1);
     meshgrid(-d, d, -d, d, X_meshgrid, Y_meshgrid);
+    //square matrices elements
+    X_meshgrid.elementsOperation(pow_X_meshgrid, 2, Pow);
+    Y_meshgrid.elementsOperation(pow_Y_meshgrid, 2, Pow);
+    //add powered matrices
+    pow_X_meshgrid + pow_Y_meshgrid;
+    //Multiply by -5/d^2
+    Matrix2D<double>factorized_sum_of_powered_meshgrids(2*d + 1, 2*d +1), gaussian(2*d + 1, 2*d +1);
+    double multiply_factor = -5/pow(d, 2);
+    pow_X_meshgrid.elementsOperation(factorized_sum_of_powered_meshgrids, multiply_factor, Multiply);
+    //finally, compute gaussian
+    factorized_sum_of_powered_meshgrids.elementsOperation(gaussian, 0, Exp);
+
+    //compute inner operations needed for the new P
+    Matrix2D<double>P_plus_d(no_nonzeros_in_B, 2), P_minus_d(no_nonzeros_in_B, 2);
+    P.elementsOperation(P_plus_d, d, Sum);
+    P.elementsOperation(P_minus_d, d, Substract);
+    //compute masks for the above matrices, afterwards perform logical and on them
+    Matrix2D<bool>P_plus_d_mask(no_nonzeros_in_B, 2), P_minus_d_mask(no_nonzeros_in_B, 2), and_P_masks(no_nonzeros_in_B, 2);
+    vector<double>size_mask(2);
+    size_mask[0] = mask.getRows(); size_mask[1] =  mask.getCols();
+    P_plus_d.compareMatrixColumnsToVector(P_plus_d_mask, size_mask, LessThanOrEqual);
+    P_minus_d.compareValuesToTreshold(P_minus_d_mask, 1, GreaterThanOrEqual);
+    P_plus_d_mask.logicalAnd(and_P_masks, P_minus_d_mask);
+    //check rows that contain at least one 0 value
+    vector<bool>allNonZeroLines(and_P_masks.getRows());
+    and_P_masks.allNonZero(allNonZeroLines, 2);
+    //count the number of 1 values in the above computed mask. It will tel how many rows from P will be kept
+    int notzero_lines_in_P = count(allNonZeroLines.begin(), allNonZeroLines.end(), true);
+    Matrix2D<double>masked_P(notzero_lines_in_P, P.getCols()), N(notzero_lines_in_P, masked_P.getCols(), numeric_limits<double>::quiet_NaN());
+    P.applyMask(masked_P, allNonZeroLines);
 }

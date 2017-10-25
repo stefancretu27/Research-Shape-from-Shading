@@ -337,7 +337,7 @@ void getBorderNormals(Matrix2D<bool> mask)
     //the obtained boolean matrix and the (input0 mask perform a logical and operation, storing the result in B and returning the number of non zero elements
     int no_nonzeros_in_B = 0;
     no_nonzeros_in_B = conv_greater_than.logicalAnd(B, mask);
-    //store the indeces of nonzero elements in this matrix
+    //store the indeces of nonzero elements in this matrix. In comparison to the Matlab ones, they'll always  lower by 1 (0 vs 1 base indexing)
     Matrix2D<double>P(no_nonzeros_in_B, 2);
     B.findIndecesEqualToValue(P, 1);
 
@@ -356,22 +356,93 @@ void getBorderNormals(Matrix2D<bool> mask)
     //finally, compute gaussian
     factorized_sum_of_powered_meshgrids.elementsOperation(gaussian, 0, Exp);
 
+
     //compute inner operations needed for the new P
     Matrix2D<double>P_plus_d(no_nonzeros_in_B, 2), P_minus_d(no_nonzeros_in_B, 2);
     P.elementsOperation(P_plus_d, d, Sum);
     P.elementsOperation(P_minus_d, d, Substract);
-    //compute masks for the above matrices, afterwards perform logical and on them
+
+    //compute the  masks for the above matrices, afterwards perform logical and on them
     Matrix2D<bool>P_plus_d_mask(no_nonzeros_in_B, 2), P_minus_d_mask(no_nonzeros_in_B, 2), and_P_masks(no_nonzeros_in_B, 2);
+    //create size vector containing V's dimensions, needed for comparison
     vector<double>size_mask(2);
     size_mask[0] = mask.getRows(); size_mask[1] =  mask.getCols();
+    //compute the bsxfun operations, which return boolean matrices
     P_plus_d.compareMatrixColumnsToVector(P_plus_d_mask, size_mask, LessThanOrEqual);
     P_minus_d.compareValuesToTreshold(P_minus_d_mask, 1, GreaterThanOrEqual);
+    //logical AND between the above resulted boolean matrices
     P_plus_d_mask.logicalAnd(and_P_masks, P_minus_d_mask);
+
     //check rows that contain at least one 0 value
     vector<bool>allNonZeroLines(and_P_masks.getRows());
     and_P_masks.allNonZero(allNonZeroLines, 2);
-    //count the number of 1 values in the above computed mask. It will tel how many rows from P will be kept
+    //count the number of 1 values in the above computed mask. It will tell how many rows from P will be kept. In comparison to the Matlab ones, P's values are always  lower by 1 (0 vs 1 base indexing)
     int notzero_lines_in_P = count(allNonZeroLines.begin(), allNonZeroLines.end(), true);
     Matrix2D<double>masked_P(notzero_lines_in_P, P.getCols()), N(notzero_lines_in_P, masked_P.getCols(), numeric_limits<double>::quiet_NaN());
-    P.applyMask(masked_P, allNonZeroLines);
+    P.applyVectorMask(masked_P, allNonZeroLines);
+
+    //create [-d:d] vector and initialize it. It is needed inside the for loop
+    vector<int>d_vector(2*d + 1);
+    for(unsigned int i = 0; i < d_vector.size(); i++)
+    {
+        d_vector[i] = i - 5;
+    }
+
+    //P matrix has only 2 columns
+    for(int i = 0; i < 1 /*P.getRows()*/; i++)
+    {
+        //vectors of indeces used ot get submatrix of mask input
+        vector<int> mask_x(2*d + 1), mask_y(2*d + 1);
+        //compute indeces by adding the current matrix values (for the current line) to d_vector computed before the loop
+        for(unsigned int j = 0;  j < mask_x.size(); j++)
+        {
+            mask_x[j] = d_vector[j] + P.getMatrixValue(i, 0);
+            mask_y[j] = d_vector[j] + P.getMatrixValue(i, 1);
+        }
+        //compute patch matrix
+        Matrix2D<bool> patch(2*d + 1, 2*d + 1);
+        for(int idx = 0; idx < patch.getRows(); idx++)
+            for(int idy = 0; idy < patch.getCols(); idy++)
+        {
+            patch.setMatrixValue(idx, idy, mask.getMatrixValue(mask_x[idx], mask_y[idy]));
+        }
+
+        int no_nonzeros_in_patch = 0;
+        no_nonzeros_in_patch = patch.countValuesDifferentFromInput(0);
+        //store the indeces of nonzero elements in this matrix. In comparison to the Matlab ones, they'll always  lower by 1 (0 vs 1 base indexing)
+        Matrix2D<double>ii_jj(no_nonzeros_in_patch, 2);
+        //finIndecesEqualToValue outputs only to double matrices
+        patch.findIndecesEqualToValue(ii_jj, 1);
+        //thus, convert it to int, as it only operates with integers
+        Matrix2D<int>int_ii_jj(no_nonzeros_in_patch, 2);
+        convertDoubleToIntMatrix2D(ii_jj, int_ii_jj);
+        //then, copy its column in 2 distinct vectors, as they are separately needed in further operations
+        vector<int> ii(no_nonzeros_in_patch), jj(no_nonzeros_in_patch);
+        int_ii_jj.copyMatrixColumnToVector(ii, 0);
+        int_ii_jj.copyMatrixColumnToVector(jj, 1);
+
+        //start computing 'a' matrix
+        Matrix2D<bool> a(patch.getDim(), patch.getDim(), 0), temp_a(no_nonzeros_in_patch, no_nonzeros_in_patch);
+        //convert patch to vector
+        vector<bool> vector_patch(patch.getDim());
+        patch.reshapeToVector(vector_patch);
+
+        //calculate bsxfun substractions
+        Matrix2D<int> substract_ii(no_nonzeros_in_patch, no_nonzeros_in_patch), substract_jj(no_nonzeros_in_patch, no_nonzeros_in_patch);
+        vectorOpItsTranspose(ii, substract_ii, Substract);
+        vectorOpItsTranspose(jj, substract_jj, Substract);
+        //square up the above matrices' elements
+        Matrix2D<int> sq_substract_ii(no_nonzeros_in_patch, no_nonzeros_in_patch), sq_substract_jj(no_nonzeros_in_patch, no_nonzeros_in_patch);
+        substract_ii.elementsOperation(sq_substract_ii,  2, Pow);
+        substract_jj.elementsOperation(sq_substract_jj,  2, Pow);
+        //add the precedently computed and store the result in sq_substract_ii (overwrite tis values)
+        sq_substract_ii + sq_substract_jj;
+        sq_substract_ii.compareValuesToTreshold(temp_a, 2, LessThanOrEqual);
+        temp_a.applyDoubleVectorMask(a, vector_patch, vector_patch);
+
+        //apply patch mask to the gaussian
+        Matrix2D<double> d_patch(patch.getRows(), patch.getCols(), 0);
+        gaussian.applyMatrixMask(d_patch, patch);
+
+    }
 }

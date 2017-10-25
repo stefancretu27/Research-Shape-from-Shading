@@ -27,6 +27,14 @@ enum Operation
     Exp
 };
 
+enum DataType
+{
+    Bool,
+    Int,
+    Float,
+    Double
+};
+
 template <class Type>
 class Matrix2D
 {
@@ -88,7 +96,10 @@ public:
     int logicalAnd(Matrix2D<bool>& result, Matrix2D<Type>& input);
     //only the number of columns has to be equal to size of vector
     void compareMatrixColumnsToVector(Matrix2D<bool>& result, std::vector<Type>& input, Comparison comp);
-    void applyMask(Matrix2D<Type>& result, std::vector<bool> mask);
+    void applyVectorMask(Matrix2D<Type>& result, std::vector<bool> mask);
+    void applyDoubleVectorMask(Matrix2D<Type>& result, std::vector<bool> mask1, std::vector<bool> mask2);
+    void applyMatrixMask(Matrix2D<Type>& result, Matrix2D<bool> mask);
+
     /*
     *basic math-operations
     */
@@ -104,9 +115,12 @@ public:
     void findIndecesEqualToValue(Matrix2D<double>& result, Type value);
     void elementsOperation(Matrix2D<Type>& result, Type value, Operation op);
     void allNonZero(std::vector<bool>& result, int direction);
+    int countValuesDifferentFromInput(Type value);
     /*
     *matrix conversions
     */
+    void copyMatrixColumnToVector(std::vector<Type> &result, int col);
+    void copyMatrixRowToVector(std::vector<Type> &result, int row);
     void reshapeToVector(std::vector<Type>& dest);
     void getSubMatrix(Matrix2D<Type>& source, int x_first, int x_last, int y_first, int y_last);
     void reverseMatrix(Matrix2D<Type>& source);

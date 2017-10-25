@@ -8,10 +8,10 @@
 
 //matrix operations
 void convertBoolToDoubleMatrix2D(Matrix2D<bool>& source, Matrix2D<double>& dest);
+void convertDoubleToIntMatrix2D(Matrix2D<double>& source, Matrix2D<int>& dest);
 void applyMaskOnKeysValueMatrix(std::vector<bool>& mask, Matrix2D<KeysValue<double> >** source, Matrix2D<KeysValue<double> > *dest);
 //input is vector of matrices, output is a matrix whose number of rows is the sum of all matrices rows from the vector  = appended below
 void appendMatrixBelow(std::vector< Matrix2D<KeysValue<double> > > source, Matrix2D< KeysValue<double> >** dest);
 void meshgrid(int x_min, int x_max, int y_min, int y_max, Matrix2D<double>& result_X, Matrix2D<double>& result_Y);
-
 
 #endif // MATLAB_MATRIX_H_INCLUDED

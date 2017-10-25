@@ -27,3 +27,51 @@ void convertVectorOfVectorsToMatrix(vector<vector<Type> > &source, Matrix2D<Type
         dest.setMatrixValue(j, i, source[i][j]);
     }
 }
+
+//input is considered a column vector and result is  matrix obtained after each element in the column vector performs operation 'op' with each element in the transpose vector
+template <class Type>
+void vectorOpItsTranspose(vector<Type>& input, Matrix2D<Type>& result, Operation op)
+{
+    unsigned int i, j;
+
+    switch(op)
+    {
+    case 0:
+        for(j = 0; j < input.size(); j++)
+            for(i = 0; i < input.size(); i++)
+            {
+                result.setMatrixValue(i, j, input[i] + input[j]);
+            }
+        break;
+    case 1:
+        for(j = 0; j < input.size(); j++)
+            for(i = 0; i < input.size(); i++)
+            {
+                result.setMatrixValue(i, j, input[i] - input[j]);
+            }
+        break;
+    case 2:
+        for(j = 0; j < input.size(); j++)
+            for(i = 0; i < input.size(); i++)
+            {
+                result.setMatrixValue(i, j, input[i] * input[j]);
+            }
+        break;
+    case 3:
+        for(j = 0; j < input.size(); j++)
+            for(i = 0; i < input.size(); i++)
+            {
+                result.setMatrixValue(i, j, input[i]/input[j]);
+            }
+        break;
+    case 4:
+        for(j = 0; j < input.size(); j++)
+            for(i = 0; i < input.size(); i++)
+            {
+                result.setMatrixValue(i, j, pow(input[i], input[j]));
+            }
+        break;
+    case 5:
+        break;
+    }
+}

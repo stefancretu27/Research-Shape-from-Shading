@@ -526,7 +526,7 @@ void Matrix2D<Type>::compareMatrixColumnsToVector(Matrix2D<bool>& result, std::v
 }
 
 template <class Type>
-void Matrix2D<Type>::applyMask(Matrix2D<Type>& result, std::vector<bool> mask)
+void Matrix2D<Type>::applyVectorMask(Matrix2D<Type>& result, std::vector<bool> mask)
 {
     int t_idx = 0;
 
@@ -540,6 +540,44 @@ void Matrix2D<Type>::applyMask(Matrix2D<Type>& result, std::vector<bool> mask)
                 result.setMatrixValue(t_idx, idy, this->getMatrixValue(idx, idy));
             }
             t_idx++;
+        }
+    }
+}
+
+//asks are applied simultaneously, where boths' values are 1 the result will store a non zero value
+template <class Type>
+void Matrix2D<Type>::applyDoubleVectorMask(Matrix2D<Type>& result, std::vector<bool> mask1, std::vector<bool> mask2)
+{
+    int idx = 0, idy = 0;
+
+    for(int i = 0; i < result.getRows(); i++)
+    {
+        for(int j =0; j < result.getCols(); j++)
+        {
+            if(mask1[i] == 1 && mask2[j] == 1)
+            {
+                result.setMatrixValue(i, j, this->getMatrixValue(idx, idy));
+                idy++;
+            }
+        }
+        if(idy == this->getCols())
+        {
+            idx++;
+            idy = 0;
+        }
+    }
+}
+
+//caller, mask and result have same dimensions
+template <class Type>
+void Matrix2D<Type>::applyMatrixMask(Matrix2D<Type>& result, Matrix2D<bool> mask)
+{
+    for(int i = 0; i < this->getRows(); i++)
+        for(int j = 0; j < this->getCols(); j++)
+    {
+        if(mask(i, j) == 1)
+        {
+            result.setMatrixValue(i, j, this->getMatrixValue(i, j));
         }
     }
 }
@@ -788,9 +826,40 @@ void Matrix2D<Type>::allNonZero(vector<bool>& result, int direction)
     }
 }
 
+//return # of elements whose value is different from input value. Useful when computing number of elements different from that value with Matlab's 'find'
+template <class Type>
+int Matrix2D<Type>::countValuesDifferentFromInput(Type value)
+{
+    int counter = 0;
+
+    for(int i = 0; i < this->getRows(); i++)
+        for(int j = 0; j < this->getCols(); j++)
+    {
+        if(this->getMatrixValue(i, j) != value)
+            counter++;
+    }
+
+    return counter;
+}
+
 /*
 * matrix conversions
 */
+
+template <class Type>
+void Matrix2D<Type>::copyMatrixColumnToVector(vector<Type> &result, int col)
+{
+    for(int i = 0; i < this->getRows(); i++)
+        result[i] = this->getMatrixValue(i, col);
+}
+
+template <class Type>
+void Matrix2D<Type>::copyMatrixRowToVector(vector<Type> &result, int row)
+{
+    for(int j = 0; j < this->getCols(); j++)
+        result[j] = this->getMatrixValue(row, j);
+}
+
 //Convert calling matrix to vector, by putting the columns one after another
 template <class Type>
 void Matrix2D<Type>::reshapeToVector(vector<Type>& dest)

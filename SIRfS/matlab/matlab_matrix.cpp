@@ -12,6 +12,15 @@ void convertBoolToDoubleMatrix2D(Matrix2D<bool>& source, Matrix2D<double>& dest)
         }
 }
 
+void convertDoubleToIntMatrix2D(Matrix2D<double>& source, Matrix2D<int>& dest)
+{
+    for(int i = 0; i < source.getRows(); i++)
+        for(int j = 0; j < source.getCols(); j++)
+        {
+            dest.setMatrixValue(i, j, (int) source.getMatrixValue(i,j));
+        }
+}
+
 //store in dest the lines in sotrce corresponding to true values in  mask
 void applyMaskOnKeysValueMatrix(std::vector<bool>& mask, Matrix2D<KeysValue<double> >** source, Matrix2D<KeysValue<double> > *dest)
 {

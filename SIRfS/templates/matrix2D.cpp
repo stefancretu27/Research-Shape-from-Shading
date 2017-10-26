@@ -714,19 +714,344 @@ bool Matrix2D<Type>::checkNonZero()
 }
 
 template <class Type>
-void Matrix2D<Type>::findIndecesEqualToValue(Matrix2D<double>& result, Type value)
+void Matrix2D<Type>::mFindIndeces(Matrix2D<int>& result, Type value, Comparison cmp)
 {
     int res_i = 0, i, j;
 
-    for(j = 0; j < this->getCols(); j++)
-        for(i = 0; i < this->getRows(); i++)
+    switch(cmp)
     {
-        if(this->getMatrixValue(i, j) == value)
+    case 0:
+        for(j = 0; j < this->getCols(); j++)
+            for(i = 0; i < this->getRows(); i++)
         {
-            result.setMatrixValue(res_i, 0, (double) i);
-            result.setMatrixValue(res_i, 1, (double) j);
-            res_i++;
+            if(this->getMatrixValue(i, j) == value)
+            {
+                result.setMatrixValue(res_i, 0, i);
+                result.setMatrixValue(res_i, 1, j);
+                res_i++;
+            }
         }
+        break;
+    case 1:
+        for(j = 0; j < this->getCols(); j++)
+            for(i = 0; i < this->getRows(); i++)
+        {
+            if(this->getMatrixValue(i, j) != value)
+            {
+                result.setMatrixValue(res_i, 0, i);
+                result.setMatrixValue(res_i, 1, j);
+                res_i++;
+            }
+        }
+        break;
+    case 2:
+        for(j = 0; j < this->getCols(); j++)
+            for(i = 0; i < this->getRows(); i++)
+        {
+            if(this->getMatrixValue(i, j) < value)
+            {
+                result.setMatrixValue(res_i, 0, i);
+                result.setMatrixValue(res_i, 1, j);
+                res_i++;
+            }
+        }
+        break;
+    case 3:
+        for(j = 0; j < this->getCols(); j++)
+            for(i = 0; i < this->getRows(); i++)
+        {
+            if(this->getMatrixValue(i, j) <= value)
+            {
+                result.setMatrixValue(res_i, 0, i);
+                result.setMatrixValue(res_i, 1,  j);
+                res_i++;
+            }
+        }
+        break;
+    case 4:
+        for(j = 0; j < this->getCols(); j++)
+            for(i = 0; i < this->getRows(); i++)
+        {
+            if(this->getMatrixValue(i, j) >= value)
+            {
+                result.setMatrixValue(res_i, 0,  i);
+                result.setMatrixValue(res_i, 1,  j);
+                res_i++;
+            }
+        }
+        break;
+    case 5:
+        for(j = 0; j < this->getCols(); j++)
+            for(i = 0; i < this->getRows(); i++)
+        {
+            if(this->getMatrixValue(i, j) > value)
+            {
+                result.setMatrixValue(res_i, 0,  i);
+                result.setMatrixValue(res_i, 1,  j);
+                res_i++;
+            }
+        }
+        break;
+    }
+}
+
+template <class Type>
+void Matrix2D<Type>::mFindIndecesAndValues(Matrix2D<Type>& result, Type value, Comparison cmp)
+{
+    int res_i = 0, i, j;
+
+    switch(cmp)
+    {
+    case 0:
+        for(j = 0; j < this->getCols(); j++)
+            for(i = 0; i < this->getRows(); i++)
+        {
+            if(this->getMatrixValue(i, j) == value)
+            {
+                result.setMatrixValue(res_i, 0,  i);
+                result.setMatrixValue(res_i, 1,  j);
+                result.setMatrixValue(res_i, 2, this->getMatrixValue(i,j));
+                res_i++;
+            }
+        }
+        break;
+    case 1:
+        for(j = 0; j < this->getCols(); j++)
+            for(i = 0; i < this->getRows(); i++)
+        {
+            if(this->getMatrixValue(i, j) != value)
+            {
+                result.setMatrixValue(res_i, 0,  i);
+                result.setMatrixValue(res_i, 1,  j);
+                result.setMatrixValue(res_i, 2,  this->getMatrixValue(i,j));
+                res_i++;
+            }
+        }
+        break;
+    case 2:
+        for(j = 0; j < this->getCols(); j++)
+            for(i = 0; i < this->getRows(); i++)
+        {
+            if(this->getMatrixValue(i, j) < value)
+            {
+                result.setMatrixValue(res_i, 0,  i);
+                result.setMatrixValue(res_i, 1,  j);
+                result.setMatrixValue(res_i, 2,  this->getMatrixValue(i,j));
+                res_i++;
+            }
+        }
+        break;
+    case 3:
+        for(j = 0; j < this->getCols(); j++)
+            for(i = 0; i < this->getRows(); i++)
+        {
+            if(this->getMatrixValue(i, j) <= value)
+            {
+                result.setMatrixValue(res_i, 0,  i);
+                result.setMatrixValue(res_i, 1,  j);
+                result.setMatrixValue(res_i, 2,  this->getMatrixValue(i,j));
+                res_i++;
+            }
+        }
+        break;
+    case 4:
+        for(j = 0; j < this->getCols(); j++)
+            for(i = 0; i < this->getRows(); i++)
+        {
+            if(this->getMatrixValue(i, j) >= value)
+            {
+                result.setMatrixValue(res_i, 0, i);
+                result.setMatrixValue(res_i, 1,  j);
+                result.setMatrixValue(res_i, 2,  this->getMatrixValue(i,j));
+                res_i++;
+            }
+        }
+        break;
+    case 5:
+        for(j = 0; j < this->getCols(); j++)
+            for(i = 0; i < this->getRows(); i++)
+        {
+            if(this->getMatrixValue(i, j) > value)
+            {
+                result.setMatrixValue(res_i, 0,  i);
+                result.setMatrixValue(res_i, 1,  j);
+                result.setMatrixValue(res_i, 2,  this->getMatrixValue(i,j));
+                res_i++;
+            }
+        }
+        break;
+    }
+}
+
+template <class Type>
+void Matrix2D<Type>::vFindIndeces(std::vector<int>& x, std::vector<int>&  y, Type value, Comparison cmp)
+{
+    int res_i = 0, i, j;
+
+    switch(cmp)
+    {
+    case 0:
+        //cout<<x.size()<<" "<<y.size()<<endl;
+        for(j = 0; j < this->getCols(); j++)
+            for(i = 0; i < this->getRows(); i++)
+        {
+            if(this->getMatrixValue(i, j) == value)
+            {
+                x[res_i] = i;
+                y[res_i] = j;
+                res_i++;
+                //cout<<res_i<<endl;
+            }
+        }
+        break;
+    case 1:
+        for(j = 0; j < this->getCols(); j++)
+            for(i = 0; i < this->getRows(); i++)
+        {
+            if(this->getMatrixValue(i, j) != value)
+            {
+                x[res_i] = i;
+                y[res_i] = j;
+                res_i++;
+            }
+        }
+        break;
+    case 2:
+        for(j = 0; j < this->getCols(); j++)
+            for(i = 0; i < this->getRows(); i++)
+        {
+            if(this->getMatrixValue(i, j) < value)
+            {
+                x[res_i] = i;
+                y[res_i] = j;
+                res_i++;
+            }
+        }
+        break;
+    case 3:
+        for(j = 0; j < this->getCols(); j++)
+            for(i = 0; i < this->getRows(); i++)
+        {
+            if(this->getMatrixValue(i, j) <= value)
+            {
+                x[res_i] = i;
+                y[res_i] = j;
+                res_i++;
+            }
+        }
+        break;
+    case 4:
+        for(j = 0; j < this->getCols(); j++)
+            for(i = 0; i < this->getRows(); i++)
+        {
+            if(this->getMatrixValue(i, j) >= value)
+            {
+                x[res_i] = i;
+                y[res_i] = j;
+                res_i++;
+            }
+        }
+        break;
+    case 5:
+        for(j = 0; j < this->getCols(); j++)
+            for(i = 0; i < this->getRows(); i++)
+        {
+            if(this->getMatrixValue(i, j) > value)
+            {
+                x[res_i] = i;
+                y[res_i] = j;
+                res_i++;
+            }
+        }
+        break;
+    }
+}
+
+template <class Type>
+void Matrix2D<Type>::vFindIndecesAndValues(std::vector<int>& x, std::vector<int>&  y, std::vector<Type>&  val, Type value, Comparison cmp)
+{
+    int res_i = 0, i, j;
+
+    switch(cmp)
+    {
+    case 0:
+        for(j = 0; j < this->getCols(); j++)
+            for(i = 0; i < this->getRows(); i++)
+        {
+            if(this->getMatrixValue(i, j) == value)
+            {
+                x[res_i] = i;
+                y[res_i] = j;
+                val[res_i] = this->getMatrixValue(i,j);
+                res_i++;
+            }
+        }
+        break;
+    case 1:
+        for(j = 0; j < this->getCols(); j++)
+            for(i = 0; i < this->getRows(); i++)
+        {
+            if(this->getMatrixValue(i, j) != value)
+            {
+                x[res_i] = i;
+                y[res_i] = j;
+                val[res_i] = this->getMatrixValue(i,j);
+                res_i++;
+            }
+        }
+        break;
+    case 2:
+        for(j = 0; j < this->getCols(); j++)
+            for(i = 0; i < this->getRows(); i++)
+        {
+            if(this->getMatrixValue(i, j) < value)
+            {
+                x[res_i] = i;
+                y[res_i] = j;
+                val[res_i] = this->getMatrixValue(i,j);
+                res_i++;
+            }
+        }
+        break;
+    case 3:
+        for(j = 0; j < this->getCols(); j++)
+            for(i = 0; i < this->getRows(); i++)
+        {
+            if(this->getMatrixValue(i, j) <= value)
+            {
+                x[res_i] = i;
+                y[res_i] = j;
+                val[res_i] = this->getMatrixValue(i,j);
+                res_i++;
+            }
+        }
+        break;
+    case 4:
+        for(j = 0; j < this->getCols(); j++)
+            for(i = 0; i < this->getRows(); i++)
+        {
+            if(this->getMatrixValue(i, j) >= value)
+            {
+                x[res_i] = i;
+                y[res_i] = j;
+                val[res_i] = this->getMatrixValue(i,j);
+                res_i++;
+            }
+        }
+        break;
+    case 5:
+        for(j = 0; j < this->getCols(); j++)
+            for(i = 0; i < this->getRows(); i++)
+        {
+            if(this->getMatrixValue(i, j) > value)
+            {
+                x[res_i] = i;
+                y[res_i] = j;
+                val[res_i] = this->getMatrixValue(i,j);
+                res_i++;
+            }
+        }
+        break;
     }
 }
 

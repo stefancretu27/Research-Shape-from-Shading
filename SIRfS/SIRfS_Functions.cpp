@@ -338,8 +338,10 @@ void getBorderNormals(Matrix2D<bool> mask)
     int no_nonzeros_in_B = 0;
     no_nonzeros_in_B = conv_greater_than.logicalAnd(B, mask);
     //store the indeces of nonzero elements in this matrix. In comparison to the Matlab ones, they'll always  lower by 1 (0 vs 1 base indexing)
+    Matrix2D<int>int_P(no_nonzeros_in_B, 2);
+    B.mFindIndeces(int_P, 1, Equal);
     Matrix2D<double>P(no_nonzeros_in_B, 2);
-    B.findIndecesEqualToValue(P, 1);
+    convertIntToDoubleMatrix2D(int_P, P);
 
     //create meshgrid
     Matrix2D<double>X_meshgrid(2*d +1, 2*d + 1), Y_meshgrid(2*d + 1, 2*d +1), pow_X_meshgrid(2*d +1, 2*d + 1), pow_Y_meshgrid(2*d + 1, 2*d +1);
@@ -389,7 +391,7 @@ void getBorderNormals(Matrix2D<bool> mask)
     }
 
     //P matrix has only 2 columns
-    for(int i = 0; i < 1 /*P.getRows()*/; i++)
+    for(int i = 0; i < P.getRows(); i++)
     {
         //vectors of indeces used ot get submatrix of mask input
         vector<int> mask_x(2*d + 1), mask_y(2*d + 1);
@@ -410,16 +412,8 @@ void getBorderNormals(Matrix2D<bool> mask)
         int no_nonzeros_in_patch = 0;
         no_nonzeros_in_patch = patch.countValuesDifferentFromInput(0);
         //store the indeces of nonzero elements in this matrix. In comparison to the Matlab ones, they'll always  lower by 1 (0 vs 1 base indexing)
-        Matrix2D<double>ii_jj(no_nonzeros_in_patch, 2);
-        //finIndecesEqualToValue outputs only to double matrices
-        patch.findIndecesEqualToValue(ii_jj, 1);
-        //thus, convert it to int, as it only operates with integers
-        Matrix2D<int>int_ii_jj(no_nonzeros_in_patch, 2);
-        convertDoubleToIntMatrix2D(ii_jj, int_ii_jj);
-        //then, copy its column in 2 distinct vectors, as they are separately needed in further operations
         vector<int> ii(no_nonzeros_in_patch), jj(no_nonzeros_in_patch);
-        int_ii_jj.copyMatrixColumnToVector(ii, 0);
-        int_ii_jj.copyMatrixColumnToVector(jj, 1);
+        patch.vFindIndeces(ii, jj, 1, Equal);
 
         //start computing 'a' matrix
         Matrix2D<bool> a(patch.getDim(), patch.getDim(), 0), temp_a(no_nonzeros_in_patch, no_nonzeros_in_patch);
@@ -443,6 +437,41 @@ void getBorderNormals(Matrix2D<bool> mask)
         //apply patch mask to the gaussian
         Matrix2D<double> d_patch(patch.getRows(), patch.getCols(), 0);
         gaussian.applyMatrixMask(d_patch, patch);
-
+        //then, get indeces and values of non zeros in d_patch
+        int no_nonzeros_in_d_patch = 0;
+        no_nonzeros_in_d_patch = d_patch.countValuesDifferentFromInput(0);
+        vector<int>patch_i(no_nonzeros_in_d_patch), patch_j(no_nonzeros_in_d_patch);
+        vector<double> d_val(no_nonzeros_in_d_patch), d_patch_i(no_nonzeros_in_d_patch), d_patch_j(no_nonzeros_in_d_patch);
+        d_patch.vFindIndecesAndValues(patch_i, patch_j, d_val, 0, NonEqual);
+        //substract d+1 from the above index vectors/ Actually, substract only d, since the indeces are already lower by 1
+        for(int idx = 0; idx < no_nonzeros_in_d_patch; idx++)
+        {
+            patch_i[idx] -= d;
+            patch_j[idx] -= d;
+        }
+        //multiply each value in patch_i and patch_j by the corresponding value in d_val
+        for(int idx = 0; idx < no_nonzeros_in_d_patch; idx++)
+        {
+            d_patch_i[idx] = patch_i[idx] * d_val[idx];
+            d_patch_j[idx] = patch_j[idx] * d_val[idx];
+        }
+        //compute the mean in the above computed vectors, and store the result in a vector
+        double sum_i = 0, sum_j = 0;
+        for(int idx = 0; idx < no_nonzeros_in_d_patch; idx++)
+        {
+            sum_i += d_patch_i[idx];
+            sum_j += d_patch_j[idx];
+        }
+        vector<double>n(2);
+        double sqrt_sum_squared_n;
+        n[0] = -sum_i/no_nonzeros_in_d_patch;
+        n[1] = -sum_j/no_nonzeros_in_d_patch;
+        sqrt_sum_squared_n = sqrt(pow(n[0], 2) + pow(n[1], 2));
+        //scale n vector by the previously computed value
+        n[0] /= sqrt_sum_squared_n;
+        n[1] /= sqrt_sum_squared_n;
+        //store final results in matrix N
+        N.setMatrixValue(i, 0, n[0]);
+        N.setMatrixValue(i, 1, n[1]);
     }
 }

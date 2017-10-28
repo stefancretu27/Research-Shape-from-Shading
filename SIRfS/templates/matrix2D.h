@@ -111,8 +111,15 @@ public:
     void anyNonZero(std::vector<int>& result, int direction);
     void anyGreater(std::vector<int>& result, int direction, int treshold);
     bool checkNonZero();
-    //the equivalent of  'find' Matlab function. The result's Type is forced to double. In case is needed for other type, create enum and proceed similar as in compareValuesToTreshold
-    void findIndecesEqualToValue(Matrix2D<double>& result, Type value);
+    //the equivalent of  'find' Matlab function, but stores indeces in a matrix with 2 columns
+    void mFindIndeces(Matrix2D<int>& result, Type value, Comparison cmp);
+    //same as above but the output is a matrix with 3 column, as the 3rd stores also the values
+    void mFindIndecesAndValues(Matrix2D<Type>& result, Type value, Comparison cmp);
+    //same as mFindIndeces, but stores output indeces in 2 separate vectors
+    void vFindIndeces(std::vector<int>& x, std::vector<int>&  y, Type value, Comparison cmp);
+    //same as above, but stores the values in a 3rd vector
+    void vFindIndecesAndValues(std::vector<int>& x, std::vector<int>&  y, std::vector<Type>&  val, Type value, Comparison cmp);
+    //per matrix element operation
     void elementsOperation(Matrix2D<Type>& result, Type value, Operation op);
     void allNonZero(std::vector<bool>& result, int direction);
     int countValuesDifferentFromInput(Type value);
@@ -125,6 +132,7 @@ public:
     void getSubMatrix(Matrix2D<Type>& source, int x_first, int x_last, int y_first, int y_last);
     void reverseMatrix(Matrix2D<Type>& source);
     void getTranspose(Matrix2D<Type>** result);
+    void linearizeIndeces(std::vector<Type>& result, int rows, int cols);
 
     //for debug purposes
     void printMatrixValues()

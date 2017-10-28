@@ -1,0 +1,29 @@
+#ifndef BORDER_H_INCLUDED
+#define BORDER_H_INCLUDED
+
+#include <vector>
+#include "templates/Matrix2D.h"
+
+class Border
+{
+private:
+    std::vector<double> Idx;
+    Matrix2D<double> Position;
+    Matrix2D<double> Normal;
+    Matrix2D<double> Tangent;
+
+public:
+    Border(): Position(1,1), Normal(1,1),Tangent(1,1){};
+    //getters
+    inline std::vector<double>& getIdx(){return this->Idx;};
+    inline Matrix2D<double>& getPosition(){return this->Position;};
+    inline Matrix2D<double>& getNormal(){return this->Normal;};
+    inline Matrix2D<double>& getTangent(){return this->Tangent;};
+    //setters
+    void setIdx(std::vector<double>& in){this->Idx = in;};
+    void setPosition(Matrix2D<double>& in){this->Position = in;};
+    void setNormal(Matrix2D<double>& in){this->Normal = in;};
+    void setTangent(Matrix2D<double>& in){this->Tangent = in;};
+};
+
+#endif // BORDER_H_INCLUDED

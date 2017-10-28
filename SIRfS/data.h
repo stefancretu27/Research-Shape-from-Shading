@@ -2,12 +2,14 @@
 #define DATA_H_INCLUDED
 
 #include "data_class/dataTrue.h"
+#include "data_class/border.h"
 #include "templates/keyValue.h"
 
 class Data
 {
 public:
     DataTrue dt;
+    Border border;
     Matrix2D< KeysValue <double> >* ZMedianFilterMat;
     Matrix2D< KeysValue <double> >* AMedianFilterMat;
     Matrix2D< KeysValue <double> >* ZMedianFilterMatT;
@@ -22,6 +24,7 @@ public:
 
     //getters
     inline DataTrue& getDataTrue(){return this->dt;};
+    inline Border& getBorder(){return this->border;};
     inline Matrix2D<bool>& getValid(){return this->valid;};
     //matrices getetrs
     inline Matrix2D<KeysValue<double> >** getZMedianFilterMatAddress(){return &ZMedianFilterMat;};

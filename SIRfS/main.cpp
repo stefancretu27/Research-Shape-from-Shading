@@ -85,7 +85,11 @@ int main()
     //cout<<data.getZMedianFilterMatT()->getMatrixValue(0, 210000).getKeyX()<<" "<<data.getZMedianFilterMatT()->getMatrixValue(0, 210000).getKeyY()<<" "<<data.getZMedianFilterMatT()->getMatrixValue(0, 210000).getValue()<<endl;
     data.getAMedianFilterMat()->getTranspose(data.getAMedianFilterMatTAddress());
 
-    getBorderNormals(data.getDataTrue().getMask());
+    getBorderNormals(data.getDataTrue().getMask(), data.getBorder());
+
+    std::sort(data.getBorder().getIdx().begin(), data.getBorder().getIdx().end());
+    for(int idx =0; idx < data.getBorder().getIdx().size(); idx++)
+        cout<<data.getBorder().getIdx()[idx]<<endl;
 
     return 0;
 }

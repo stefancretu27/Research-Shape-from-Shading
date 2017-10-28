@@ -1196,7 +1196,7 @@ void Matrix2D<Type>::reshapeToVector(vector<Type>& dest)
         }
 }
 
-//The caller is a matrix object whose value are a submatrix of "source" input. The indeces are considered those between the specified indeces
+//The caller is a matrix object whose values are a submatrix of "source" input. The indeces are considered those between the specified indeces
 template <class Type>
 void Matrix2D<Type>::getSubMatrix(Matrix2D<Type>& source, int x_first, int x_last, int y_first, int y_last)
 {
@@ -1247,5 +1247,15 @@ void Matrix2D<Type>::getTranspose(Matrix2D<Type>** output)
         for(int idy = 0; idy < this->getCols(); idy++)
     {
         (**output).setMatrixValue(idy, idx, this->getMatrixValue(idx, idy));
+    }
+}
+
+//caller matrix is a double column matrix storing indeces of another matrix
+template <class Type>
+void Matrix2D<Type>::linearizeIndeces(std::vector<Type>& result, int rows, int cols)
+{
+    for(int idx = 0; idx< this->getRows(); idx++)
+    {
+        result.push_back( this->getMatrixValue(idx, 0) + (this->getMatrixValue(idx, 1)-1)*rows );
     }
 }

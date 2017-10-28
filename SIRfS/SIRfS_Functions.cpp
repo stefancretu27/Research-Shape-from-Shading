@@ -312,7 +312,8 @@ void medianFilterMatMask(Matrix2D<bool>& input_mask, int half_width, Matrix2D< K
     appendMatrixBelow(Av,  output);
 }
 
-void getBorderNormals(Matrix2D<bool> mask)
+//outputs 4 matrices stored in Border object
+void getBorderNormals(Matrix2D<bool> mask, Border& border)
 {
     int d = 5;
 
@@ -380,7 +381,8 @@ void getBorderNormals(Matrix2D<bool> mask)
     and_P_masks.allNonZero(allNonZeroLines, 2);
     //count the number of 1 values in the above computed mask. It will tell how many rows from P will be kept. In comparison to the Matlab ones, P's values are always  lower by 1 (0 vs 1 base indexing)
     int notzero_lines_in_P = count(allNonZeroLines.begin(), allNonZeroLines.end(), true);
-    Matrix2D<double>masked_P(notzero_lines_in_P, P.getCols()), N(notzero_lines_in_P, masked_P.getCols(), numeric_limits<double>::quiet_NaN());
+    //declare N, matrix for storing normal's values computed in the for loop. Also, masked_P stores values from P kept after applying mask
+    Matrix2D<double> masked_P(notzero_lines_in_P, P.getCols()), N(notzero_lines_in_P, masked_P.getCols(), numeric_limits<double>::quiet_NaN());
     P.applyVectorMask(masked_P, allNonZeroLines);
 
     //create [-d:d] vector and initialize it. It is needed inside the for loop
@@ -474,4 +476,23 @@ void getBorderNormals(Matrix2D<bool> mask)
         N.setMatrixValue(i, 0, n[0]);
         N.setMatrixValue(i, 1, n[1]);
     }
+
+    Matrix2D<double> T(N.getRows(), N.getCols());
+    for(int idx = 0; idx< T.getRows(); idx++)
+    {
+        //T's first column is N's 2nd column * -1
+        T.setMatrixValue(idx, 0, N.getMatrixValue(idx, 1) * (-1) );
+        //T's 2nd column is N's 1st column
+        T.setMatrixValue(idx, 1, N.getMatrixValue(idx, 0));
+    }
+
+    //convert indeces stored in masked_P to linear form with respect to input mask's size
+    vector<double> idx;
+    //these values = matlab values -1 - mask.getRows()
+    masked_P.linearizeIndeces(idx, mask.getRows(), mask.getCols());
+
+    border.setIdx(idx);
+    border.setPosition(masked_P);
+    border.setNormal(N);
+    border.setTangent(T);
 }

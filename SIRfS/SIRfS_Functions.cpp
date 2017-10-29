@@ -24,14 +24,12 @@ void conv2mat(int maskRows, int maskCols, Matrix2D<int> input_filter, Matrix2D<K
     //vectors used to store indeces after applying filter
     vector<int> i(mask_matrix_linear_size, 0), j( mask_matrix_linear_size, 0), idx(mask_matrix_linear_size, 0);
     //this vector stores non zero values from each input_filter(F)
-    vector<int> fs;     //(F.getRows(), F.getCols());
+    vector<int> fs;
     //for each such a non-zero value, store how many values do not fit in the range when computing the vector containing indeces
     vector<int> count_out_of_range_indeces;
-    //this vector contains the dimensions of each index-vector computed for each non-zero value in input_filter (F). Might not be necesary
-    //vector<int> dims;
     vector<bool> keep(mask_matrix_linear_size, 0);
     //vector that contains for each filter F a vector of NaN of  matrix_linear_size dimensions each (250x200)
-    vector< vector<int> > idxs;   //( F.getRows()*F.getCols(), vector<int>(matrix_linear_size));
+    vector< vector<int> > idxs;
 
     //indeces of non-zero elements in a matrix that contains only logical ones . The indeces are stored in 2 vectors. They are used as follows A(i0[0], j0[0])
     for(x = 0; x < maskRows; x++)
@@ -140,8 +138,6 @@ void conv2mat(int maskRows, int maskCols, Matrix2D<int> input_filter, Matrix2D<K
 
        //almost 50k by 50k it takes some time to allocate it, especially if it contains double values.
        //matrix initialization takes almost 15-16 secs
-        //Matrix2D<float> A(m, mask_matrix_linear_size, 0);
-
         //Since it is impossible to work with such big matrices as the system goes out of RAM, use a matrix that stores only non zero values
         //These values are actually  triples (keyX, keyY, value), hat are indices in a spare matrix and the afferent value
         //output is a double pointer as it can't be allocated outside this function, since its dimensions are only known here

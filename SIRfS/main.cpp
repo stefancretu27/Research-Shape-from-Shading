@@ -51,7 +51,7 @@ int main()
 
     //data.true.im
     Data data;
-    data.getDataTrue().getInputImage() = grayImage;
+    data.getDataTrue().setInputImage(grayImage);
 
     //im
     Matrix2D<double> im(grayImage);
@@ -68,10 +68,10 @@ int main()
     log_im.logNatMatrix(im);
 
     //set some fields of the "data" structure
-    data.getDataTrue().getIm() = im;
-    data.getDataTrue().getLogIm() = log_im;
-    data.getValid() = valid;
-    data.getDataTrue().getMask() = valid;
+    data.getDataTrue().setIm(im);
+    data.getDataTrue().setLogIm(log_im);
+    data.setValid(valid);
+    data.getDataTrue().setMask(valid);
 
     //the output matrices are written at the address given as input
     medianFilterMatMask(negated_valid,  params.getZMedianHalfwidth(), data.getZMedianFilterMatAddress());
@@ -86,10 +86,6 @@ int main()
     data.getAMedianFilterMat()->getTranspose(data.getAMedianFilterMatTAddress());
 
     getBorderNormals(data.getDataTrue().getMask(), data.getBorder());
-
-    std::sort(data.getBorder().getIdx().begin(), data.getBorder().getIdx().end());
-    for(int idx =0; idx < data.getBorder().getIdx().size(); idx++)
-        cout<<data.getBorder().getIdx()[idx]<<endl;
 
     return 0;
 }

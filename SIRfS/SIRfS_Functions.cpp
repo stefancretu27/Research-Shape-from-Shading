@@ -1,9 +1,7 @@
 #include "SIRfS_Functions.h"
 
 #include "templates/matrix2D.cpp"
-//#include "templates/KVmatrix2D.cpp"
 #include "matlab/matlab_vector.cpp"
-//#include "matlab/matlab_matrix.cpp"
 
 using namespace std;
 
@@ -12,7 +10,7 @@ using namespace std;
 //Instead use an adress of a pointer declared in medianFilterMatMask, which is allocated  inside conv2mat
 void conv2mat(int maskRows, int maskCols, Matrix2D<int> input_filter, Matrix2D<KeysValue<double>  >** output)
 {
-    int x, y, index, counter_dim = 0;
+    int x, y, col, index, counter_dim = 0;
     int mask_matrix_linear_size = maskRows*maskCols;                         //also referred as n in matlab code
     Matrix2D<int> F(input_filter.getRows(), input_filter.getCols(), 0);
 
@@ -117,7 +115,6 @@ void conv2mat(int maskRows, int maskCols, Matrix2D<int> input_filter, Matrix2D<K
                 //find the first -1 value, store its line index and increase the counter
                 if(idxsMat.getMatrixValue(x, y) == -1)
                 {
-                   //push_back doesn't work as the vector is indexed outside this scope and it seems it gets deallocated
                     nan_values_line_index[nan_counter++] = x;
                     break;
                 }
@@ -133,7 +130,7 @@ void conv2mat(int maskRows, int maskCols, Matrix2D<int> input_filter, Matrix2D<K
             }
         }
 
-        //the number of line for the output matrix is the linear size of the input mask subtsracting the # lines containing NaN values
+        //the number of lines for the output matrix is the linear size of the input mask subtsracting the # lines containing NaN values
         int m = mask_matrix_linear_size - nan_counter;
 
        //almost 50k by 50k it takes some time to allocate it, especially if it contains double values.
@@ -143,23 +140,33 @@ void conv2mat(int maskRows, int maskCols, Matrix2D<int> input_filter, Matrix2D<K
         //output is a double pointer as it can't be allocated outside this function, since its dimensions are only known here
         *output = new Matrix2D<KeysValue<double> >(m, idxsMat_noNaN.getCols());
 
-        //Matrix2D<int> sparse(m, mask_matrix_linear_size, 0);
-        //Instead of store a sparse matrix, use a vector for saving memory.
+        //Instead of storing a sparse matrix, use a vector for saving memory.
         //By this way, the idea of sparse matrix from Matlab is preserved, as it is meant to save memory by not storing 0 values
         vector<int> sparse_vec(mask_matrix_linear_size, 0);
         int temp_idx;
 
         for(y = 0; y < idxsMat_noNaN.getCols(); y++)
         {
+            //In MATLAB the matrix is generating to store the values in ascending order of their column indexes
+            //Thus check if these indexes are in ascending order. If not, change value of y so it indexes in reverse order
+            if(idxsMat_noNaN.getCols() > 1 && idxsMat_noNaN(0, 0) > idxsMat_noNaN(0, 1))
+            {
+                //idxsMat_noNaN.sortLines();
+                col = idxsMat_noNaN.getCols() - 1 - y;
+            }
+            else
+            {
+                col = y;
+            }
+
             //for each column in idxsMat_noNaN, m values are stored in mask_matrix_linear_size sized array, where m <= mask_matrix_linear_size
             //the values do not necessarily start with 0, as they might start indexing from 502, for instance
             for(x = 0; x < m; x++)
             {
-                //sparse.setMatrixValue(x, idxsMat, fs[y]);
-                temp_idx = idxsMat_noNaN(x, y);
-                sparse_vec[temp_idx] = fs[y];
+                temp_idx = idxsMat_noNaN(x, col);
+                //the values from filter fs are stored in the vector sparse_vec at the index shown by idxsMat_noNan
+                sparse_vec[temp_idx] = fs[col];
 
-                //A(x, temp_idx) += sparse_vec[temp_idx];
                 //if 2 or more values were on the same line, they will still be, as A stores on the lines x a number of y KeysValue triple
                 (**output)(x, y) .setKeysValue(x, temp_idx, sparse_vec[temp_idx]);
             }
@@ -261,6 +268,14 @@ void medianFilterMatMask(Matrix2D<bool>& input_mask, int half_width, Matrix2D< K
             //A is dynamically allocated in conv2mat
             conv2mat(input_mask.getRows(), input_mask.getCols(), fs[k], &A);
 
+#ifdef CREATE_TEST_FILES
+            DataFile<double> dfd;
+            ostringstream os ;
+            os << k+1 ;
+            string filename = "Acpp" + os.str() + ".txt";
+            dfd.writeKeysValueMatrix2D(filename, &A, 1);
+#endif // CREATE_TEST_FILES
+
             Matrix2D<bool> bool_f( fs[k].getRows(), fs[k].getCols());
             //if a value is not zero, store 1, else store 1 in the new matrix f
             fs[k].compareValuesToTreshold(bool_f, 0, NonEqual);
@@ -276,7 +291,7 @@ void medianFilterMatMask(Matrix2D<bool>& input_mask, int half_width, Matrix2D< K
             d_input_mask.conv2DValid(f, conv_res);
 
             //reshape conv_res matrix to vector R. R's dimension should be equal to A.getRows()
-            vector<double> R(conv_res.getRows()*conv_res.getCols(), 0);
+            vector<double> R((*A).getRows(), 0);
             conv_res.reshapeToVector(R);
 
             //compute 'keep' mask vector
@@ -292,19 +307,24 @@ void medianFilterMatMask(Matrix2D<bool>& input_mask, int half_width, Matrix2D< K
             //delete dinamically allocated Matrix2D object
              delete A;
 
+             //store temp_A in the vector of matrixes
              Av.push_back(temp_A);
         }
     }
 
     int output_rows_nr = 0;
+    //All matrixes from the vector of matrixes Av are concatenated by putting the 2nd one's first row after the 1st ones last row and so on.
+    //Thus they form a big matrix wihich has as as number of rows the sum of those matrixes rows
     for(unsigned int idx = 0; idx < Av.size(); idx++)
     {
+        //compute total number of rows by adding the number of rows for each matrix in the vector of matrixes
         output_rows_nr += Av[idx].getRows();
     }
 
+    //allocate memory for the output matrix
     *output = new Matrix2D<KeysValue<double> >(output_rows_nr, Av[0].getCols());
 
-    //input is vector of matrices, output is a matrix whose number of rows is the sum of all matrices rows from the vector  = appended below
+    //input is vector of matrices, output is a matrix whose number of rows is the sum of all matrices rows from the vector  of matrixes
     appendMatrixBelow(Av,  output);
 }
 
@@ -354,7 +374,6 @@ void getBorderNormals(Matrix2D<bool> mask, Border& border)
     pow_X_meshgrid.elementsOperation(factorized_sum_of_powered_meshgrids, multiply_factor, Multiply);
     //finally, compute gaussian
     factorized_sum_of_powered_meshgrids.elementsOperation(gaussian, 0, Exp);
-
 
     //compute inner operations needed for the new P
     Matrix2D<double>P_plus_d(no_nonzeros_in_B, 2), P_minus_d(no_nonzeros_in_B, 2);

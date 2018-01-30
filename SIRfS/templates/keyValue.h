@@ -40,6 +40,16 @@ public:
         this->keyY = new_keyY;
     };
 
+    void setKeyX(int new_keyX)
+    {
+        this->keyX = new_keyX;
+    };
+
+    void setKeyY(int new_keyY)
+    {
+        this->keyY = new_keyY;
+    };
+
     void setValue(Type new_value)
     {
         this->value = new_value;

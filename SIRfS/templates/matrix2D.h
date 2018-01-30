@@ -7,33 +7,7 @@
 #include <limits>
 
 #include "keyValue.h"
-enum Comparison
-{
-    Equal,
-    NonEqual,
-    LessThan,
-    LessThanOrEqual,
-    GreaterThanOrEqual,
-    GreaterThan
-};
-
-enum Operation
-{
-    Sum,
-    Substract,
-    Multiply,
-    Divide,
-    Pow,
-    Exp
-};
-
-enum DataType
-{
-    Bool,
-    Int,
-    Float,
-    Double
-};
+#include "../helpers/enums.h"
 
 template <class Type>
 class Matrix2D
@@ -69,6 +43,7 @@ public:
         return this->matrix2d[rowsIdx][colsIdx];
     };
 
+    bool operator==(const Matrix2D<Type>& new_matrix);
     Matrix2D& operator=(const Matrix2D<Type>& new_matrix);
     Matrix2D& operator+(Matrix2D<Type>& new_matrix);
     Matrix2D& operator-(Matrix2D<Type>& new_matrix);
@@ -99,6 +74,7 @@ public:
     void applyVectorMask(Matrix2D<Type>& result, std::vector<bool> mask);
     void applyDoubleVectorMask(Matrix2D<Type>& result, std::vector<bool> mask1, std::vector<bool> mask2);
     void applyMatrixMask(Matrix2D<Type>& result, Matrix2D<bool> mask);
+    void sortLines();
 
     /*
     *basic math-operations

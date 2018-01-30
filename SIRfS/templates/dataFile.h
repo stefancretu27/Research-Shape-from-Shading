@@ -5,7 +5,9 @@
 #include <fstream>
 #include <vector>
 #include <iomanip>
+#include <string>
 
+#include "keyValue.h"
 #include "matrix2D.h"
 #include "matrix3D.h"
 
@@ -24,20 +26,16 @@ public:
 
         if(fileObject.is_open())
         {
-            int idx;
+            int idx = 0;
             Type temp;
 
             if(precision)
             {
                 while(fileObject >> setprecision(precision) >> temp)
                {
+                   //dest[idx++] = temp; //throws error
                    dest.push_back(temp);
                }
-                /*for(idx = 0; idx < dim; idx++)
-                //{
-                    //fileObject >> setprecision(precision) >> dest[idx];
-                //}
-                if(typeid(Type)== typeid(double))*/
             }
             else
             {
@@ -46,6 +44,42 @@ public:
                     fileObject >> dest[idx];
                 }
             }
+        }
+        else
+        {
+            cout<<"File "<<filename<<" could not be open to read the vector"<<endl;
+        }
+        fileObject.close();
+    }
+
+    void writeVector(string filename, std::vector <Type> &source, int precision, int alterValue)
+    {
+        fileObject.open(filename.c_str(), ios::out);
+
+        if(fileObject.is_open())
+        {
+            unsigned int idx;
+
+            if(precision)
+            {
+                 for(idx = 0; idx < source.size(); idx++)
+                {
+                    fileObject << setprecision(precision) << source[idx]+alterValue;
+                    fileObject << " ";
+                }
+            }
+            else
+            {
+                for(idx = 0; idx < source.size(); idx++)
+                {
+                    fileObject << source[idx]+alterValue;
+                    fileObject << " ";
+                }
+            }
+        }
+        else
+        {
+            cout<<"File "<<filename<<" could not be open to write the vector"<<endl;
         }
         fileObject.close();
     }
@@ -74,6 +108,68 @@ public:
                 {
                     fileObject >> dest(xIdx, yIdx);
                 }
+            }
+        }
+        else
+        {
+            cout<<"File "<<filename<<" could not be open to read the matrix2d"<<endl;
+        }
+        fileObject.close();
+    }
+
+    void  writeMatrix2D(const char* filename, Matrix2D<Type> &source, int precision, int alterValue)
+    {
+        fileObject.open(filename, ios::out);
+
+        if(fileObject.is_open())
+        {
+             int xIdx, yIdx;
+
+            if(precision)
+            {
+                for(xIdx = 0; xIdx < source.getRows(); xIdx++)
+                {
+                    for(yIdx = 0; yIdx < source.getCols(); yIdx++)
+                    {
+                        fileObject << setprecision(precision) << source(xIdx, yIdx)+alterValue;
+                        fileObject << " ";
+                    }
+                    fileObject << endl;
+                }
+            }
+            else
+            {
+                for(xIdx = 0; xIdx < source.getRows(); xIdx++)
+                {
+                    for(yIdx = 0; yIdx < source.getCols(); yIdx++)
+                    {
+                        fileObject << source(xIdx, yIdx)+alterValue;
+                        fileObject << " ";
+                    }
+                    fileObject << endl;
+                }
+            }
+        }
+        else
+        {
+            cout<<"File "<<filename<<" could not be open to write the matrix2d"<<endl;
+        }
+        fileObject.close();
+    }
+
+    //It is known the input matrixes have 2 columns
+    void writeKeysValueMatrix2D(string filename, Matrix2D<KeysValue<Type> > **source, int alterValue)
+    {
+        fstream fileObject;
+
+        fileObject.open(filename.c_str(), ios::out);
+
+        if(fileObject.is_open())
+        {
+            for(int x = 0; x < (**source).getRows(); x++)
+            {
+                fileObject << (**source)(x, 0).getKeyX()+alterValue<<" "<<(**source)(x, 0).getKeyY()+alterValue<<" "<<(**source)(x, 0).getValue()<<" ";
+                fileObject<< (**source)(x, 1).getKeyX()+alterValue<<" "<<(**source)(x, 1).getKeyY()+alterValue<<" "<<(**source)(x, 1).getValue()<<endl;
             }
         }
         fileObject.close();
@@ -107,9 +203,11 @@ public:
                 }
             }
         }
+        else
+        {
+            cout<<"File "<<filename<<" could not be open to read the matrix3d"<<endl;
+        }
         fileObject.close();
     }
-
 };
-
 #endif // DATAFILE_H_INCLUDED

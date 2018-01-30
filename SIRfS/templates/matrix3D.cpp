@@ -44,7 +44,7 @@ Type& Matrix3D<Type>::operator()(unsigned int xIdx, unsigned int yIdx, unsigned 
 }
 
 template <class Type>
-Matrix3D<Type>& Matrix3D<Type>::operator=(Matrix3D<Type>& new_matrix)
+Matrix3D<Type>& Matrix3D<Type>::operator=(const Matrix3D<Type>& new_matrix)
 {
     this->xDim = new_matrix.getXDim();
     this->yDim = new_matrix.getYDim();
@@ -69,7 +69,7 @@ Matrix3D<Type>& Matrix3D<Type>::operator=(Matrix3D<Type>& new_matrix)
         for(unsigned int yIdx = 0; yIdx < this->yDim; yIdx++)
             for(unsigned int zIdx = 0; zIdx < this->zDim; zIdx++)
     {
-        this->matrix3d[xIdx][yIdx][zIdx] = new_matrix(xIdx, yIdx, zIdx);
+        this->setMatrixValue(xIdx, yIdx, zIdx, new_matrix.getMatrixValue(xIdx, yIdx, zIdx));
     }
 
     return *this;
@@ -77,7 +77,7 @@ Matrix3D<Type>& Matrix3D<Type>::operator=(Matrix3D<Type>& new_matrix)
 
 //copy constructor. Not mandatory
 template <class Type>
-Matrix3D<Type>::Matrix3D(Matrix3D<Type>& new_matrix)
+Matrix3D<Type>::Matrix3D(const Matrix3D<Type>& new_matrix)
 {
     this->xDim = new_matrix.getXDim();
     this->yDim = new_matrix.getYDim();
@@ -102,7 +102,7 @@ Matrix3D<Type>::Matrix3D(Matrix3D<Type>& new_matrix)
         for(unsigned int yIdx = 0; yIdx < this->yDim; yIdx++)
             for(unsigned int zIdx = 0; zIdx < this->zDim; zIdx++)
     {
-        this->matrix3d[xIdx][yIdx][zIdx] = new_matrix(xIdx, yIdx, zIdx);
+        this->setMatrixValue(xIdx, yIdx, zIdx, new_matrix.getMatrixValue(xIdx, yIdx, zIdx));
     }
 }
 

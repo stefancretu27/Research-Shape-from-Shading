@@ -15,23 +15,25 @@ public:
     //constructors
     Matrix3D(){};
     Matrix3D(unsigned int new_xDim, unsigned int new_yDim, unsigned int new_zDim);
-    Matrix3D(Matrix3D& new_matrix);
+    Matrix3D(const Matrix3D& new_matrix);
     //destructor
     ~Matrix3D();
 
     //getters
-    inline int getXDim(){return this->xDim;};
-    inline int getYDim(){return this->yDim;};
-    inline int getZDim(){return this->zDim;};
+    inline int getXDim()const{return this->xDim;};
+    inline int getYDim()const{return this->yDim;};
+    inline int getZDim()const{return this->zDim;};
     inline unsigned int getDim(){return this->xDim*this->yDim*this->zDim;};
+    inline Type getMatrixValue(int i, int j, int z) const {return this->matrix3d[i][j][z];};
     //setters
     inline void setXDim(int new_xDim){this->xDim = new_xDim;};
     inline void setYDim(int new_yDim){this->yDim = new_yDim;};
     inline void setZDim(int new_zDim){this->zDim = new_zDim;};
+    inline void setMatrixValue(int i, int j, int z, Type value){this->matrix3d[i][j][z] = value;};
 
     //operators overloading
     Type& operator()(unsigned int new_xDim, unsigned int new_yDim, unsigned int new_zDim);
-    Matrix3D& operator=(Matrix3D& new_matrix);
+    Matrix3D& operator=(const Matrix3D& new_matrix);
 
     //matrix operations
     void normalizeData(int factor);

@@ -35,14 +35,15 @@ void applyMaskOnKeysValueMatrix(std::vector<bool>& mask, Matrix2D<KeysValue<doub
 {
     int t_idx = 0;
 
-    //mask.getRows = source.getRows. For each line, check if mask is 1, then iterate through cols, allocate memory for KeyValue object, then set ts values
+    //mask.getRows = source.getRows. For each line, check if mask is 1, then iterate through cols,  then set the values
     for(int idx = 0; idx < (**source).getRows(); idx++)
     {
         if(mask[idx] == true)
         {
             for( int idy = 0; idy < (**source).getCols(); idy++)
             {
-                (*dest)(t_idx,idy).setKeysValue((**source)(idx, idy).getKeyX(),  (**source)(idx, idy).getKeyY(), (**source)(idx, idy).getValue());
+                //(*dest)(t_idx,idy).setKeysValue((**source)(idx, idy).getKeyX(),  (**source)(idx, idy).getKeyY(), (**source)(idx, idy).getValue());
+                (*dest)(t_idx,idy).setKeysValue(t_idx,  (**source)(idx, idy).getKeyY(), (**source)(idx, idy).getValue());
             }
             t_idx++;
         }
@@ -72,7 +73,9 @@ void appendMatrixBelow(vector< Matrix2D<KeysValue<double> > > source, Matrix2D< 
         {
             for(int idy = 0; idy < (*dest)->getCols(); idy++)
             {
-                (*dest)->setMatrixValue(idx, idy, source[id].getMatrixValue(idx-start, idy));
+                KeysValue<double> temp = source[id].getMatrixValue(idx-start, idy);
+                temp.setKeyX(idx);
+                (*dest)->setMatrixValue(idx, idy, temp);
             }
         }
     }

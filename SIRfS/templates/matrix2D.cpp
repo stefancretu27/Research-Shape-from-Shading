@@ -85,6 +85,24 @@ Operators overloading
 */
 //Overload attribution operator to allow for operatrions such as A = B, where A,B are Matrix2D instances
 template <class Type>
+bool Matrix2D<Type>::operator==(const Matrix2D<Type>& new_matrix)
+{
+    bool k = true;
+
+    for(int idx = 0; idx < this->getRows(); idx++)
+    {
+        for(int idy = 0; idy < this->getCols(); idy++)
+            if(this->getMatrixValue(idx, idy) != new_matrix.getMatrixValue(idx, idy))
+            {
+                k = false;
+                cout<<idx<<" "<<idy<<endl;
+            }
+    }
+
+    return k;
+}
+
+template <class Type>
 Matrix2D<Type>& Matrix2D<Type>::operator=(const Matrix2D<Type>& new_matrix)
 {
     this->rows = new_matrix.getRows();
@@ -582,6 +600,25 @@ void Matrix2D<Type>::applyMatrixMask(Matrix2D<Type>& result, Matrix2D<bool> mask
     }
 }
 
+template <class Type>
+void Matrix2D<Type>::sortLines()
+{
+    Type aux;
+    for(int i = 0; i < this->getRows(); i++)
+    {
+        for(int j = 0; j < this->getCols()-1; j++)
+            if(this->getMatrixValue(i, j) > this->getMatrixValue(i, j+1))
+        {
+            aux = this->getMatrixValue(i, j);
+            this->setMatrixValue(i, j, this->getMatrixValue(i, j+1));
+            this->setMatrixValue(i, j+1, aux);
+        }
+    }
+}
+
+/*
+*basic math-operations
+*/
 //Returns a matrix whose all values are >=0. The orginal values are those in the input "source"
 template <class Type>
 void Matrix2D<Type>::getAbsoluteValuesMatrix(Matrix2D<Type>& source)
@@ -1256,6 +1293,6 @@ void Matrix2D<Type>::linearizeIndeces(std::vector<Type>& result, int rows, int c
 {
     for(int idx = 0; idx< this->getRows(); idx++)
     {
-        result.push_back( this->getMatrixValue(idx, 0) + (this->getMatrixValue(idx, 1)-1)*rows );
+        result.push_back( this->getMatrixValue(idx, 0) + this->getMatrixValue(idx, 1)*rows );
     }
 }

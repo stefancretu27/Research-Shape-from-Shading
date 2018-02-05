@@ -14,12 +14,14 @@ private:
 
 public:
     //operators overloading
-    ReflectanceGSM& operator=(const ReflectanceGSM& input);
+    ReflectanceGSM& operator=(const ReflectanceGSM& input)
     {
         this->mu = input.mu;
         this->sigs = input.sigs;
         this->pis = input.pis;
-        this->lutObj = input.lutObj:
+        this->lutObj = input.lutObj;
+
+        return *this;
     };
 
      //getters

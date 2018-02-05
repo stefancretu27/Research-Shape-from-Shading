@@ -16,8 +16,8 @@ void ReflectanceGSM::initializeGSMReflectanceGrayData()
 
     //read data from files into vectors
     DataFile<double> dFileReader;
-    dFileReader.readVector("block_A1\prior\reflectance\gray\grayMA\sigs21.txt", this->sigs, 40, 21);
+    dFileReader.readVector("block_A1/prior/reflectance/gray/grayMA/sigs21.txt", this->sigs, 40, 21);
 
     DataFile<long double> ldFileReader;
-    ldFileReader.readVector("block_A1\prior\reflectance\gray\grayMA\pis_exp16.txt", this->pis, 40, numeric_limits<long double>::max());
+    ldFileReader.readVector("block_A1/prior/reflectance/gray/grayMA/pis_exp16.txt", this->pis, 40, 21);
 }

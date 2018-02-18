@@ -351,12 +351,13 @@ void getBorderNormals(Matrix2D<bool> mask, Border& border)
     d_negated_mask.conv2DSame(reversed_filter, conv_same);
     //once convolution is computed, it checks which values are greater than 0, creating a bolean matrix storing the results (1 if greater, 0 else)
     conv_same.compareValuesToTreshold(conv_greater_than, 0, GreaterThan);
-    //the obtained boolean matrix and the (input0 mask perform a logical and operation, storing the result in B and returning the number of non zero elements
+    //Calculate B: the obtained boolean matrix and the input mask perform a logical and operation, storing the result in B and returning the number of non zero elements
     int no_nonzeros_in_B = 0;
     no_nonzeros_in_B = conv_greater_than.logicalAnd(B, mask);
     //store the indeces of nonzero elements in this matrix. In comparison to the Matlab ones, they'll always  lower by 1 (0 vs 1 base indexing)
     Matrix2D<int>int_P(no_nonzeros_in_B, 2);
     B.mFindIndeces(int_P, 1, Equal);
+    //Convert the previous matrix from int to double
     Matrix2D<double>P(no_nonzeros_in_B, 2);
     convertIntToDoubleMatrix2D(int_P, P);
 
@@ -404,7 +405,7 @@ void getBorderNormals(Matrix2D<bool> mask, Border& border)
     vector<int>d_vector(2*d + 1);
     for(unsigned int i = 0; i < d_vector.size(); i++)
     {
-        d_vector[i] = i - 5;
+        d_vector[i] = i - d;
     }
 
     //P matrix has only 2 columns
@@ -417,7 +418,9 @@ void getBorderNormals(Matrix2D<bool> mask, Border& border)
         {
             mask_x[j] = d_vector[j] + P.getMatrixValue(i, 0);
             mask_y[j] = d_vector[j] + P.getMatrixValue(i, 1);
+           //cout<<i<<" "<<j<<" "<<P.getMatrixValue(i, 0)<<" "<<P.getMatrixValue(i, 1)<<" "<<mask_x[j]<<" "<<mask_y[j]<<endl;
         }
+
         //compute patch matrix
         Matrix2D<bool> patch(2*d + 1, 2*d + 1);
         for(int idx = 0; idx < patch.getRows(); idx++)
@@ -490,6 +493,7 @@ void getBorderNormals(Matrix2D<bool> mask, Border& border)
         //store final results in matrix N
         N.setMatrixValue(i, 0, n[0]);
         N.setMatrixValue(i, 1, n[1]);
+
     }
 
     Matrix2D<double> T(N.getRows(), N.getCols());

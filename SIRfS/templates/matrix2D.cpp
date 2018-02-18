@@ -428,13 +428,13 @@ void Matrix2D<Type>::negateMatrixMask(Matrix2D<bool>& result)
 template <class Type>
 int Matrix2D<Type>::logicalAnd(Matrix2D<bool>& result, Matrix2D<Type>& input)
 {
-    int i, j, counter;
+    int i, j, counter = 0;
 
     for(i = 0; i < this->getRows(); i++)
         for(j = 0; j < this->getCols(); j++)
     {
         result.setMatrixValue(i, j, this->getMatrixValue(i,j ) & input.getMatrixValue(i, j));
-        if(result.getMatrixValue(i, j) > 0)
+        if(result.getMatrixValue(i, j) == 1)
             counter++;
     }
 

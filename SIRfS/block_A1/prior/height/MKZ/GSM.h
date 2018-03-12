@@ -13,6 +13,16 @@ private:
     std::vector<long double> pis;
 
 public:
+    //constructors
+    GSM(){};
+    GSM(const GSM& new_gsm)
+    {
+        this->mu = new_gsm.mu;
+        this->sigs = new_gsm.sigs;
+        this->pis = new_gsm.pis;
+        this->lutObj = new_gsm.lutObj;
+    }
+
     //operators overloading
     GSM& operator=(const GSM& new_gsm)
     {
@@ -26,14 +36,11 @@ public:
      //getters
     inline float getMu(){return this->mu;};
     inline Lut& getLut(){return this->lutObj;};
-    inline std::vector<double>& getSigs(){return this->sigs;};
-    inline std::vector<long double>& getPis(){return this->pis;};
+    inline std::vector<double> getSigs(){return this->sigs;};
+    inline std::vector<long double> getPis(){return this->pis;};
 
     //initialize height data
-    void initializeGSMHeightData();
-
-    //initialize reflectance gray data
-    void initializeGSMReflectanceGrayData();
+    void initializeGSMHeightData(StructNode& GSMHeight_metadata);
 };
 
 #endif // GSM_H_INCLUDED

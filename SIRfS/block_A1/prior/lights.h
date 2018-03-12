@@ -11,6 +11,14 @@ private:
     LightsGray gray;
 
 public:
+    //constructors
+    Lights(){};
+    LIghts(const Lights &input)
+    {
+        this->color = input.color;
+        this->gray = input.gray;
+    };
+
     //operators overloading
     Lights& operator=(const Lights& new_light)
     {
@@ -24,14 +32,21 @@ public:
     inline LightsColor& getLightsColor(){return this->color;};
 
     //initialize data
-    void initializeLightsData()
+    void initializeLightsData(StructNode& lights_metadata)
     {
-        //initialize gaussian
-        this->color.initializeLightColorData();
-        //initialize whiten parameters
-        this->gray.initializeLightsGrayData();
+        vector<StructNode*>  nodes2 = lights_metadata.getChildrenNodes();
+
+        for(int ii = 0; ii < nodes2.size(); ii++)
+        {
+            if(strcmp(nodes2[ii]->getStructureP()->name, "color") == 0)
+            {
+                this->color.initializeLightColorData(*nodes2[ii]);
+            }
+            if(strcmp(nodes2[ii]->getStructureP()->name, "gray") == 0)
+            {
+                this->gray.initializeLightsGrayData(*nodes2[ii]);
+            }
+        }
     }
-
 };
-
 #endif // LIGHT_H_INCLUDED

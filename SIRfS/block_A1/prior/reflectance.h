@@ -11,6 +11,14 @@ private:
     ReflectanceColor color;
 
 public:
+    //constructors
+    Reflectance(){};
+    Reflectance(const Reflectance& new_reflectance)
+    {
+        this->color = new_reflectance.color;
+        this->gray = new_reflectance.gray;
+
+    };
     //operators overloading
     Reflectance& operator=(const Reflectance& new_reflectance)
     {
@@ -24,12 +32,21 @@ public:
     inline ReflectanceColor& getReflectanceColor(){return this->color;};
 
     //initialize class instances
-    void initializeReflectanceData()
+    void initializeReflectanceData(StructNode& reflectance_metadata)
     {
-        //cout<<"Reflectance initializer"<<endl;
+        vector<StructNode*>  nodes2 = reflectance_metadata.getChildrenNodes();
 
-        this->gray.initializeReflectanceGrayData();
-        this->color.initializeReflectanceColorData();
+        for(int ii = 0; ii < nodes2.size(); ii++)
+        {
+            if(strcmp(nodes2[ii]->getStructureP()->name, "color") == 0)
+            {
+                this->color.initializeReflectanceColorData(*nodes2[ii]);
+            }
+            if(strcmp(nodes2[ii]->getStructureP()->name, "gray") == 0)
+            {
+                this->gray.initializeReflectanceGrayData(*nodes2[ii]);
+            }
+        }
     }
 };
 

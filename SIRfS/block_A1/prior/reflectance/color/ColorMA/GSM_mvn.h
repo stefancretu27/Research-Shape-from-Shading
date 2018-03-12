@@ -3,7 +3,7 @@
 
 #include "GSM_mvn/ReflectanceColorLut.h"
 #include "../../../../../templates/matrix2D.h"
-#include "../../../../../templates/matrix2D.cpp"               //because of linking issues. On Linux it would disappear as a Makefile woll solve it.
+#include "../../../../../templates/matrix2D.cpp"
 
 class GSM_mvn
 {
@@ -14,6 +14,21 @@ private:
     Matrix2D<double> Sigma, Sigma_inv, Sigma_whiten, Sigma_R;      //size [3][3]
 
 public:
+    //operators overloading
+    GSM_mvn(){};
+    GSM_mvn(const GSM_mvn& input)
+    {
+        this->lut = input.lut;
+        this->LL_zero = input.LL_zero;
+        this->pis = input.pis;
+        this->vars = input.vars;
+        this->logmults = input.logmults;
+        this->Sigma = input.Sigma;
+        this->Sigma_inv = input.Sigma_inv;
+        this->Sigma_whiten = input.Sigma_whiten;
+        this->Sigma_R = input.Sigma_R;
+    };
+
     //operators overloading
     GSM_mvn& operator=(const GSM_mvn& input)
     {
@@ -41,8 +56,7 @@ public:
     inline Matrix2D<double>& getSigma_R(){return this->Sigma_R;};
 
     //initialize data
-    GSM_mvn();
-    void initializeGSM_mvnData();
+    void initializeGSM_mvnData(StructNode& color_ma_gsm_metadata);
 };
 
 #endif // GSM_MVN_H_INCLUDED

@@ -33,7 +33,6 @@ public:
             {
                 while(fileObject >> setprecision(precision) >> temp)
                {
-                   //dest[idx++] = temp; //throws error
                    dest.push_back(temp);
                }
             }

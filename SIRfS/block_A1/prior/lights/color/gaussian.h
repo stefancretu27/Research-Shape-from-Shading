@@ -5,14 +5,24 @@
 #include <vector>
 #include "../../../../templates/matrix2D.h"
 #include "../../../../templates/dataFile.h"
+#include "../../../prior_struct_node.h"
+#include "../../../../helpers/validation.h"
 
 class ColorGaussian
 {
 private:
-    std::vector<long double> mu;
+    std::vector<double> mu;
     Matrix2D<double> Sigma;     //size = 27
 
 public:
+    //constructors
+    ColorGaussian(){};
+    ColorGaussian(const ColorGaussian& input)
+    {
+        this->mu = input.mu;
+        this->Sigma = input.Sigma;
+    };
+
     //operators overloading
     ColorGaussian& operator=(const ColorGaussian& input)
     {
@@ -22,13 +32,11 @@ public:
     };
 
     //getters
-    inline std::vector<long double>& getMu(){return this->mu;};
+    inline std::vector<double>& getMu(){return this->mu;};
     inline Matrix2D<double>& getSigma(){return this->Sigma;};
 
     //initialize data
-    ColorGaussian();
-    void initializeColorLaboratoryGaussianData();
-    void initializeColorNaturalGaussianData();
+    void initializeColorGaussianData(StructNode& color_g_metadata);
 };
 
 #endif // COLORGAUSSIAN_H_INCLUDED

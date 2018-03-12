@@ -1,0 +1,25 @@
+﻿Build started 19/02/2018 18:32:11.
+     1>Project "C:\Users\stefa_000\Downloads\matio-1.5.11\matio-1.5.11\visual_studio\test_mat\test_mat.vcxproj" on node 3 (build target(s)).
+     1>InitializeBuildStatus:
+         Touching "Release\test_mat.unsuccessfulbuild".
+       ClCompile:
+         All outputs are up-to-date.
+       Link:
+         c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\stefa_000\Downloads\matio-1.5.11\matio-1.5.11\visual_studio\Release\test_mat.exe" /INCREMENTAL:NO /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /ManifestFile:"Release\test_mat.exe.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"C:\Users\stefa_000\Downloads\matio-1.5.11\matio-1.5.11\visual_studio\Release\test_mat.pdb" /SUBSYSTEM:CONSOLE /OPT:REF /OPT:ICF /LTCG /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\stefa_000\Downloads\matio-1.5.11\matio-1.5.11\visual_studio\Release\test_mat.lib" /MACHINE:X86 Release\getopt_long.obj
+         Release\test_mat.obj
+         "C:\Users\stefa_000\Downloads\matio-1.5.11\matio-1.5.11\visual_studio\Release\libmatio.lib"
+         Generating code
+     1>c:\users\stefa_000\downloads\matio-1.5.11\matio-1.5.11\test\test_mat.c(3360): warning C4723: potential divide by 0
+     1>c:\users\stefa_000\downloads\matio-1.5.11\matio-1.5.11\test\test_mat.c(3331): warning C4723: potential divide by 0
+         Finished generating code
+         test_mat.vcxproj -> C:\Users\stefa_000\Downloads\matio-1.5.11\matio-1.5.11\visual_studio\Release\test_mat.exe
+       Manifest:
+         C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\mt.exe /nologo /verbose /outputresource:"C:\Users\stefa_000\Downloads\matio-1.5.11\matio-1.5.11\visual_studio\Release\test_mat.exe;#1" /manifest Release\test_mat.exe.intermediate.manifest
+       FinalizeBuildStatus:
+         Deleting file "Release\test_mat.unsuccessfulbuild".
+         Touching "Release\test_mat.lastbuildstate".
+     1>Done Building Project "C:\Users\stefa_000\Downloads\matio-1.5.11\matio-1.5.11\visual_studio\test_mat\test_mat.vcxproj" (build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:00.77

@@ -1,34 +1,28 @@
 #include "gaussian.h"
+#include "../../../../templates/matrix2D.cpp"
 
-//use constructor to allocate memory for matrix
-GrayGaussian::GrayGaussian():Sigma(9, 9){}
+using namespace std;
 
-void GrayGaussian::initializeGrayLaboratoryGaussianData()
+void GrayGaussian::initializeGrayGaussianData(StructNode& gray_g_metadata)
 {
-    //cout<<"initializeGrayLaboratoryGaussianData"<<endl;
+    //create a node instance for each inner field and store it in a vector
+    vector<StructNode*> nodes5 = gray_g_metadata.getChildrenNodes();
 
-    //alocate memory for vector
-    mu.reserve(9);
+    for(int v = 0; v <  nodes5.size(); v++)
+    {
+        if(strcmp(nodes5[v]->getStructureP()->name, "mu") == 0)
+        {
+            //get pointer to raw data from .mat file
+            double *raw_data = (double*)nodes5[v]->getStructureP()->data;
+            //get dimension of the vector
+            int dim  = nodes5[v]->getStructureP()->dims[0] * nodes5[v]->getStructureP()->dims[1];
+            //use pointer to the first and the last element in the array as iterators
+            this->mu.assign(raw_data, raw_data + dim);
+        }
+        if(strcmp(nodes5[v]->getStructureP()->name, "Sigma") == 0)
+        {
+             this->Sigma.setMatrix2D((double*)nodes5[v]->getStructureP()->data, nodes5[v]->getStructureP()->dims[0], nodes5[v]->getStructureP()->dims[1], true);
+        }
 
-    //read data to vector
-    DataFile<double> dFileReader;
-    dFileReader.readVector("block_A1/prior/lights/gray/laboratory/gaussian/mu_exp16.txt", this->mu, 9, 16);
-
-    //read data to matrix
-    dFileReader.readMatrix2D("block_A1/prior/lights/gray/laboratory/gaussian/sigma_exp16.txt", this->Sigma, 9, 9, 16);
-}
-
-void GrayGaussian::initializeGrayNaturalGaussianData()
-{
-    //cout<<"initializeGrayNaturalGaussianData"<<endl;
-
-    //alocate memory for vector
-    mu.reserve(9);
-
-    //read data to vector
-    DataFile<double> dFileReader;
-    dFileReader.readVector("block_A1/prior/lights/gray/natural/gaussian/mu20.txt", this->mu, 9, 20);
-
-    //read data to matrix
-    dFileReader.readMatrix2D("block_A1/prior/lights/gray/natural/gaussian/Sigma20.txt", this->Sigma, 9, 9, 20);
+    };
 }

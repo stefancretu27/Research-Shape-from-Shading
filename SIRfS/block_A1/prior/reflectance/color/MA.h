@@ -9,7 +9,14 @@ private:
     GSM_mvn gsm_mvn;
 
 public:
-        //operators overloading
+    //constructors
+    ColorMA(){};
+    ColorMA(const ColorMA& input)
+    {
+        this->gsm_mvn = input.gsm_mvn;
+    };
+
+    //operators overloading
     ColorMA& operator=(const ColorMA& input)
     {
         this->gsm_mvn = input.gsm_mvn;
@@ -20,11 +27,11 @@ public:
     inline GSM_mvn& getGsm_mvn(){return this->gsm_mvn;};
 
     //initialize class instance
-    inline void initializeColorMAData()
+    inline void initializeColorMAData(StructNode& color_ma_metadata)
     {
-        //cout<<"Reflectance ColorMA initializer"<<endl;
+        vector<StructNode*> nodes4 = color_ma_metadata.getChildrenNodes();
 
-        this->gsm_mvn.initializeGSM_mvnData();
+        this->gsm_mvn.initializeGSM_mvnData(*nodes4[0]);
     }
 };
 

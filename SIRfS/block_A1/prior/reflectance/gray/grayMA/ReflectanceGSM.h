@@ -7,12 +7,22 @@
 class ReflectanceGSM
 {
 private:
-    float mu;
+    int mu;
     Lut lutObj;
     vector<double> sigs;       //size = 40
-    vector<long double> pis;
+    vector<double> pis;
 
 public:
+    //constructors
+    ReflectanceGSM(){};
+    ReflectanceGSM(const ReflectanceGSM& input)
+    {
+        this->mu = input.mu;
+        this->sigs = input.sigs;
+        this->pis = input.pis;
+        this->lutObj = input.lutObj;
+    };
+
     //operators overloading
     ReflectanceGSM& operator=(const ReflectanceGSM& input)
     {
@@ -25,13 +35,13 @@ public:
     };
 
      //getters
-    float getMu(){return this->mu;};
+    int getMu(){return this->mu;};
     Lut& getLut(){return this->lutObj;};
     vector<double>& getSigs(){return this->sigs;};
-    vector<long double>& getPis(){return this->pis;};
+    vector<double>& getPis(){return this->pis;};
 
     //initialize reflectance gray data
-    void initializeGSMReflectanceGrayData();
+    void initializeGSMReflectanceGrayData(StructNode& gray_ma_gsm_metadata);
 };
 
 

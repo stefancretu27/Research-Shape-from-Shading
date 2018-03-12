@@ -2,44 +2,52 @@
 
 using namespace std;
 
-void GrayWhitenParams::initializeGrayLaboratoryWhitenParamsData()
+void GrayWhitenParams::initializeGrayWhitenParamsData(StructNode &gray_wp_metadata)
 {
-    //cout<<"initializeGrayLaboratoryWhitenParamsData"<<endl;
+    //create a node instance for each inner field and store it in a vector
+    vector<StructNode*> nodes5 = gray_wp_metadata.getChildrenNodes();
 
-    //allocate memory for vector
-    this->mean.reserve(9);
+    for(int v = 0; v <  nodes5.size(); v++)
+    {
+        if(strcmp(nodes5[v]->getStructureP()->name, "mean") == 0)
+        {
+            //get pointer to raw data from .mat file
+            double *raw_data = (double*)nodes5[v]->getStructureP()->data;
+            //get dimension of the vector
+            int dim  = nodes5[v]->getStructureP()->dims[0] * nodes5[v]->getStructureP()->dims[1];
+            //use pointer to the first and the last element in the array as iterators
+            this->mean.assign(raw_data, raw_data + dim);
+        }
 
-    //read data to vector
-    DataFile<double> dFileReader;
-    dFileReader.readVector("block_A1/prior/lights/color/laboratory/whiten_params/mean_exp16.txt", this->mean, 9, 16);
-
-    //read data to matrices
-    dFileReader.readMatrix2D("block_A1/prior/lights/gray/laboratory/whiten_params/map_exp16.txt", this->mapp, 9, 9, 16);
-    dFileReader.readMatrix2D("block_A1/prior/lights/gray/laboratory/whiten_params/inverse_exp16.txt", this->inverse, 9, 9, 16);
-    dFileReader.readMatrix2D("block_A1/prior/lights/gray/laboratory/whiten_params/V_exp16.txt", this->V, 9, 9, 16);
-    dFileReader.readMatrix2D("block_A1/prior/lights/gray/laboratory/whiten_params/D18.txt", this->D, 9, 9, 18);
-    dFileReader.readMatrix2D("block_A1/prior/lights/gray/laboratory/whiten_params/iD_exp16.txt", this->iD, 9, 9, 16);
-    dFileReader.readMatrix2D("block_A1/prior/lights/gray/laboratory/whiten_params/C_exp16.txt", this->C, 9, 9, 16);
-    dFileReader.readMatrix2D("block_A1/prior/lights/gray/laboratory/whiten_params/iC_exp16.txt", this->iC, 9, 9, 16);
-}
-
-void GrayWhitenParams::initializeGrayNaturalWhitenParamsData()
-{
-    //cout<<"initializeGrayNaturalWhitenParamsData"<<endl;
-
-    //allocate memory for vector
-    this->mean.reserve(9);
-
-    //read data to vector
-    DataFile<double> dFileReader;
-    dFileReader.readVector("block_A1/prior/lights/gray/natural/whiten_params/mean20.txt", this->mean, 9, 20);
-
-    //read data to matrices
-    dFileReader.readMatrix2D("block_A1/prior/lights/gray/natural/whiten_params/map20.txt", this->mapp, 9, 9, 20);
-    dFileReader.readMatrix2D("block_A1/prior/lights/gray/natural/whiten_params/inverse20.txt", this->inverse, 9, 9, 20);
-    dFileReader.readMatrix2D("block_A1/prior/lights/gray/natural/whiten_params/V20.txt", this->V, 9, 9, 20);
-    dFileReader.readMatrix2D("block_A1/prior/lights/gray/natural/whiten_params/D18.txt", this->D, 9, 9, 18);
-    dFileReader.readMatrix2D("block_A1/prior/lights/gray/natural/whiten_params/iD16.txt", this->iD, 9, 9, 16);
-    dFileReader.readMatrix2D("block_A1/prior/lights/gray/natural/whiten_params/C20.txt", this->C, 9, 9, 20);
-    dFileReader.readMatrix2D("block_A1/prior/lights/gray/natural/whiten_params/iC18.txt", this->mapp, 9, 9, 18);
+        if(strcmp(nodes5[v]->getStructureP()->name, "map") == 0)
+        {
+             this->mapp.setMatrix2D( (double*)nodes5[v]->getStructureP()->data, nodes5[v]->getStructureP()->dims[0], nodes5[v]->getStructureP()->dims[1], true);
+        }
+        if(strcmp(nodes5[v]->getStructureP()->name, "inverse") == 0)
+        {
+             this->inverse.setMatrix2D( (double*)nodes5[v]->getStructureP()->data, nodes5[v]->getStructureP()->dims[0], nodes5[v]->getStructureP()->dims[1], true);
+        }
+        if(strcmp(nodes5[v]->getStructureP()->name, "V") == 0)
+        {
+             this->V.setMatrix2D( (double*)nodes5[v]->getStructureP()->data, nodes5[v]->getStructureP()->dims[0], nodes5[v]->getStructureP()->dims[1], true);
+            //unlike the others, it is not a simmetrical matrix. The ones read from the mat file are column-wise stored (typical to Matlab), whereas the values in the text file are written in a row-wise manner (typical to C/C++)
+             //this->V.Transp();
+        }
+        if(strcmp(nodes5[v]->getStructureP()->name, "iD") == 0)
+        {
+             this->iD.setMatrix2D( (double*)nodes5[v]->getStructureP()->data, nodes5[v]->getStructureP()->dims[0], nodes5[v]->getStructureP()->dims[1], true);
+        }
+        if(strcmp(nodes5[v]->getStructureP()->name, "D") == 0)
+        {
+             this->D.setMatrix2D( (double*)nodes5[v]->getStructureP()->data, nodes5[v]->getStructureP()->dims[0], nodes5[v]->getStructureP()->dims[1], true);
+        }
+        if(strcmp(nodes5[v]->getStructureP()->name, "C") == 0)
+        {
+             this->C.setMatrix2D( (double*)nodes5[v]->getStructureP()->data, nodes5[v]->getStructureP()->dims[0], nodes5[v]->getStructureP()->dims[1], true);
+        }
+        if(strcmp(nodes5[v]->getStructureP()->name, "iC") == 0)
+        {
+             this->iC.setMatrix2D( (double*)nodes5[v]->getStructureP()->data, nodes5[v]->getStructureP()->dims[0], nodes5[v]->getStructureP()->dims[1], true);
+        }
+    };
 }

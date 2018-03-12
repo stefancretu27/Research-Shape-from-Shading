@@ -4,6 +4,8 @@
 #include <vector>
 #include "../../../../templates/matrix2D.h"
 #include "../../../../templates/dataFile.h"
+#include "../../../prior_struct_node.h"
+#include "../../../../helpers/validation.h"
 
 class GrayGaussian
 {
@@ -12,6 +14,14 @@ private:
     Matrix2D<double> Sigma;     //size = 9
 
 public:
+    //constructors
+    GrayGaussian(){};
+    GrayGaussian(const GrayGaussian& input)
+    {
+        this->mu = input.mu;
+        this->Sigma = input.Sigma;
+    };
+
     //operators overloading
     GrayGaussian& operator=(const GrayGaussian& input)
     {
@@ -19,15 +29,12 @@ public:
         this->Sigma = input.Sigma;
         return *this;
     };
-
     //getters
     inline std::vector<double>& getMu(){return this->mu;};
     inline Matrix2D<double>& getSigma(){return this->Sigma;};
 
     //initialize data
-    GrayGaussian();
-    void initializeGrayLaboratoryGaussianData();
-    void initializeGrayNaturalGaussianData();
+    void initializeGrayGaussianData(StructNode& gray_g_metadata);
 };
 
 #endif // GAUSSIAN_H_INCLUDED

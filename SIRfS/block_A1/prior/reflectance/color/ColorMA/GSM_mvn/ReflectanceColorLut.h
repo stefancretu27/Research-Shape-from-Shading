@@ -7,6 +7,8 @@
 
 #include "../../../../../../helpers/range.h"
 #include "../../../../../../templates/dataFile.h"
+#include "../../../../../prior_struct_node.h"
+#include "../../../../../../helpers/validation.h"
 
 class ReflectanceColorLut
 {
@@ -17,6 +19,16 @@ private:
     Range bin_range;
 
 public:
+    //operators overloading
+    ReflectanceColorLut(){};
+    ReflectanceColorLut(const ReflectanceColorLut& input)
+    {
+        this->F = input.F;
+        this->bin_range = input.bin_range;
+        this->bin_width = input.bin_width;
+        this->n_bins = input.n_bins;;
+    };
+
     //operators overloading
     ReflectanceColorLut& operator=(const ReflectanceColorLut& input)
     {
@@ -34,7 +46,7 @@ public:
     inline std::vector<double>& getF() {return this->F;};
 
     //initialize reflectance color data
-    void initializeLutReflectanceColorData();
+    void initializeLutReflectanceColorData(StructNode& color_ma_gsm_lut_metadata);
 };
 
 

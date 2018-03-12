@@ -2,17 +2,30 @@
 
 using namespace std;
 
-void MKZ::initilalizeMKZData()
+void MKZ::initilalizeMKZData(StructNode& MKZ_metadata)
 {
-    //cout<<"MKZ initializer"<<endl;
+    //create a StructNode instance for 3rd level fields
+    vector<StructNode*> nodes3 = MKZ_metadata.getChildrenNodes();
 
-    //initialize class instance
-    this->gsm.initializeGSMHeightData();
+    for(int iii = 0; iii <  nodes3.size(); iii++)
+    {
+        if(strcmp(nodes3[iii]->getStructureP()->name, "MKZ_train") == 0)
+        {
+            //get pointer to raw data from .mat file
+            double *raw_data = (double*)nodes3[iii]->getStructureP()->data;
+            //get dimension of the vector
+            int dim  = nodes3[iii]->getStructureP()->dims[0] * nodes3[iii]->getStructureP()->dims[1];
+            //use pointer to the first and the last element in the array as iterators
+            this->MKZ_train.assign(raw_data, raw_data + dim);
 
-    //allocate memory for vector
-    this->mkz_train.reserve(300000);
-
-    //read data from file into vector
-    DataFile<double> dFileReader;
-    dFileReader.readVector("block_A1/prior/height/mkz_train21.txt", this->mkz_train, 300000, 21);
+#ifdef TEST_PRIOR_HEIGHT
+            cout<<"Test for reading priors on height: "<<MKZ_metadata.getStructureP()->name<<"->"<<nodes3[iii]->getStructureP()->name<<"  "<<\
+                        test_vectors("block_A1/prior/height/mkz_train21.txt", this->MKZ_train, Double)<<endl;
+#endif // TEST_PRIOR_HEIGHT
+        }
+        if(strcmp(nodes3[iii]->getStructureP()->name, "GSM") == 0)
+        {
+            this->gsm.initializeGSMHeightData(*nodes3[iii]);
+        }
+    }
 }

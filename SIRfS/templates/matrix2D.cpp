@@ -7,34 +7,27 @@ using namespace std;
 */
 //Creates a matrix2D with specified dimensions
 template <class Type>
-Matrix2D<Type>::Matrix2D( int new_rows,  int new_cols)//:rows(new_rows), cols(new_cols)
+Matrix2D<Type>::Matrix2D( int new_rows,  int new_cols)
 {
     this->rows = new_rows;
     this->cols = new_cols;
 
-    //allocate memory for the rows. It is an array that contains pointers to Type.
-    matrix2d = new Type* [this->rows];
-    //allocate memory for each column. That is, for each line, allocate space for each element in the matrix.
-    for( int rowsIdx = 0; rowsIdx < this->rows; rowsIdx++)
-    {
-        this->matrix2d[rowsIdx] = new Type[this->cols];
-    }
+    //allocate memory
+    if(rows != 0 && cols !=0)
+        this->matrix2d = new Type[this->rows*this->cols];
+    else
+        this->matrix2d = NULL;
 }
 
-//Constructor with data initializations: this constructor creates a matrix2D that has the specified dimensions and whose elements are initialized to value
+//Constructor with data initializations: this constructor creates a matrix2D that has the specified dimensions and whose elements are initialized to the given value
 template <class Type>
 Matrix2D<Type>::Matrix2D( int new_rows,  int new_cols, Type value)
 {
     this->rows = new_rows;
     this->cols = new_cols;
 
-    //allocate memory for the rows. It is an array that contains pointers to Type.
-    matrix2d = new Type* [this->rows];
-    //allocate memory for each column. That is, for each line, allocate space for each element in the matrix.
-    for( int rowsIdx = 0; rowsIdx < this->rows; rowsIdx++)
-    {
-        this->matrix2d[rowsIdx] = new Type[this->cols];
-    }
+    //allocate memory
+    this->matrix2d = new Type[this->rows*this->cols];
 
     for(int rowsIdx = 0; rowsIdx < this->rows; rowsIdx++ )
         for(int colsIdx = 0; colsIdx < this->cols; colsIdx++)
@@ -50,13 +43,8 @@ Matrix2D<Type>::Matrix2D(const Matrix2D<Type>& new_matrix)
     this->rows = new_matrix.getRows();
     this->cols = new_matrix.getCols();
 
-    //allocate memory for the rows. It is an array that contains pointers to Type.
-    this->matrix2d = new Type* [this->rows];
-    //allocate space for each column. That is, for each line, allocate space for each element in the matrix.
-    for(int rowsIdx = 0; rowsIdx < this->rows; rowsIdx++)
-    {
-        this->matrix2d[rowsIdx] = new Type[this->cols];
-    }
+    //allocate memory
+    this->matrix2d = new Type[this->rows*this->cols];
 
     //copy elements
     for( int rowsIdx = 0; rowsIdx < this->rows; rowsIdx++)
@@ -70,20 +58,53 @@ Matrix2D<Type>::Matrix2D(const Matrix2D<Type>& new_matrix)
 template <class Type>
 Matrix2D<Type>::~Matrix2D()
 {
-    //delete the columns
-    for( int rowsIdx = 0; rowsIdx < this->rows; rowsIdx++)
+
+    //delete the array
+    delete [] this->matrix2d;
+}
+
+template <class Type>
+void Matrix2D<Type>::setMatrix2D(Type* data, int new_rows,  int new_cols, bool transp)
+{
+    //in Matlab the matrices are stored column after column, in the contiguous array gotten as parameters (data), so it needs to be transposed
+    if(transp)
     {
-        delete [] this->matrix2d[rowsIdx];
+        this->rows = new_rows;
+        this->cols = new_cols;
+
+        this->matrix2d = new Type[this->rows*this->cols];
+
+        //copy elements
+        for( int rowsIdx = 0; rowsIdx < this->rows; rowsIdx++)
+            for( int colsIdx = 0; colsIdx < this->cols; colsIdx++)
+            {
+                this->setMatrixValue(rowsIdx, colsIdx, data[rowsIdx + this->rows*colsIdx]);
+            }
+    }
+    else
+    {
+        this->rows = new_rows;
+        this->cols = new_cols;
+
+        this->matrix2d = new Type[this->rows*this->cols];
+
+        //copy elements
+        for( int rowsIdx = 0; rowsIdx < this->rows; rowsIdx++)
+            for( int colsIdx = 0; colsIdx < this->cols; colsIdx++)
+            {
+                this->setMatrixValue(rowsIdx, colsIdx, data[rowsIdx*this->cols +colsIdx]);
+            }
     }
 
-    //delete the array that contains pointers to Type
-    delete [] this->matrix2d;
+
+    //copy(data, data + this->rows*this->cols, this->matrix2d);
+    //memcpy(this->matrix2d, data, this->rows*this->cols);
 }
 
 /*
 Operators overloading
 */
-//Overload attribution operator to allow for operatrions such as A = B, where A,B are Matrix2D instances
+//Override attribution operator to allow for operations such as A = B, where A,B are Matrix2D instances
 template <class Type>
 bool Matrix2D<Type>::operator==(const Matrix2D<Type>& new_matrix)
 {
@@ -95,7 +116,6 @@ bool Matrix2D<Type>::operator==(const Matrix2D<Type>& new_matrix)
             if(this->getMatrixValue(idx, idy) != new_matrix.getMatrixValue(idx, idy))
             {
                 k = false;
-                cout<<idx<<" "<<idy<<endl;
             }
     }
 
@@ -108,13 +128,10 @@ Matrix2D<Type>& Matrix2D<Type>::operator=(const Matrix2D<Type>& new_matrix)
     this->rows = new_matrix.getRows();
     this->cols = new_matrix.getCols();
 
-    //allocate memory for the rows. It is an array that contains pointers to Type.
-    this->matrix2d = new Type* [this->rows];
-    //allocate space for each column. That is, for each line, allocate space for each element in the matrix.
-    for( int rowsIdx = 0; rowsIdx < this->rows; rowsIdx++)
-    {
-        this->matrix2d[rowsIdx] = new Type[this->cols];
-    }
+    //allocate memory
+    if(this->matrix2d != NULL)
+        delete this->matrix2d;
+    this->matrix2d = new Type[this->rows*this->cols];
 
     //copy elements
     for( int rowsIdx = 0; rowsIdx < this->rows; rowsIdx++)
@@ -176,13 +193,8 @@ Matrix2D<Type>& Matrix2D<Type>::operator-(Matrix2D<Type>& new_matrix)
 template <class Type>
 void Matrix2D<Type>::allocateMemory(int dimX, int dimY)
 {
-    //allocate memory for the rows. It is an array that contains pointers to Type.
-    this->matrix2d = new Type* [dimX];
-    //allocate space for each column. That is, for each line, allocate space for each element in the matrix.
-    for( int rowsIdx = 0; rowsIdx < this->rows; rowsIdx++)
-    {
-        this->matrix2d[rowsIdx] = new Type[dimY];
-    }
+    //allocate memory
+    this->matrix2d = new Type[this->rows*this->cols];
 }
 
 template <class Type>
@@ -254,7 +266,7 @@ void Matrix2D<Type>::conv2DValid(Matrix2D<Type>& kernel, Matrix2D<Type>& result)
             {
                 for(n = 0; n < kernel.getCols() ; n++)
                 {
-                    temp = result.getMatrixValue(i, j) + this->matrix2d[i+m ][j+n] * kernel.getMatrixValue(m, n);
+                    temp = result.getMatrixValue(i, j) + this->matrix2d[(i+m)*this->cols + (j+n)] * kernel.getMatrixValue(m, n);
                     result.setMatrixValue(i, j, temp);
                 }
             }
@@ -1284,6 +1296,25 @@ void Matrix2D<Type>::getTranspose(Matrix2D<Type>** output)
         for(int idy = 0; idy < this->getCols(); idy++)
     {
         (**output).setMatrixValue(idy, idx, this->getMatrixValue(idx, idy));
+    }
+}
+
+//the result overwrites the input matrix. Only used for quadratic matrices
+template <class Type>
+void Matrix2D<Type>::Transp()
+{
+    Type temp;
+
+    //only for quadratic matrix
+    if(this->getCols() == this->getRows())
+    {
+        for(int idx = 0; idx < this->getRows(); idx++)
+            for(int idy = idx+1; idy < this->getCols(); idy++)
+            {
+                temp = this->getMatrixValue(idx, idy);
+                this->setMatrixValue(idx, idy, this->getMatrixValue(idy, idx));
+                this->setMatrixValue(idy, idx, temp);
+            }
     }
 }
 

@@ -11,6 +11,13 @@ private:
     ColorNatural nat;
 
 public:
+    //constructors
+    LightsColor(){};
+    LIghtsColor(const LightsColor &input)
+    {
+        this->lab = input.lab;
+        this->nat = input.nat;
+    };
     //operators overloading
     LightsColor& operator=(const LightsColor& input)
     {
@@ -24,12 +31,24 @@ public:
     inline ColorNatural& getColorNatural(){return this->nat;};
 
     //initialize Lights color data
-    void initializeLightColorData()
+    void initializeLightColorData(StructNode& color_metadata)
     {
-        //initialize lab
-        this->lab.initializeColorLaboratoryData();
-        //initialize nat
-        this->nat.initializeColorNaturalData();
+        //create a StructNode instance for 3rd level fields, that are natural and laboratory structs, which are inner structs for both color and gray
+        vector<StructNode*> nodes3 = color_metadata.getChildrenNodes();
+
+        for(int iii = 0; iii < nodes3.size(); iii++)
+        {
+            if(strcmp(nodes3[iii]->getStructureP()->name, "laboratory") == 0)
+            {
+                //initialize lab
+                this->lab.initializeColorLaboratoryData(*nodes3[iii]);
+            }
+            if(strcmp(nodes3[iii]->getStructureP()->name, "natural") == 0)
+            {
+                //initialize nat
+                this->nat.initializeColorNaturalData(*nodes3[iii]);
+            }
+        }
     }
 };
 

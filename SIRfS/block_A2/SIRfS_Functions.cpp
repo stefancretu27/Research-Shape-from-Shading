@@ -216,7 +216,6 @@ void medianFilterMatMask(Matrix2D<bool>& input_mask, int half_width, Matrix2D< K
         }
 
     vector<int> do_remove(fs_size, 0);
-    //fs size = 25.
     for(i = 0; i < fs_size; i++)
         for(j = i+1;  j < fs_size - i; j++)
         {
@@ -267,14 +266,6 @@ void medianFilterMatMask(Matrix2D<bool>& input_mask, int half_width, Matrix2D< K
         {
             //A is dynamically allocated in conv2mat
             conv2mat(input_mask.getRows(), input_mask.getCols(), fs[k], &A);
-
-#ifdef CREATE_TEST_FILES
-            DataFile<double> dfd;
-            ostringstream os ;
-            os << k+1 ;
-            string filename = "validation_files/Acpp" + os.str() + ".txt";
-            dfd.writeKeysValueMatrix2D(filename, &A, 1);
-#endif // CREATE_TEST_FILES
 
             Matrix2D<bool> bool_f( fs[k].getRows(), fs[k].getCols());
             //if a value is not zero, store 1, else store 1 in the new matrix f
@@ -493,7 +484,6 @@ void getBorderNormals(Matrix2D<bool> mask, Border& border)
         //store final results in matrix N
         N.setMatrixValue(i, 0, n[0]);
         N.setMatrixValue(i, 1, n[1]);
-
     }
 
     Matrix2D<double> T(N.getRows(), N.getCols());

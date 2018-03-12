@@ -4,6 +4,8 @@
 #include <vector>
 #include "../../../../templates/matrix2D.h"
 #include "../../../../templates/dataFile.h"
+#include "../../../prior_struct_node.h"
+#include "../../../../helpers/validation.h"
 
 class GrayWhitenParams
 {
@@ -12,7 +14,19 @@ private:
     Matrix2D<double> mapp, inverse, V, D, iD, C, iC;        //size = 9
 
 public:
-    GrayWhitenParams():mapp(9,9), inverse(9,9), V(9,9), D(9,9), iD(9,9), C(9,9), iC(9,9){};
+    //constructors
+    GrayWhitenParams(){};
+    GrayWhitenParams(const GrayWhitenParams& input)
+    {
+        this->mean = input.mean;
+        this->mapp = input.mapp;
+        this->inverse = input.inverse;
+        this->iC = input.iC;
+        this->C = input.C;
+        this->iD = input.iD;
+        this->D = input.D;
+        this->V = input.V;
+    };
      //operators overloading
     GrayWhitenParams& operator=(const GrayWhitenParams& input)
     {
@@ -38,8 +52,7 @@ public:
     inline Matrix2D<double>& getiC(){return this->iC;};
 
     //initialize data
-    void initializeGrayLaboratoryWhitenParamsData();
-    void initializeGrayNaturalWhitenParamsData();
+    void initializeGrayWhitenParamsData(StructNode& gray_wp_metadata);
 };
 
 #endif // WHITENPARAMS_H_INCLUDED

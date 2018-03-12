@@ -1,0 +1,23 @@
+﻿Build started 19/02/2018 18:32:11.
+     1>Project "C:\Users\stefa_000\Downloads\matio-1.5.11\matio-1.5.11\visual_studio\matdump\matdump.vcxproj" on node 2 (build target(s)).
+     1>InitializeBuildStatus:
+         Touching "Release\matdump.unsuccessfulbuild".
+       ClCompile:
+         All outputs are up-to-date.
+       Link:
+         c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\stefa_000\Downloads\matio-1.5.11\matio-1.5.11\visual_studio\Release\matdump.exe" /INCREMENTAL:NO /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /ManifestFile:"Release\matdump.exe.intermediate.manifest" /MANIFESTUAC:NO /PDB:"C:\Users\stefa_000\Downloads\matio-1.5.11\matio-1.5.11\visual_studio\Release\matdump.pdb" /SUBSYSTEM:CONSOLE /OPT:REF /OPT:ICF /LTCG /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\stefa_000\Downloads\matio-1.5.11\matio-1.5.11\visual_studio\Release\matdump.lib" /MACHINE:X86 Release\getopt_long.obj
+         Release\matdump.obj
+         "C:\Users\stefa_000\Downloads\matio-1.5.11\matio-1.5.11\visual_studio\Release\libmatio.lib"
+         Generating code
+         Finished generating code
+         matdump.vcxproj -> C:\Users\stefa_000\Downloads\matio-1.5.11\matio-1.5.11\visual_studio\Release\matdump.exe
+       Manifest:
+         C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\mt.exe /nologo /verbose /outputresource:"C:\Users\stefa_000\Downloads\matio-1.5.11\matio-1.5.11\visual_studio\Release\matdump.exe;#1" /manifest Release\matdump.exe.intermediate.manifest
+       FinalizeBuildStatus:
+         Deleting file "Release\matdump.unsuccessfulbuild".
+         Touching "Release\matdump.lastbuildstate".
+     1>Done Building Project "C:\Users\stefa_000\Downloads\matio-1.5.11\matio-1.5.11\visual_studio\matdump\matdump.vcxproj" (build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:00.74

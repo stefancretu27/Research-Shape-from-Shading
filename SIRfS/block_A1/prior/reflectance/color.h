@@ -15,6 +15,18 @@ private:
     ColorMA ma;
 
 public:
+    //constructors
+    ReflectanceColor(){};
+    ReflectanceColor(const ReflectanceColor& input)
+    {
+        this->A_whiten = input.A_whiten;
+        this->A_train = input.A_train;
+        this->Aw_hist = input.Aw_hist;
+        this->ma = input.ma;
+        this->bin_low = input.bin_low;
+        this->bin_high = input.bin_high;
+    };
+
     //operators overloading
     ReflectanceColor& operator=(const ReflectanceColor& input)
     {
@@ -36,8 +48,7 @@ public:
     inline ColorMA& getMA(){return this->ma;};
 
     //initialize data
-    ReflectanceColor();
-    void initializeReflectanceColorData();
+    void initializeReflectanceColorData(StructNode& color_metadata);
 };
 
 #endif // COLOR_H_INCLUDED

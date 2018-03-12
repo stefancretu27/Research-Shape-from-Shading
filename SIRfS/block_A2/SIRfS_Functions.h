@@ -1,8 +1,6 @@
 #ifndef SIRFS_FUNCTIONS_H_INCLUDED
 #define SIRFS_FUNCTIONS_H_INCLUDED
 
-//#define CREATE_TEST_FILES 1
-
 //used for std::min_element
 #include <algorithm>
 #include <tr1/memory>

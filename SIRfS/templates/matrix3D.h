@@ -8,8 +8,8 @@ template <class Type>
 class Matrix3D
 {
 private:
-    Type ***matrix3d;
-    unsigned int xDim, yDim, zDim;
+    Type *matrix3d;
+    unsigned int width, height, depth;
 
 public:
     //constructors
@@ -20,16 +20,20 @@ public:
     ~Matrix3D();
 
     //getters
-    inline int getXDim()const{return this->xDim;};
-    inline int getYDim()const{return this->yDim;};
-    inline int getZDim()const{return this->zDim;};
-    inline unsigned int getDim(){return this->xDim*this->yDim*this->zDim;};
-    inline Type getMatrixValue(int i, int j, int z) const {return this->matrix3d[i][j][z];};
+    inline int getWidth()const{return this->width;};
+    inline int getHeight()const{return this->height;};
+    inline int getDepth()const{return this->depth;};
+    inline unsigned int getDim(){return this->width*this->height*this->depth;};
+    inline unsigned int getLinearIndex(int i, int j, int k){return i*this->height*this->depth + j*this->depth + k;};
+    inline void get3DIndecesFromLinearIndex(int linearindex, int *w, int *h, int *d);
+    inline Type getMatrixValue(int i, int j, int k) const {return this->matrix3d[i*height*depth + j*depth + k];};
+
     //setters
-    inline void setXDim(int new_xDim){this->xDim = new_xDim;};
-    inline void setYDim(int new_yDim){this->yDim = new_yDim;};
-    inline void setZDim(int new_zDim){this->zDim = new_zDim;};
-    inline void setMatrixValue(int i, int j, int z, Type value){this->matrix3d[i][j][z] = value;};
+    inline void setWidth(int new_xDim){this->width = new_xDim;};
+    inline void setHeight(int new_yDim){this->height = new_yDim;};
+    inline void setDepth(int new_zDim){this->depth = new_zDim;};
+    inline void setMatrixValue(int x, int y, int z, Type value){this->matrix3d[x*this->height*this->depth + y*this->depth +z] = value;};
+    void setMatrix3D(Type* data, int new_width,  int new_height, int new_depth);
 
     //operators overloading
     Type& operator()(unsigned int new_xDim, unsigned int new_yDim, unsigned int new_zDim);

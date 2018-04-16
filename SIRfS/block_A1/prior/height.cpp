@@ -26,11 +26,13 @@ void Height::initializeHeightData(StructNode& height_metadata)
                         test_vectors("block_A1/prior/nz_train17.txt", this->nz_train, Double)<<endl;
 #endif // TEST_PRIOR_HEIGHT
         }
+
         //get metadata for the inner structures
         if(strcmp(nodes2[ii]->getStructureP()->name, "normal") == 0)
         {
             this->normal.initializeNormalData(*nodes2[ii]);
         }
+
         if(strcmp(nodes2[ii]->getStructureP()->name, "MKZ") == 0)
         {
             this->mkz.initilalizeMKZData(*nodes2[ii]);

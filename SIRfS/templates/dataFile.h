@@ -156,7 +156,7 @@ public:
         fileObject.close();
     }
 
-    //It is known the input matrixes have 2 columns
+    //It is known the input matrixes have 1 column
     void writeKeysValueMatrix2D(string filename, Matrix2D<KeysValue<Type> > **source, int alterValue)
     {
         fstream fileObject;
@@ -167,8 +167,8 @@ public:
         {
             for(int x = 0; x < (**source).getRows(); x++)
             {
-                fileObject << (**source)(x, 0).getKeyX()+alterValue<<" "<<(**source)(x, 0).getKeyY()+alterValue<<" "<<(**source)(x, 0).getValue()<<" ";
-                fileObject<< (**source)(x, 1).getKeyX()+alterValue<<" "<<(**source)(x, 1).getKeyY()+alterValue<<" "<<(**source)(x, 1).getValue()<<endl;
+                fileObject << (**source)(x, 0).getKeyX()+alterValue<<" "<<(**source)(x, 0).getKeyY()+alterValue<<" "<<(**source)(x, 0).getValue()<<endl;
+                //fileObject<< (**source)(x, 1).getKeyX()+alterValue<<" "<<(**source)(x, 1).getKeyY()+alterValue<<" "<<(**source)(x, 1).getValue()<<endl;
             }
         }
         fileObject.close();

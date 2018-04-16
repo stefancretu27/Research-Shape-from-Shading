@@ -21,6 +21,7 @@ void GSM::initializeGSMHeightData(StructNode& GSMHeight_metadata)
                         nodes4[iv]->getStructureP()->name<<"  "<<result<<endl;
 #endif // TEST_PRIOR_HEIGHT
          }
+
         if(strcmp(nodes4[iv]->getStructureP()->name, "sigs") == 0)
          {
             //get pointer to raw data from .mat file
@@ -35,8 +36,9 @@ void GSM::initializeGSMHeightData(StructNode& GSMHeight_metadata)
                         test_vectors("block_A1/prior/height/MKZ/sigs21.txt", this->sigs, Double)<<endl;
 #endif // TEST_PRIOR_HEIGHT
          }
+
         if(strcmp(nodes4[iv]->getStructureP()->name, "pis") == 0)
-         {
+        {
             //get pointer to raw data from .mat file
             double *raw_data = (double*)nodes4[iv]->getStructureP()->data;
             //get dimension of the vector
@@ -49,6 +51,7 @@ void GSM::initializeGSMHeightData(StructNode& GSMHeight_metadata)
                         test_vectors("block_A1/prior/height/MKZ/pis31.txt", this->pis, Double)<<endl;
 #endif // TEST_PRIOR_HEIGHT
          }
+
          //get data for lut structure
          if(strcmp(nodes4[iv]->getStructureP()->name, "lut") == 0)
          {

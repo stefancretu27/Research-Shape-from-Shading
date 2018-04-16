@@ -46,6 +46,7 @@ public:
     matvar_t* getFieldP(int index);
     matvar_t ** getFields_P();
     std::vector<StructNode*>  getChildrenNodes();
+    void* getNodeDataPointer(){return this->getStructureP()->data;};
 
     //constructors
     StructNode(){this->structure_p = NULL; this->fields_names = NULL; this->struct_fields_p = NULL;};
@@ -55,7 +56,7 @@ public:
     StructNode(const StructNode &sn);
     ~StructNode();
 
-    //operators overloading
+    //operators overriding
     StructNode& operator=(const StructNode &sn);
 };
 

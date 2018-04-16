@@ -7,98 +7,95 @@ using namespace std;
 */
 //Creates a matrix2D with specified dimensions
 template <class Type>
-Matrix2D<Type>::Matrix2D( int new_rows,  int new_cols)
+Matrix2D<Type>::Matrix2D( int new_rows,  int new_cols):rows(new_rows), cols(new_cols)
 {
-    this->rows = new_rows;
-    this->cols = new_cols;
-
     //allocate memory
     if(rows != 0 && cols !=0)
-        this->matrix2d = new Type[this->rows*this->cols];
+    {
+        this->container = new Type[this->rows*this->cols];
+    }
     else
-        this->matrix2d = NULL;
+    {
+        this->container = NULL;
+    }
 }
 
 //Constructor with data initializations: this constructor creates a matrix2D that has the specified dimensions and whose elements are initialized to the given value
 template <class Type>
-Matrix2D<Type>::Matrix2D( int new_rows,  int new_cols, Type value)
+Matrix2D<Type>::Matrix2D( int new_rows,  int new_cols, Type value):rows(new_rows), cols(new_cols)
 {
-    this->rows = new_rows;
-    this->cols = new_cols;
-
     //allocate memory
-    this->matrix2d = new Type[this->rows*this->cols];
+    this->container = new Type[this->rows*this->cols];
 
+    /*
     for(int rowsIdx = 0; rowsIdx < this->rows; rowsIdx++ )
         for(int colsIdx = 0; colsIdx < this->cols; colsIdx++)
         {
             this->setMatrixValue(rowsIdx, colsIdx, value);
         }
+        */
+    for(unsigned int idx = 0; idx < this->getDim(); idx++)
+    {
+        this->container[idx] = value;
+    }
 }
 
 //Copy constructor: The calling matrix is a clone of the input matrix, being allocated and initialized to the latter's values
 template <class Type>
-Matrix2D<Type>::Matrix2D(const Matrix2D<Type>& new_matrix)
+Matrix2D<Type>::Matrix2D(const Matrix2D<Type>& new_matrix):rows(new_matrix.getRows()), cols(new_matrix.getCols())
 {
-    this->rows = new_matrix.getRows();
-    this->cols = new_matrix.getCols();
-
     //allocate memory
-    this->matrix2d = new Type[this->rows*this->cols];
+    this->container = new Type[this->rows*this->cols];
 
     //copy elements
+    /*
     for( int rowsIdx = 0; rowsIdx < this->rows; rowsIdx++)
         for( int colsIdx = 0; colsIdx < this->cols; colsIdx++)
         {
             this->setMatrixValue(rowsIdx, colsIdx, new_matrix.getMatrixValue(rowsIdx, colsIdx));
         }
+        */
+    for(unsigned int idx = 0; idx < this->getDim(); idx++)
+    {
+        this->container[idx] = new_matrix.getMatrixValue(idx);
+    }
 }
 
 //Destructor
 template <class Type>
 Matrix2D<Type>::~Matrix2D()
 {
-
     //delete the array
-    delete [] this->matrix2d;
+    delete [] this->container;
 }
 
 template <class Type>
 void Matrix2D<Type>::setMatrix2D(Type* data, int new_rows,  int new_cols, bool transp)
 {
+    this->rows = new_rows;
+    this->cols = new_cols;
+
+    this->container = new Type[this->rows*this->cols];
+
     //in Matlab the matrices are stored column after column, in the contiguous array gotten as parameters (data), so it needs to be transposed
     if(transp)
     {
-        this->rows = new_rows;
-        this->cols = new_cols;
-
-        this->matrix2d = new Type[this->rows*this->cols];
-
         //copy elements
         for( int rowsIdx = 0; rowsIdx < this->rows; rowsIdx++)
             for( int colsIdx = 0; colsIdx < this->cols; colsIdx++)
             {
-                this->setMatrixValue(rowsIdx, colsIdx, data[rowsIdx + this->rows*colsIdx]);
+                //this->setMatrixValue(rowsIdx, colsIdx, data[rowsIdx + this->rows*colsIdx]);
+                this->container[rowsIdx*this->cols +colsIdx] = data[rowsIdx + this->rows*colsIdx];
             }
     }
     else
     {
-        this->rows = new_rows;
-        this->cols = new_cols;
-
-        this->matrix2d = new Type[this->rows*this->cols];
-
         //copy elements
-        for( int rowsIdx = 0; rowsIdx < this->rows; rowsIdx++)
-            for( int colsIdx = 0; colsIdx < this->cols; colsIdx++)
-            {
-                this->setMatrixValue(rowsIdx, colsIdx, data[rowsIdx*this->cols +colsIdx]);
-            }
+        for(unsigned int idx = 0; idx < this->getDim(); idx++)
+        {
+            this->container[idx] = data[idx];
+        }
     }
-
-
-    //copy(data, data + this->rows*this->cols, this->matrix2d);
-    //memcpy(this->matrix2d, data, this->rows*this->cols);
 }
 
 /*
@@ -110,13 +107,30 @@ bool Matrix2D<Type>::operator==(const Matrix2D<Type>& new_matrix)
 {
     bool k = true;
 
-    for(int idx = 0; idx < this->getRows(); idx++)
+    if(this->getDim() != new_matrix.getDim())
     {
-        for(int idy = 0; idy < this->getCols(); idy++)
-            if(this->getMatrixValue(idx, idy) != new_matrix.getMatrixValue(idx, idy))
+        cout<<"The matrices have different dimensions and cannot be compared"<<endl;
+        exit(0);
+    }
+    else
+    {
+        /*for(unsigned int idx = 0; idx < this->getRows(); idx++)
+        {
+            for(unsigned int idy = 0; idy < this->getCols(); idy++)
+                if(this->getMatrixValue(idx, idy) != new_matrix.getMatrixValue(idx, idy))
+                {
+                    k = false;
+                }
+        }*/
+
+        for(unsigned int idx = 0; idx < this->getDim() && k; idx++)
+        {
+            if(this->container[idx]!= new_matrix.getMatrixValue(idx))
             {
                 k = false;
+                break;
             }
+        }
     }
 
     return k;
@@ -129,16 +143,24 @@ Matrix2D<Type>& Matrix2D<Type>::operator=(const Matrix2D<Type>& new_matrix)
     this->cols = new_matrix.getCols();
 
     //allocate memory
-    if(this->matrix2d != NULL)
-        delete this->matrix2d;
-    this->matrix2d = new Type[this->rows*this->cols];
+    if(this->container != NULL)
+    {
+        delete this->container;
+    }
+    this->container = new Type[this->rows*this->cols];
 
     //copy elements
+    /*
     for( int rowsIdx = 0; rowsIdx < this->rows; rowsIdx++)
         for( int colsIdx = 0; colsIdx < this->cols; colsIdx++)
         {
             this->setMatrixValue(rowsIdx, colsIdx, new_matrix.getMatrixValue(rowsIdx, colsIdx));
         }
+    */
+    for(unsigned int idx = 0; idx < this->getDim(); idx++)
+    {
+        this->container[idx] = new_matrix.getMatrixValue(idx);
+    }
 
     return *this;
 }
@@ -154,13 +176,18 @@ Matrix2D<Type>& Matrix2D<Type>::operator+(Matrix2D<Type>& new_matrix)
         exit(0);
     }
 
-    //copy elements
-    for( int rowsIdx = 0; rowsIdx < this->rows; rowsIdx++)
+    //sum up elements
+    /*for( int rowsIdx = 0; rowsIdx < this->rows; rowsIdx++)
         for( int colsIdx = 0; colsIdx < this->cols; colsIdx++)
         {
             sum = this->getMatrixValue(rowsIdx, colsIdx) + new_matrix.getMatrixValue(rowsIdx, colsIdx);
             this->setMatrixValue(rowsIdx, colsIdx, sum);
         }
+        */
+    for(unsigned int idx = 0; idx < this->getDim(); idx++)
+    {
+        this->container[idx] += new_matrix.getMatrixValue(idx);
+    }
 
     return *this;
 }
@@ -176,13 +203,18 @@ Matrix2D<Type>& Matrix2D<Type>::operator-(Matrix2D<Type>& new_matrix)
         exit(0);
     }
 
-    //copy elements
-    for( int rowsIdx = 0; rowsIdx < this->rows; rowsIdx++)
+    //substract elements
+    /*for( int rowsIdx = 0; rowsIdx < this->rows; rowsIdx++)
         for( int colsIdx = 0; colsIdx < this->cols; colsIdx++)
         {
             diff = this->getMatrixValue(rowsIdx, colsIdx) - new_matrix.getMatrixValue(rowsIdx, colsIdx);
             this->setMatrixValue(rowsIdx, colsIdx, diff);
         }
+        */
+    for(unsigned int idx = 0; idx < this->getDim(); idx++)
+    {
+        this->container[idx] -= new_matrix.getMatrixValue(idx);
+    }
 
     return *this;
 }
@@ -191,32 +223,14 @@ Matrix2D<Type>& Matrix2D<Type>::operator-(Matrix2D<Type>& new_matrix)
 *helpers
 */
 template <class Type>
-void Matrix2D<Type>::allocateMemory(int dimX, int dimY)
-{
-    //allocate memory
-    this->matrix2d = new Type[this->rows*this->cols];
-}
-
-template <class Type>
-void Matrix2D<Type>::copyElementsFromMatrix(Matrix2D<Type>& source)
-{
-    for( int rowsIdx = 0; rowsIdx < this->rows; rowsIdx++)
-        for( int colsIdx = 0; colsIdx < this->cols; colsIdx++)
-        {
-            //this->matrix2d[rowsIdx][colsIdx] = source(rowsIdx, colsIdx);
-            this->setMatrixValue(rowsIdx, colsIdx, source.getMatrixValue(rowsIdx, colsIdx));
-        }
-}
-
-template <class Type>
 void Matrix2D<Type>::initializeMatrixValues(Type value)
 {
-    for( int rowsIdx = 0; rowsIdx < this->rows; rowsIdx++)
-        for( int colsIdx = 0; colsIdx < this->cols; colsIdx++)
-        {
-            this->setMatrixValue(rowsIdx, colsIdx, value);
-        }
+    for(unsigned int idx = 0; idx < this->getDim(); idx++)
+    {
+        this->container[idx] = value;
+    }
 }
+
 
 /*
 *Convolution
@@ -266,7 +280,7 @@ void Matrix2D<Type>::conv2DValid(Matrix2D<Type>& kernel, Matrix2D<Type>& result)
             {
                 for(n = 0; n < kernel.getCols() ; n++)
                 {
-                    temp = result.getMatrixValue(i, j) + this->matrix2d[(i+m)*this->cols + (j+n)] * kernel.getMatrixValue(m, n);
+                    temp = result.getMatrixValue(i, j) + this->getMatrixValue(i+m, j+n) * kernel.getMatrixValue(m, n);
                     result.setMatrixValue(i, j, temp);
                 }
             }
@@ -318,15 +332,24 @@ void Matrix2D<Type>::insertNaNValues(Matrix2D<bool>& mask)
     }
     else
     {
+        /*
         for(int i = 0; i < mask.getRows(); i++)
             for(int j = 0; j < mask.getCols(); j++)
             {
-                //if the mask has value 1 at i(,j) index
+                //if the mask has value 1 at (i,j) index
                 if(mask.getMatrixValue(i,j) == 1)
                 {
                     this->setMatrixValue(i, j, numeric_limits<double>::quiet_NaN());
                 }
             }
+            */
+        for(unsigned int idx = 0; idx < this->getDim(); idx++)
+        {
+            if(mask.getMatrixValue(idx) == 1)
+            {
+                this->container[idx] = numeric_limits<double>::quiet_NaN();
+            }
+        }
     }
 }
 
@@ -339,6 +362,7 @@ void Matrix2D<Type>::compareValuesToTreshold(Matrix2D<bool>& result, Type tresho
     switch(comp)
     {
         case 0:
+            /*
             for(i = 0; i < this->getRows(); i++)
                 for(j = 0; j < this->getCols(); j++)
                 {
@@ -351,76 +375,83 @@ void Matrix2D<Type>::compareValuesToTreshold(Matrix2D<bool>& result, Type tresho
                         result.setMatrixValue(i, j, 0);
                     }
                 }
+                */
+            for(unsigned int idx = 0; idx < this->getDim(); idx++)
+            {
+                if(this->container[idx] == treshold)
+                {
+                    result.setMatrixValue(idx, 1);
+                }
+                else
+                {
+                    result.setMatrixValue(idx, 0);
+                }
+            }
             break;
         case 1:
-            for(i = 0; i < this->getRows(); i++)
-                for(j = 0; j < this->getCols(); j++)
+            for(unsigned int idx = 0; idx < this->getDim(); idx++)
+            {
+                if(this->container[idx] != treshold)
                 {
-                    if(this->getMatrixValue(i, j) != treshold)
-                    {
-                        result.setMatrixValue(i, j, 1);
-                    }
-                    else
-                    {
-                        result.setMatrixValue(i, j, 0);
-                    }
+                    result.setMatrixValue(idx, 1);
                 }
+                else
+                {
+                    result.setMatrixValue(idx, 0);
+                }
+            }
             break;
         case 2:
-            for(i = 0; i < this->getRows(); i++)
-                for(j = 0; j < this->getCols(); j++)
+            for(unsigned int idx = 0; idx < this->getDim(); idx++)
+            {
+                if(this->container[idx] < treshold)
                 {
-                    if(this->getMatrixValue(i, j) < treshold)
-                    {
-                        result.setMatrixValue(i, j, 1);
-                    }
-                    else
-                    {
-                        result.setMatrixValue(i, j, 0);
-                    }
+                    result.setMatrixValue(idx, 1);
                 }
+                else
+                {
+                    result.setMatrixValue(idx, 0);
+                }
+            }
             break;
         case 3:
-            for(i = 0; i < this->getRows(); i++)
-                for(j = 0; j < this->getCols(); j++)
+            for(unsigned int idx = 0; idx < this->getDim(); idx++)
+            {
+                if(this->container[idx] <= treshold)
                 {
-                    if(this->getMatrixValue(i, j) <= treshold)
-                    {
-                        result.setMatrixValue(i, j, 1);
-                    }
-                    else
-                    {
-                        result.setMatrixValue(i, j, 0);
-                    }
+                    result.setMatrixValue(idx, 1);
                 }
+                else
+                {
+                    result.setMatrixValue(idx, 0);
+                }
+            }
             break;
         case 4:
-            for(i = 0; i < this->getRows(); i++)
-                for(j = 0; j < this->getCols(); j++)
+            for(unsigned int idx = 0; idx < this->getDim(); idx++)
+            {
+                if(this->container[idx] >= treshold)
                 {
-                    if(this->getMatrixValue(i, j) >= treshold)
-                    {
-                        result.setMatrixValue(i, j, 1);
-                    }
-                    else
-                    {
-                        result.setMatrixValue(i, j, 0);
-                    }
+                    result.setMatrixValue(idx, 1);
                 }
+                else
+                {
+                    result.setMatrixValue(idx, 0);
+                }
+            }
             break;
         case 5:
-            for(i = 0; i < this->getRows(); i++)
-                for(j = 0; j < this->getCols(); j++)
+            for(unsigned int idx = 0; idx < this->getDim(); idx++)
+            {
+                if(this->container[idx] > treshold)
                 {
-                    if(this->getMatrixValue(i, j) > treshold)
-                    {
-                        result.setMatrixValue(i, j, 1);
-                    }
-                    else
-                    {
-                        result.setMatrixValue(i, j, 0);
-                    }
+                    result.setMatrixValue(idx, 1);
                 }
+                else
+                {
+                    result.setMatrixValue(idx, 0);
+                }
+            }
             break;
     }
 }
@@ -429,10 +460,16 @@ void Matrix2D<Type>::compareValuesToTreshold(Matrix2D<bool>& result, Type tresho
 template <class Type>
 void Matrix2D<Type>::negateMatrixMask(Matrix2D<bool>& result)
 {
-    for(int i = 0; i < this->getRows(); i++)
+    /*for(int i = 0; i < this->getRows(); i++)
         for(int j = 0; j < this->getCols(); j++)
     {
         result.setMatrixValue(i, j, 1 - this->getMatrixValue(i,j));
+    }
+    */
+
+    for(unsigned int idx = 0; idx < this->getDim(); idx++)
+    {
+        result.setMatrixValue(idx, 1 - this->container[idx]);
     }
 }
 
@@ -440,14 +477,25 @@ void Matrix2D<Type>::negateMatrixMask(Matrix2D<bool>& result)
 template <class Type>
 int Matrix2D<Type>::logicalAnd(Matrix2D<bool>& result, Matrix2D<Type>& input)
 {
-    int i, j, counter = 0;
+    unsigned int counter = 0;
 
-    for(i = 0; i < this->getRows(); i++)
+    /*for(i = 0; i < this->getRows(); i++)
         for(j = 0; j < this->getCols(); j++)
     {
         result.setMatrixValue(i, j, this->getMatrixValue(i,j ) & input.getMatrixValue(i, j));
         if(result.getMatrixValue(i, j) == 1)
             counter++;
+    }
+    */
+
+    for(unsigned int idx = 0; idx < this->getDim(); idx++)
+    {
+        result.setMatrixValue(idx, this->container[idx] & input.getMatrixValue(idx));
+
+        if(result.getMatrixValue(idx) == 1)
+        {
+            counter++;
+        }
     }
 
     return counter;
@@ -602,7 +650,7 @@ void Matrix2D<Type>::applyDoubleVectorMask(Matrix2D<Type>& result, std::vector<b
 template <class Type>
 void Matrix2D<Type>::applyMatrixMask(Matrix2D<Type>& result, Matrix2D<bool> mask)
 {
-    for(int i = 0; i < this->getRows(); i++)
+    /*for(int i = 0; i < this->getRows(); i++)
         for(int j = 0; j < this->getCols(); j++)
     {
         if(mask(i, j) == 1)
@@ -610,20 +658,32 @@ void Matrix2D<Type>::applyMatrixMask(Matrix2D<Type>& result, Matrix2D<bool> mask
             result.setMatrixValue(i, j, this->getMatrixValue(i, j));
         }
     }
+    */
+    for(unsigned int idx = 0; idx < this->getDim(); idx++)
+    {
+        if(mask.getMatrixValue(idx) == 1)
+        {
+            result.setMatrixValue(idx, this->container[idx]);
+        }
+    }
+
 }
 
 template <class Type>
 void Matrix2D<Type>::sortLines()
 {
     Type aux;
+
     for(int i = 0; i < this->getRows(); i++)
     {
         for(int j = 0; j < this->getCols()-1; j++)
-            if(this->getMatrixValue(i, j) > this->getMatrixValue(i, j+1))
         {
-            aux = this->getMatrixValue(i, j);
-            this->setMatrixValue(i, j, this->getMatrixValue(i, j+1));
-            this->setMatrixValue(i, j+1, aux);
+            if(this->getMatrixValue(i, j) > this->getMatrixValue(i, j+1))
+            {
+                aux = this->getMatrixValue(i, j);
+                this->setMatrixValue(i, j, this->getMatrixValue(i, j+1));
+                this->setMatrixValue(i, j+1, aux);
+            }
         }
     }
 }
@@ -635,10 +695,14 @@ void Matrix2D<Type>::sortLines()
 template <class Type>
 void Matrix2D<Type>::getAbsoluteValuesMatrix(Matrix2D<Type>& source)
 {
-    for(int i = 0; i < source.getRows(); i++)
+    /*for(int i = 0; i < source.getRows(); i++)
         for(int j = 0; j < source.getCols(); j++)
     {
         this->setMatrixValue(i, j, abs(source.getMatrixValue(i,j)));
+    }*/
+    for(unsigned int idx = 0; idx < this->getDim(); idx++)
+    {
+        this->container[idx] = abs(source.getMatrixValue(idx));
     }
 }
 
@@ -646,11 +710,16 @@ void Matrix2D<Type>::getAbsoluteValuesMatrix(Matrix2D<Type>& source)
 template <class Type>
 void Matrix2D<Type>::logNatMatrix(Matrix2D<Type>& source)
 {
-    for(int i = 0; i < this->getRows(); i++)
+    /*for(int i = 0; i < this->getRows(); i++)
         for(int j = 0; j < this->getCols(); j++)
         {
             this->setMatrixValue(i, j, log(source.getMatrixValue(i,j)));
         }
+        */
+    for(unsigned int idx = 0; idx < this->getDim(); idx++)
+    {
+        this->container[idx] = log(source.getMatrixValue(idx));
+    }
 }
 
 //find first element in matrix that differs from the input value
@@ -753,12 +822,19 @@ void Matrix2D<Type>::anyGreater(vector<int>& result, int direction, int treshold
 template <class Type>
 bool Matrix2D<Type>::checkNonZero()
 {
-    for(int i = 0; i < this->getRows(); i++)
+    /*for(int i = 0; i < this->getRows(); i++)
         for(int j = 0; j < this->getCols(); j++)
         {
             if(this->getMatrixValue(i, j) != 0)
                 return true;
         }
+        */
+    for(unsigned int idx = 0; idx < this->getDim(); idx++)
+    {
+        if(this->container[idx] != 0)
+            return true;
+    }
+
     return false;
 }
 
@@ -940,7 +1016,6 @@ void Matrix2D<Type>::vFindIndeces(std::vector<int>& x, std::vector<int>&  y, Typ
     switch(cmp)
     {
     case 0:
-        //cout<<x.size()<<" "<<y.size()<<endl;
         for(j = 0; j < this->getCols(); j++)
             for(i = 0; i < this->getRows(); i++)
         {
@@ -949,7 +1024,6 @@ void Matrix2D<Type>::vFindIndeces(std::vector<int>& x, std::vector<int>&  y, Typ
                 x[res_i] = i;
                 y[res_i] = j;
                 res_i++;
-                //cout<<res_i<<endl;
             }
         }
         break;
@@ -1112,45 +1186,45 @@ void Matrix2D<Type>::elementsOperation(Matrix2D<Type>& result, Type value, Opera
     switch(op)
     {
     case 0:
-        for(i = 0; i < this->getRows(); i++)
+        /*for(i = 0; i < this->getRows(); i++)
             for(j = 0; j < this->getCols(); j++)
             {
                 result.setMatrixValue(i, j, this->getMatrixValue(i, j) + value);
             }
+            */
+            for(unsigned int idx = 0; idx < this->getDim(); idx++)
+            {
+                result.setMatrixValue(idx, this->container[idx] + value);
+            }
         break;
     case 1:
-        for(i = 0; i < this->getRows(); i++)
-            for(j = 0; j < this->getCols(); j++)
+            for(unsigned int idx = 0; idx < this->getDim(); idx++)
             {
-                result.setMatrixValue(i, j, this->getMatrixValue(i, j) - value);
+                result.setMatrixValue(idx, this->container[idx] - value);
             }
         break;
     case 2:
-        for(i = 0; i < this->getRows(); i++)
-            for(j = 0; j < this->getCols(); j++)
+            for(unsigned int idx = 0; idx < this->getDim(); idx++)
             {
-                result.setMatrixValue(i, j, this->getMatrixValue(i, j) * value);
+                result.setMatrixValue(idx, this->container[idx] * value);
             }
         break;
     case 3:
-        for(i = 0; i < this->getRows(); i++)
-            for(j = 0; j < this->getCols(); j++)
+            for(unsigned int idx = 0; idx < this->getDim(); idx++)
             {
-                result.setMatrixValue(i, j, this->getMatrixValue(i, j)/value);
+                result.setMatrixValue(idx, this->container[idx]/value);
             }
         break;
     case 4:
-        for(i = 0; i < this->getRows(); i++)
-            for(j = 0; j < this->getCols(); j++)
+            for(unsigned int idx = 0; idx < this->getDim(); idx++)
             {
-                result.setMatrixValue(i, j, pow(this->getMatrixValue(i, j), value));
+                result.setMatrixValue(idx, pow(this->container[idx], value));
             }
         break;
     case 5:
-        for(i = 0; i < this->getRows(); i++)
-            for(j = 0; j < this->getCols(); j++)
+            for(unsigned int idx = 0; idx < this->getDim(); idx++)
             {
-                result.setMatrixValue(i, j, exp(this->getMatrixValue(i, j)));
+                result.setMatrixValue(idx, exp(this->container[idx]));
             }
         break;
     }
@@ -1206,10 +1280,18 @@ int Matrix2D<Type>::countValuesDifferentFromInput(Type value)
 {
     int counter = 0;
 
+    /*
     for(int i = 0; i < this->getRows(); i++)
         for(int j = 0; j < this->getCols(); j++)
     {
         if(this->getMatrixValue(i, j) != value)
+            counter++;
+    }
+    */
+
+    for(unsigned int idx = 0; idx < this->getDim(); idx++)
+    {
+        if(this->container[idx] != value)
             counter++;
     }
 
@@ -1290,7 +1372,7 @@ void Matrix2D<Type>::reverseMatrix(Matrix2D<Type>& source)
 template <class Type>
 void Matrix2D<Type>::getTranspose(Matrix2D<Type>** output)
 {
-    *output = new Matrix2D<KeysValue<double> >(this->getCols(), this->getRows());
+    *output = new Matrix2D<Type>(this->getCols(), this->getRows());
 
     for(int idx = 0; idx < this->getRows(); idx++)
         for(int idy = 0; idy < this->getCols(); idy++)
@@ -1301,7 +1383,7 @@ void Matrix2D<Type>::getTranspose(Matrix2D<Type>** output)
 
 //the result overwrites the input matrix. Only used for quadratic matrices
 template <class Type>
-void Matrix2D<Type>::Transp()
+void Matrix2D<Type>::TransposeMatrix()
 {
     Type temp;
 
@@ -1315,15 +1397,5 @@ void Matrix2D<Type>::Transp()
                 this->setMatrixValue(idx, idy, this->getMatrixValue(idy, idx));
                 this->setMatrixValue(idy, idx, temp);
             }
-    }
-}
-
-//caller matrix is a double column matrix storing indeces of another matrix
-template <class Type>
-void Matrix2D<Type>::linearizeIndeces(std::vector<Type>& result, int rows, int cols)
-{
-    for(int idx = 0; idx< this->getRows(); idx++)
-    {
-        result.push_back( this->getMatrixValue(idx, 0) + this->getMatrixValue(idx, 1)*rows );
     }
 }

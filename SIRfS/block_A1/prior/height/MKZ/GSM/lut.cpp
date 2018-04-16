@@ -17,14 +17,17 @@ void Lut::initializeLutData(StructNode& lut_metadata)
             this->bin_range.setLow(raw_data[0]);
             this->bin_range.setHigh(raw_data[1]);
         }
+
         if(strcmp(nodes5[v]->getStructureP()->name, "bin_width") == 0)
         {
             this->bin_width = *(double*)nodes5[v]->getStructureP()->data;
         }
+
         if(strcmp(nodes5[v]->getStructureP()->name, "n_bins") == 0)
         {
             this->n_bins= *(double*)nodes5[v]->getStructureP()->data;
         }
+
         if(strcmp(nodes5[v]->getStructureP()->name, "F_LL") == 0)
         {
             //get pointer to raw data from .mat file
@@ -34,6 +37,7 @@ void Lut::initializeLutData(StructNode& lut_metadata)
             //use pointer to the first and the last element in the array as iterators
             this->F_LL.assign(raw_data, raw_data + dim);
         }
+
         if(strcmp(nodes5[v]->getStructureP()->name, "F_cost") == 0)
         {
             //get pointer to raw data from .mat file
@@ -43,6 +47,7 @@ void Lut::initializeLutData(StructNode& lut_metadata)
             //use pointer to the first and the last element in the array as iterators
             this->F_cost.assign(raw_data, raw_data + dim);
         }
+
         if(strcmp(nodes5[v]->getStructureP()->name, "N_train") == 0)
         {
             //get pointer to raw data from .mat file

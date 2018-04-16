@@ -40,61 +40,61 @@ void conv2mat(int maskRows, int maskCols, Matrix2D<int> input_filter, Matrix2D<K
             idx0[x*maskCols + y] = x*maskCols + y;
         }
 
-        for(int oi = 0; oi < F.getRows(); oi++)
-            for(int oj = 0; oj < F.getCols(); oj++)
+    for(int oi = 0; oi < F.getRows(); oi++)
+        for(int oj = 0; oj < F.getCols(); oj++)
+        {
+            //for each non zero value in the reversed input filter compute an array of indeces
+            if(F.getMatrixValue(oi, oj) != 0)
             {
-                //for each non zero value in the reversed input filter compute an array of indeces
-                if(F.getMatrixValue(oi, oj) != 0)
+                //used to count how many 0 values will be in idx array. It is reset to 0 for each new non-zero value of F matrix
+                count_out_of_range_indeces.push_back(0);
+
+                for(index = 0; index < mask_matrix_linear_size; index++)
                 {
-                    //used to count how many 0 values will be in idx array. It is reset to 0 for each new non-zero value of F matrix
-                    count_out_of_range_indeces.push_back(0);
+                    //the reversed filter is applied to the mask so, new vectors storing the updated indeces are computed
+                    i[index] = i0[index] + oi ;
+                    j[index] = j0[index] + oj ;
 
-                    for(index = 0; index < mask_matrix_linear_size; index++)
+                    keep[index] = (i[index] < maskRows) & (j[index] < maskCols);
+
+                    //check if the newly computed indeces are in the given range. Don't need to use 'keep' vector for this, but it's similar to verifying if keep[index] == 1
+                    if(keep[index])
                     {
-                        //the reversed filter is applied to the mask so, new vectors storing the updated indeces are computed
-                        i[index] = i0[index] + oi ;
-                        j[index] = j0[index] + oj ;
-
-                        keep[index] = (i[index] < maskRows) & (j[index] < maskCols);
-
-                        //check if the newly computed indeces are in the given range. Don't need to use 'keep' vector for this, but it's similar to verifying if keep[index] == 1
-                        if(keep[index])
-                        {
-                            //If the updated indeces are within the mask matrix dimensions range, linearize them and store them in a vector (idx)
-                            // Matlab's sub2ind  loops firstly on each row, then on columns thus the linearization below (reads column by column, not line by line)
-                            idx[index] = i[index] + maskRows * j[index];
-                        }
-                        else
-                        {
-                            //if the updated indeces are out of range, store 0 as linear index and increase counter
-                            idx[index] = 0;
-                            count_out_of_range_indeces[counter_dim]++;
-                        }
+                        //If the updated indeces are within the mask matrix dimensions range, linearize them and store them in a vector (idx)
+                        // Matlab's sub2ind  loops firstly on each row, then on columns thus the linearization below (reads column by column, not line by line)
+                        idx[index] = i[index] + maskRows * j[index];
                     }
-
-                    //replace 0 values in idx with -1. Normally, there should be NaN values, but since they represent indeces, negative values work as well in order to distinguish them
-                    if(count_out_of_range_indeces[counter_dim] != 0)
+                    else
                     {
-                        for(unsigned int k = 0; k < idx.size(); k++)
-                        {
-                            if(idx[k] == 0)
-                            {
-                                idx[k] = -1;
-                            }
-                        }
+                        //if the updated indeces are out of range, store 0 as linear index and increase counter
+                        idx[index] = 0;
+                        count_out_of_range_indeces[counter_dim]++;
                     }
-
-                    //store the newly computed vector (the new idx) in the vector of vectors
-                    idxs.push_back(idx);
-                    //store each non zero value found in the reversed input filter (F)
-                    fs.push_back(F.getMatrixValue(oi, oj)) ;
-                    //store the size of each newly computed vector (idx).
-                    //If all updated indeces are within mask matrix range, the size of idx vector will be mask_matrix_linear_size. Otherwise, it will be less, depending
-                    //dims.push_back(idx.size() - count_out_of_range_indeces[counter_dim]);
-                    //count how many non zero values are in the reversed input filter F
-                    counter_dim++;
                 }
+
+                //replace 0 values in idx with -1. Normally, there should be NaN values, but since they represent indeces, negative values work as well in order to distinguish them
+                if(count_out_of_range_indeces[counter_dim] != 0)
+                {
+                    for(unsigned int k = 0; k < idx.size(); k++)
+                    {
+                        if(idx[k] == 0)
+                        {
+                            idx[k] = -1;
+                        }
+                    }
+                }
+
+                //store the newly computed vector (the new idx) in the vector of vectors
+                idxs.push_back(idx);
+                //store each non zero value found in the reversed input filter (F)
+                fs.push_back(F.getMatrixValue(oi, oj)) ;
+                //store the size of each newly computed vector (idx).
+                //If all updated indeces are within mask matrix range, the size of idx vector will be mask_matrix_linear_size. Otherwise, it will be less, depending
+                //dims.push_back(idx.size() - count_out_of_range_indeces[counter_dim]);
+                //count how many non zero values are in the reversed input filter F
+                counter_dim++;
             }
+        }
 
         //the vectors computed in the previous double loop are stored in a vector of vectors (idxs) which is now converted into a matrix
         Matrix2D<int> idxsMat( mask_matrix_linear_size, idxs.size());
@@ -176,10 +176,10 @@ void conv2mat(int maskRows, int maskCols, Matrix2D<int> input_filter, Matrix2D<K
 /*
 Compute median filter
 */
-void medianFilterMatMask(Matrix2D<bool>& input_mask, int half_width, Matrix2D< KeysValue<double> >** output)
+void medianFilterMatMask(Matrix2D<bool>& input_mask, int half_width, Matrix2D<double>** output)
 {
     int width = 2*half_width + 1;
-    int fs_size = width*width - 1;                  //Might be necessary to do -1,a s it is actually 24 not 25
+    int fs_size = width*width - 1;
     Matrix2D<int> *fs = new Matrix2D<int>[fs_size];
 
    //declare data outside the for loops for a better efficiency
@@ -257,8 +257,9 @@ void medianFilterMatMask(Matrix2D<bool>& input_mask, int half_width, Matrix2D< K
 
     //use it as temporary matrix, to store output from conv2mat, It is allocated and gets its values set inside conv2mat
     Matrix2D<KeysValue<double> > *A;
+     Matrix2D<KeysValue<double> > *keysVal_output;
     //vector of matrices
-    vector<Matrix2D<KeysValue<double> > > Av;
+    vector<Matrix2D<KeysValue<double> > > matrices_vector;
 
     for(int k = 0; k < fs_size; k++)
     {
@@ -299,24 +300,37 @@ void medianFilterMatMask(Matrix2D<bool>& input_mask, int half_width, Matrix2D< K
              delete A;
 
              //store temp_A in the vector of matrixes
-             Av.push_back(temp_A);
+             matrices_vector.push_back(temp_A);
         }
     }
 
-    int output_rows_nr = 0;
+    int temp_rows_nr = 0;
     //All matrixes from the vector of matrixes Av are concatenated by putting the 2nd one's first row after the 1st ones last row and so on.
     //Thus they form a big matrix wihich has as as number of rows the sum of those matrixes rows
-    for(unsigned int idx = 0; idx < Av.size(); idx++)
+    for(unsigned int idx = 0; idx < matrices_vector.size(); idx++)
     {
         //compute total number of rows by adding the number of rows for each matrix in the vector of matrixes
-        output_rows_nr += Av[idx].getRows();
+        temp_rows_nr += matrices_vector[idx].getRows();
     }
 
     //allocate memory for the output matrix
-    *output = new Matrix2D<KeysValue<double> >(output_rows_nr, Av[0].getCols());
+    keysVal_output = new Matrix2D<KeysValue<double> >(temp_rows_nr, matrices_vector[0].getCols());
 
-    //input is vector of matrices, output is a matrix whose number of rows is the sum of all matrices rows from the vector  of matrixes
-    appendMatrixBelow(Av,  output);
+    //input is vector of matrices, output is a matrix whose number of rows is the sum of all matrices rows from the vector of matrixes
+    appendMatrixBelow(matrices_vector,  &keysVal_output);
+
+    *output = new Matrix2D<double>(temp_rows_nr , keysVal_output->getCols()*3);
+
+    //add 1 to indeces values, as MATLAB uses 1-based indexing
+    for(int idx = 0; idx < (**output).getRows(); idx++)
+    {
+        (**output)(idx, 0) = idx+1;
+        (**output)(idx, 1) = (*keysVal_output)(idx, 0).getKeyY() +1;
+        (**output)(idx, 2) = (*keysVal_output)(idx, 0).getValue();
+        (**output)(idx, 3) = idx + 1;
+        (**output)(idx, 4) = (*keysVal_output)(idx, 1).getKeyY() + 1;
+        (**output)(idx, 5) = (*keysVal_output)(idx, 1).getValue();
+    }
 }
 
 //outputs 4 matrices stored in Border object
@@ -400,7 +414,7 @@ void getBorderNormals(Matrix2D<bool> mask, Border& border)
     }
 
     //P matrix has only 2 columns
-    for(int i = 0; i < P.getRows(); i++)
+    for(int i = 0; i < 1 /*P.getRows()*/; i++)
     {
         //vectors of indeces used ot get submatrix of mask input
         vector<int> mask_x(2*d + 1), mask_y(2*d + 1);
@@ -409,7 +423,6 @@ void getBorderNormals(Matrix2D<bool> mask, Border& border)
         {
             mask_x[j] = d_vector[j] + P.getMatrixValue(i, 0);
             mask_y[j] = d_vector[j] + P.getMatrixValue(i, 1);
-           //cout<<i<<" "<<j<<" "<<P.getMatrixValue(i, 0)<<" "<<P.getMatrixValue(i, 1)<<" "<<mask_x[j]<<" "<<mask_y[j]<<endl;
         }
 
         //compute patch matrix
@@ -452,8 +465,8 @@ void getBorderNormals(Matrix2D<bool> mask, Border& border)
         int no_nonzeros_in_d_patch = 0;
         no_nonzeros_in_d_patch = d_patch.countValuesDifferentFromInput(0);
         vector<int>patch_i(no_nonzeros_in_d_patch), patch_j(no_nonzeros_in_d_patch);
-        vector<double> d_val(no_nonzeros_in_d_patch), d_patch_i(no_nonzeros_in_d_patch), d_patch_j(no_nonzeros_in_d_patch);
-        d_patch.vFindIndecesAndValues(patch_i, patch_j, d_val, 0, NonEqual);
+        vector<double> v(no_nonzeros_in_d_patch), d_patch_i(no_nonzeros_in_d_patch), d_patch_j(no_nonzeros_in_d_patch);
+        d_patch.vFindIndecesAndValues(patch_i, patch_j, v, 0, NonEqual);
         //substract d+1 from the above index vectors/ Actually, substract only d, since the indeces are already lower by 1
         for(int idx = 0; idx < no_nonzeros_in_d_patch; idx++)
         {
@@ -463,8 +476,8 @@ void getBorderNormals(Matrix2D<bool> mask, Border& border)
         //multiply each value in patch_i and patch_j by the corresponding value in d_val
         for(int idx = 0; idx < no_nonzeros_in_d_patch; idx++)
         {
-            d_patch_i[idx] = patch_i[idx] * d_val[idx];
-            d_patch_j[idx] = patch_j[idx] * d_val[idx];
+            d_patch_i[idx] = patch_i[idx] * v[idx];
+            d_patch_j[idx] = patch_j[idx] * v[idx];
         }
         //compute the mean in the above computed vectors, and store the result in a vector
         double sum_i = 0, sum_j = 0;
@@ -496,9 +509,16 @@ void getBorderNormals(Matrix2D<bool> mask, Border& border)
     }
 
     //convert indeces stored in masked_P to linear form with respect to input mask's size
-    vector<double> idx;
+    vector<double> idx(masked_P.getRows());
     //these values = matlab values -1 - mask.getRows()
-    masked_P.linearizeIndeces(idx, mask.getRows(), mask.getCols());
+    for(int i = 0; i< idx.size(); i++)
+    {
+        //since idx stores indexes, they have to be incremented by 1 due to 1-based Matlab indexing
+        idx[i] = masked_P(i, 0) + masked_P(i, 1)*mask.getRows() + 1;
+    }
+
+    //since masked_P stores indexes, they have to be incremented by 1 due to 1-based Matlab indexing
+    masked_P.elementsOperation(masked_P, 1, Sum);
 
     border.setIdx(idx);
     border.setPosition(masked_P);

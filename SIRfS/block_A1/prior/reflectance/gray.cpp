@@ -22,12 +22,14 @@ void ReflectanceGray::initializeReflectanceGrayData(StructNode& gray_metadata)
                         test_vectors("block_A1/prior/reflectance/A_train15.txt", this->A_train, Double)<<endl;
 #endif // TEST_PRIOR_REFLECTANCE
         }
+
         if(strcmp(nodes3[iii]->getStructureP()->name, "A_range") == 0)
         {
             //set directly the data observed in Matlab
              this->A_range.setLow(4);
              this->A_range.setHigh(-7);
         }
+
         if(strcmp(nodes3[iii]->getStructureP()->name, "A_spline") == 0)
         {
             //get pointer to raw data from .mat file
@@ -42,6 +44,7 @@ void ReflectanceGray::initializeReflectanceGrayData(StructNode& gray_metadata)
                         test_vectors("block_A1/prior/reflectance/A_spline15.txt", this->A_spline, Double)<<endl<<endl;
 #endif // TEST_PRIOR_REFLECTANCE
         }
+
         if(strcmp(nodes3[iii]->getStructureP()->name, "MA") == 0)
         {
             this->MA.initializeGrayMAdata(*nodes3[iii]);

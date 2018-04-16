@@ -56,6 +56,7 @@ void appendMatrixBelow(vector< Matrix2D<KeysValue<double> > > source, Matrix2D< 
     //iterate through the vector of matrices
     for(unsigned int id = 0; id < source.size(); id++)
     {
+        KeysValue<double> temp;
         //for the first matrix, start indexing output's rows from 0
         if(id == 0)
         {
@@ -73,7 +74,7 @@ void appendMatrixBelow(vector< Matrix2D<KeysValue<double> > > source, Matrix2D< 
         {
             for(int idy = 0; idy < (*dest)->getCols(); idy++)
             {
-                KeysValue<double> temp = source[id].getMatrixValue(idx-start, idy);
+                temp = source[id].getMatrixValue(idx-start, idy);
                 temp.setKeyX(idx);
                 (*dest)->setMatrixValue(idx, idy, temp);
             }

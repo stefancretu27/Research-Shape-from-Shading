@@ -23,6 +23,7 @@ void GrayMA::initializeGrayMAdata(StructNode& gray_ma_metadata)
                         test_vectors("block_A1/prior/reflectance/gray/MA_train20.txt", this->MA_train, Double)<<endl;
 #endif // TEST_PRIOR_REFLECTANCE
         }
+
         if(strcmp(nodes4[iv]->getStructureP()->name, "GSM") == 0)
         {
             this->gsm.initializeGSMReflectanceGrayData(*nodes4[iv]);

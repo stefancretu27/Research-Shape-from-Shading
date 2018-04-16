@@ -15,8 +15,6 @@
 #include "block_A2/SIRfS_Functions.h"
 #include "helpers/validation.h"
 
-//#define CREATE_TEST_FILES 1
-
 using namespace std;
 
 int main()
@@ -35,6 +33,7 @@ int main()
 
     //Initialize SIRfS parameters. Replaces CONSTANTS file from Matlab.
     cout<<"[SIRfS] Finished reading input. Initializing parameters"<<endl;
+    clock_t initialize_params = clock();
     Parameters params;
     params.setEvalString(" ");
     //set SIRfS parameters. This method replaces PARAMETERS file from Matlab.
@@ -43,9 +42,11 @@ int main()
         cout<<"[SIRfS]  SIRfS parameters could not be set. The program will exit."<<endl;
         exit(0);
     }
+    cout<<"Time taken for initialize params: "<<(double)(clock() - initialize_params)/CLOCKS_PER_SEC<<endl<<endl;
 
     //load priors on height, light and reflectance: Z, L and R
     cout<<"[SIRfS] Parameters initialized. Loading priors on height, light and reflectance"<<endl;
+    clock_t load_priors= clock();
     Prior prior;
 
     mat_t *matfp;
@@ -58,18 +59,11 @@ int main()
     {
         prior.initializePriorData(matfp);
     }
-
-    //test prior data structures
-    //cout<<setprecision(21)<<fixed<<prior.getHeight().getMKZ().getMKZ_train()[0]<<endl;
-    //cout<<setprecision(15)<<fixed<<prior.getHeight().getMKZ().getGsm().getLut().getF_LL()[2]<<endl;
-    //cout<<setprecision(16)<<fixed<<prior.getLights().getLightsColor().getColorNatural().getColorGaussian().getSigma()(1,5)<<endl;
-    //cout<<setprecision(16)<<fixed<<prior.getLights().getLightsGray().getGrayNatural().getGrayWhitenParams().getC()(3,5)<<endl;
-    //cout<<setprecision(15)<<fixed<<prior.getReflectance().getReflectanceGray().getGrayMA().getGsm().getLut().getF_cost()[3]<<endl;
-    //cout<<setprecision(16)<<fixed<<prior.getReflectance().getReflectanceColor().getMA().getGsm_mvn().getSigma_R()(1,2)<<endl;
-    //cout<<setprecision(16)<<fixed<<prior.getReflectance().getReflectanceColor().getAw_hist()(2,1, 1)<<endl;
+    cout<<"Time taken for loading priors: "<<(double)(clock() - load_priors)/CLOCKS_PER_SEC<<endl<<endl;
 
     cout<<"[SIRfS] Priors loaded. Building 'data' class"<<endl;
     //data.true.im
+    clock_t build_data = clock();
     Data data;
     data.getDataTrue().setInputImage(grayImage);
 
@@ -92,45 +86,41 @@ int main()
     data.getDataTrue().setLogIm(log_im);
     data.getDataTrue().setMask(valid);
     data.setValid(valid);
+    cout<<"Time taken for building data class: "<<(double)(clock() - build_data)/CLOCKS_PER_SEC<<endl<<endl;
 
     cout<<"[SIRfS] Applying median filter"<<endl;
     //the output matrices are written at the address given as input
+    clock_t clock_median_filter = clock();
     medianFilterMatMask(negated_valid,  params.getZMedianHalfwidth(), data.getZMedianFilterMatAddress());
-#ifdef CREATE_TEST_FILES
-    DataFile<double> dfd;
-    dfd.writeKeysValueMatrix2D("validation_files/ZMedianFilterMat.txt", data.getZMedianFilterMatAddress(), 1);
-#endif
-    //cout<<data.getZMedianFilterMat()->getRows()<<" "<<data.getZMedianFilterMat()->getCols()<<" "<<endl;
-    //printing all 3 in the same line (command) blocks the system. Above and below are alternative that seem to work.
-    //cout<<data.getZMedianFilterMat()->getMatrixValue(123456, 0).getKeyX()<<" "<<data.getZMedianFilterMat()->getMatrixValue(123456, 0).getKeyY()<<endl;
-    //cout<<data.getZMedianFilterMat()->getMatrixValue(123456, 0).getValue()<<endl;
-    //cout<<data.getZMedianFilterMat()->getMatrixValue(0, 0).getKeyX()<<" "<<data.getZMedianFilterMat()->getMatrixValue(0, 0).getKeyY()<<endl;
-    //cout<<data.getZMedianFilterMat()->getMatrixValue(0, 1).getKeyX()<<" "<<data.getZMedianFilterMat()->getMatrixValue(0, 1).getKeyY()<<endl;
-    //cout<<data.getZMedianFilterMat()->getMatrixValue(0, 0).getValue()<<" "<<data.getZMedianFilterMat()->getMatrixValue(0, 1).getValue()<<endl;
-
     medianFilterMatMask(negated_valid,  params.getAMedianHalfwidth(), data.getAMedianFilterMatAddress());
-#ifdef CREATE_TEST_FILES
-    dfd.writeKeysValueMatrix2D("validation_files/AMedianFilterMat.txt", data.getAMedianFilterMatAddress(), 1);
-#endif
 
     //compute transposes for the above matrices. Since they store they KeysValue they might not be necessary, as the original can be used, but keep them till determining their usefulness
     data.getZMedianFilterMat()->getTranspose(data.getZMedianFilterMatTAddress());
     data.getAMedianFilterMat()->getTranspose(data.getAMedianFilterMatTAddress());
+    cout<<"Time taken for median filter: "<<(double)(clock() - clock_median_filter)/CLOCKS_PER_SEC<<endl;
+
+#ifdef TEST_BLOCK_A2
+    //first 2 values represent indexes and need to be incremented by 1 as MATLAB indexing is 1-based
+    cout<<"Test ZMedianFilterMatMask: "<<test_matrix2D("block_A2/ZM.txt", *data.getZMedianFilterMat(), Double)<<endl;
+    cout<<"Test AMedianFilterMatMask: "<<test_matrix2D("block_A2/AM.txt", *data.getAMedianFilterMat(), Double)<<endl;
+#endif
 
     cout<<"[SIRfS] Building border normals"<<endl;
+    clock_t clock_border_normals = clock();
     getBorderNormals(data.getDataTrue().getMask(), data.getBorder());
+    cout<<"Time taken for  border normals: "<<(double)(clock() - clock_border_normals)/CLOCKS_PER_SEC<<endl<<endl;
 
-#ifdef CREATE_TEST_FILES
-    dfd.writeVector("validation_files/dataBorderIdx.txt", data.getBorder().getIdx(), 0, 1);
-    dfd.writeMatrix2D("validation_files/dataBorderNormal.txt", data.getBorder().getNormal(), 15, 0);
-    dfd.writeMatrix2D("validation_files/dataBorderTangent.txt", data.getBorder().getTangent(), 15, 0);
-    dfd.writeMatrix2D("validation_files/dataBorderPosition.txt", data.getBorder().getPosition(), 0, 1);
-#endif // CREATE_TEST_FILES
+#ifdef TEST_BLOCK_A2
+    cout<<"Test Border.idx: "<<test_vectors("block_A2/IdxM.txt", data.getBorder().getIdx(), Double)<<endl;
+    cout<<"Test Border.position: "<<test_matrix2D("block_A2/PositionM.txt", data.getBorder().getPosition(), Double)<<endl;
+    cout<<"Test Border.normal: "<<test_matrix2D("block_A2/NormalM.txt", data.getBorder().getNormal(), Double)<<endl;
+    cout<<"Test Border.tangent: "<<test_matrix2D("block_A2/TangentM.txt", data.getBorder().getTangent(), Double)<<endl;
+
+#endif
 
     data.setPrior(prior);
     cout<<"[SIRfS] Finished setting 'data' class"<<endl;
 
     cout<<"Time taken "<<(double)(clock() - tStart)/CLOCKS_PER_SEC;
-
     return 0;
 }

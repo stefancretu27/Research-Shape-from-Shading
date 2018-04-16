@@ -12,6 +12,7 @@ void ReflectanceGSM::initializeGSMReflectanceGrayData(StructNode& gray_ma_gsm_me
         {
              this->mu = *(int*)nodes5[v]->getStructureP()->data;
         }
+
         if(strcmp(nodes5[v]->getStructureP()->name, "sigs") == 0)
         {
             //get pointer to raw data from .mat file
@@ -26,6 +27,7 @@ void ReflectanceGSM::initializeGSMReflectanceGrayData(StructNode& gray_ma_gsm_me
                         test_vectors("block_A1/prior/reflectance/gray/grayMA/sigs21.txt",  this->sigs, Double)<<endl;
 #endif // TEST_PRIOR_REFLECTANCE
         }
+
         if(strcmp(nodes5[v]->getStructureP()->name, "pis") == 0)
         {
             //get pointer to raw data from .mat file
@@ -40,6 +42,7 @@ void ReflectanceGSM::initializeGSMReflectanceGrayData(StructNode& gray_ma_gsm_me
                         test_vectors("block_A1/prior/reflectance/gray/grayMA/pis_exp16.txt", this->pis, Double)<<endl;
 #endif // TEST_PRIOR_REFLECTANCE
         }
+
         if(strcmp(nodes5[v]->getStructureP()->name, "lut") == 0)
         {
             this->lutObj.initializeLutData(*nodes5[v]);

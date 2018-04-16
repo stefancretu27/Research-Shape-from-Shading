@@ -13,47 +13,92 @@ template <class Type>
 class Matrix2D
 {
 private:
-    Type *matrix2d;
+    Type *container;
      int rows, cols;
 
 public:
     //constructors
-    Matrix2D(){this->rows = 0; this->cols = 0; this->matrix2d = NULL;};
+    Matrix2D(){this->rows = 0; this->cols = 0; this->container = NULL;};
     //overload constructor
     Matrix2D( int new_rows,  int new_cols);
     Matrix2D( int new_rows,  int new_cols, Type value);
+    //copy constructor
     Matrix2D(const Matrix2D<Type>& new_matrix);
-
     //destructor
     ~Matrix2D();
 
+    //indexes operations
+    inline unsigned int getLinearIndex(int i, int j)
+    {
+        return i*this->cols + j;
+    };
+    void get2DIndecesFromLinearIndex(int index, int &rows, int &cols)
+    {
+        rows = index/this->cols;  //integer division . This is x
+        cols = index - rows; //This is y
+    };
+
     //getters
-    inline int getRows() const {return this->rows;};                                           //inline tells compiler to replace function with its definition => faster execution as there is less linking
-    inline int getCols() const {return this->cols;};
-    inline int getDim(){return this->rows*this->cols;};
-    inline Type* getMat2D(){return this->matrix2d;};
-    inline Type getMatrixValue(int i, int j) const {return this->matrix2d[i*this->cols + j];};
+    inline int getRows() const              //inline tells compiler to replace function with its definition => faster execution as there is less linking
+    {
+        return this->rows;
+    };
+    inline int getCols() const
+    {
+        return this->cols;
+    };
+    inline int getDim()
+    {
+        return this->rows*this->cols;
+    };
+    inline Type* getContainerPointer()
+    {
+        return this->container;
+    };
+    inline Type getMatrixValue(int i, int j) const
+    {
+        return this->container[i*this->cols + j];
+    };
+    inline Type getMatrixValue(unsigned linearindex) const
+    {
+        return this->container[linearindex];
+    };
+
     //setters
-    inline void setRows(int new_rows){this->rows = new_rows;};
-    inline void setCols(int new_cols){this->cols = new_cols;};
-    inline void setDims(int new_rows, int new_cols){this->cols = new_cols; this->rows = new_rows; };
-    inline void setMatrixValue(int i, int j, Type value){this->matrix2d[i*this->cols +j] = value;};
+    inline void setRows(int new_rows)
+    {
+        this->rows = new_rows;
+    };
+    inline void setCols(int new_cols)
+    {
+        this->cols = new_cols;
+    };
+    inline void setDims(int new_rows, int new_cols)
+    {
+        this->cols = new_cols;
+        this->rows = new_rows;
+    };
+    inline void setMatrixValue(int i, int j, Type value)
+    {
+        this->container[i*this->cols +j] = value;
+    };
+    inline void setMatrixValue(unsigned int linearindex, Type value)
+    {
+        this->container[linearindex] = value;
+    };
     void setMatrix2D(Type* data, int new_rows,  int new_cols, bool transp);
 
     //operators overloading
-    inline Type& operator()(int rowsIdx, int colsIdx)
+    inline Type& operator() (int rowsIdx, int colsIdx) const
     {
-        return this->matrix2d[rowsIdx * this->cols + colsIdx];
+        return this->container[rowsIdx * this->cols + colsIdx];
     };
-
     bool operator==(const Matrix2D<Type>& new_matrix);
     Matrix2D& operator=(const Matrix2D<Type>& new_matrix);
     Matrix2D& operator+(Matrix2D<Type>& new_matrix);
     Matrix2D& operator-(Matrix2D<Type>& new_matrix);
 
-    //helpers: separate functions from constructors, used for memory allocation, initialization and data copying
-    void allocateMemory(int dimX, int dimY);
-    void copyElementsFromMatrix(Matrix2D<Type>& source);
+    //helper: separate function from constructors, used data copying
     void initializeMatrixValues(Type value);
 
     //convolution
@@ -111,9 +156,8 @@ public:
     void getSubMatrix(Matrix2D<Type>& source, int x_first, int x_last, int y_first, int y_last);
     void reverseMatrix(Matrix2D<Type>& source);
     void getTranspose(Matrix2D<Type>** result);
-    //same as above, but result is store din caller (caller data is lost)
-    void Transp();
-    void linearizeIndeces(std::vector<Type>& result, int rows, int cols);
+    //same as above, but result is stored in the caller (caller data is lost)
+    void TransposeMatrix();
 
     //for debug purposes
     void printMatrixValues()
@@ -122,7 +166,7 @@ public:
         {
             for(int j = 0; j < this->cols; j++)
             {
-                std::cout<<this->matrix2d[i*this->cols + j]<<" ";
+                std::cout<<this->container[i*this->cols + j]<<" ";
             }
             std::cout<<std::endl;
         }

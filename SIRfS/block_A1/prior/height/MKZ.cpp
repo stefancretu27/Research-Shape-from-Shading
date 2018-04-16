@@ -23,6 +23,7 @@ void MKZ::initilalizeMKZData(StructNode& MKZ_metadata)
                         test_vectors("block_A1/prior/height/mkz_train21.txt", this->MKZ_train, Double)<<endl;
 #endif // TEST_PRIOR_HEIGHT
         }
+
         if(strcmp(nodes3[iii]->getStructureP()->name, "GSM") == 0)
         {
             this->gsm.initializeGSMHeightData(*nodes3[iii]);

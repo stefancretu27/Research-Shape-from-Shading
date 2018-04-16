@@ -46,7 +46,7 @@ public:
                 this->whiten_params.initializeColorWhitenParamsData(*nodes4[iv]);
 #ifdef TEST_PRIOR_LIGHT
             cout<<"Test reading priors on lights->color->"<<color_nat_metadata.getStructureP()->name<<"->"<<nodes4[iv]->getStructureP()->name<<"->mean "<<\
-                        test_vectors("block_A1/prior/lights/color/natural/whiten_params/mean20.txt", &this->whiten_params.getMean(), Double)<<endl;
+                        test_vectors("block_A1/prior/lights/color/natural/whiten_params/mean20.txt", this->whiten_params.getMean(), Double)<<endl;
 
             cout<<"Test reading priors on lights->color->"<<color_nat_metadata.getStructureP()->name<<"->"<<nodes4[iv]->getStructureP()->name<<"->mapp "<<\
                         test_matrix2D("block_A1/prior/lights/color/natural/whiten_params/mapp20.txt", this->whiten_params.getMapp(), Double)<<endl;
@@ -77,7 +77,7 @@ public:
 
 #ifdef TEST_PRIOR_LIGHT
             cout<<"Test reading priors on lights->color->"<<color_nat_metadata.getStructureP()->name<<"->"<<nodes4[iv]->getStructureP()->name<<"-> mu "<<\
-                        test_vectors("block_A1/prior/lights/color/natural/gaussian/mu20.txt", &this->gaussian.getMu(), Double)<<endl;
+                        test_vectors("block_A1/prior/lights/color/natural/gaussian/mu20.txt", this->gaussian.getMu(), Double)<<endl;
             cout<<"Test reading priors on lights->color->"<<color_nat_metadata.getStructureP()->name<<"->"<<nodes4[iv]->getStructureP()->name<<"->Sigma "<<\
                         test_matrix2D("block_A1/prior/lights/color/natural/gaussian/sigma20.txt", this->gaussian.getSigma(), Double)<<endl<<endl;
 #endif // TEST_PRIOR_LIGHT

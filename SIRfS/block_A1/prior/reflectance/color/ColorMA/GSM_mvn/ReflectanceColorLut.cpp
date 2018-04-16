@@ -18,6 +18,7 @@ void ReflectanceColorLut::initializeLutReflectanceColorData(StructNode& color_ma
             cout<<"Test reading priors on reflectance: "<<color_ma_gsm_lut_metadata.getStructureP()->name<<"->"<<nodes6[vi]->getStructureP()->name<<"  "<<result<<endl;
 #endif // TEST_PRIOR_REFLECTANCE
         }
+
         if(strcmp(nodes6[vi]->getStructureP()->name, "bin_width") == 0)
         {
             this->bin_width = *(double*)nodes6[vi]->getStructureP()->data;
@@ -27,10 +28,12 @@ void ReflectanceColorLut::initializeLutReflectanceColorData(StructNode& color_ma
             cout<<"Test reading priors on reflectance: "<<color_ma_gsm_lut_metadata.getStructureP()->name<<"->"<<nodes6[vi]->getStructureP()->name<<"  "<<result<<endl;
 #endif // TEST_PRIOR_REFLECTANCE
         }
+
         if(strcmp(nodes6[vi]->getStructureP()->name, "n_bins") == 0)
         {
              this->n_bins = *(double*)nodes6[vi]->getStructureP()->data;
         }
+
         if(strcmp(nodes6[vi]->getStructureP()->name, "F") == 0)
         {
             //get pointer to raw data from .mat file
@@ -46,19 +49,4 @@ void ReflectanceColorLut::initializeLutReflectanceColorData(StructNode& color_ma
 #endif // TEST_PRIOR_REFLECTANCE
         }
     }
-
-/*
-    //initialize scalars
-    this->bin_width = 3.929576889659206e-05;
-    this->n_bins = 10000;
-    this->bin_range.setLow(0);
-    this->bin_range.setHigh(3.929537593890309);
-
-    //allocate memory for vectors
-    this->F.reserve(n_bins);
-
-    //read data from files to vectors
-    DataFile<double> dFileReader;
-    dFileReader.readVector("block_A1/prior/reflectance/color/colorMA/GSM_mvn/F16.txt", this->F, this->n_bins, 16);
-    */
 }

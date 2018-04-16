@@ -71,6 +71,16 @@ public:
         return *this;
     }
 
+    bool operator==(const KeysValue<Type>& new_kv)
+    {
+        return this->keyX == new_kv.getKeyX() && this->keyY == new_kv.getKeyY() && this->value == new_kv.getValue();
+    }
+
+    bool operator!=(const KeysValue<Type>& new_kv)
+    {
+        return this->keyX != new_kv.getKeyX() && this->keyY != new_kv.getKeyY() && this->value != new_kv.getValue();
+    }
+
     friend std::ostream& operator<<(std::ostream& out, KeysValue& kv)
     {
         out<<kv.getKeyX()<<" "<<kv.getKeyY()<<" "<<kv.getValue();

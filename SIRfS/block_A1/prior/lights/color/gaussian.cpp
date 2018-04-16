@@ -19,6 +19,7 @@ void ColorGaussian::initializeColorGaussianData(StructNode& color_g_metadata)
             //use pointer to the first and the last element in the array as iterators
             this->mu.assign(raw_data, raw_data + dim);
         }
+
         if(strcmp(nodes5[v]->getStructureP()->name, "Sigma") == 0)
         {
             this->Sigma.setMatrix2D((double*)nodes5[v]->getStructureP()->data, nodes5[v]->getStructureP()->dims[0], nodes5[v]->getStructureP()->dims[1], true);

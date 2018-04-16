@@ -4,9 +4,9 @@
 #include <iostream>
 #include <vector>
 #include "../../../../templates/matrix2D.h"
-#include "../../../../templates/dataFile.h"
+//#include "../../../../templates/dataFile.h"
 #include "../../../prior_struct_node.h"
-#include "../../../../helpers/validation.h"
+//#include "../../../../helpers/validation.h"
 
 class ColorWhitenParams
 {
@@ -44,7 +44,7 @@ public:
     };
 
     //getters
-    inline vector<double>& getMean(){return this->mean;};
+    inline std::vector<double>& getMean(){return this->mean;};
     inline Matrix2D<double>& getMapp(){return this->mapp;};
     inline Matrix2D<double>& getInverse(){return this->inverse;};
     inline Matrix2D<double>& getV(){return this->V;};

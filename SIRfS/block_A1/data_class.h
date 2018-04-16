@@ -12,10 +12,10 @@ private:
     DataTrue dt;
     Border border;
     Prior prior;
-    Matrix2D< KeysValue <double> >* ZMedianFilterMat;
-    Matrix2D< KeysValue <double> >* AMedianFilterMat;
-    Matrix2D< KeysValue <double> >* ZMedianFilterMatT;
-    Matrix2D< KeysValue <double> >* AMedianFilterMatT;
+    Matrix2D<double>* ZMedianFilterMat;
+    Matrix2D<double>* AMedianFilterMat;
+    Matrix2D<double>* ZMedianFilterMatT;
+    Matrix2D<double>* AMedianFilterMatT;
     Matrix2D<bool> valid;
 
 public:
@@ -27,15 +27,15 @@ public:
     inline Matrix2D<bool>& getValid(){return this->valid;};
 
     //matrices getters
-    inline Matrix2D<KeysValue<double> >** getZMedianFilterMatAddress(){return &ZMedianFilterMat;};
-    inline Matrix2D<KeysValue<double> >** getAMedianFilterMatAddress(){return &AMedianFilterMat;};
-    inline Matrix2D<KeysValue<double> >* getZMedianFilterMat(){return ZMedianFilterMat;};
-    inline Matrix2D<KeysValue<double> >* getAMedianFilterMat(){return AMedianFilterMat;};
+    inline Matrix2D<double>** getZMedianFilterMatAddress(){return &ZMedianFilterMat;};
+    inline Matrix2D<double>** getAMedianFilterMatAddress(){return &AMedianFilterMat;};
+    inline Matrix2D<double> * getZMedianFilterMat(){return ZMedianFilterMat;};
+    inline Matrix2D<double> * getAMedianFilterMat(){return AMedianFilterMat;};
     //transpose getters
-    inline Matrix2D<KeysValue<double> >** getZMedianFilterMatTAddress(){return &ZMedianFilterMatT;};
-    inline Matrix2D<KeysValue<double> >** getAMedianFilterMatTAddress(){return &AMedianFilterMatT;};
-    inline Matrix2D<KeysValue<double> >* getZMedianFilterMatT(){return ZMedianFilterMatT;};
-    inline Matrix2D<KeysValue<double> >* getAMedianFilterMatT(){return AMedianFilterMatT;};
+    inline Matrix2D<double>** getZMedianFilterMatTAddress(){return &ZMedianFilterMatT;};
+    inline Matrix2D<double>** getAMedianFilterMatTAddress(){return &AMedianFilterMatT;};
+    inline Matrix2D<double> * getZMedianFilterMatT(){return ZMedianFilterMatT;};
+    inline Matrix2D<double> * getAMedianFilterMatT(){return AMedianFilterMatT;};
 
     //setters
     inline void setValid(Matrix2D<bool> &input){this->valid = input;};

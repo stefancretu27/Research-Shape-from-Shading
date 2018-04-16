@@ -19,6 +19,7 @@ void Normal::initializeNormalData(StructNode& normal_metadata)
             cout<<"-->Test for reading priors on height: "<<normal_metadata.getStructureP()->name<<"->"<<nodes3[iii]->getStructureP()->name<<"  "<<result<<endl;
 #endif // TEST_PRIOR_HEIGHT
         }
+
         if(strcmp(nodes3[iii]->getStructureP()->name, "power") == 0)
         {
             this->power = *(double*)nodes3[iii]->getStructureP()->data;
@@ -28,6 +29,7 @@ void Normal::initializeNormalData(StructNode& normal_metadata)
             cout<<"-->Test for reading priors on height: "<<normal_metadata.getStructureP()->name<<"->"<<nodes3[iii]->getStructureP()->name<<"  "<<result<<endl;
 #endif // TEST_PRIOR_HEIGHT
         }
+
         if(strcmp(nodes3[iii]->getStructureP()->name, "X_train") == 0)
         {
             //get pointer to raw data from .mat file

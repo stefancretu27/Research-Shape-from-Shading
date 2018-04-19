@@ -414,7 +414,7 @@ void getBorderNormals(Matrix2D<bool> mask, Border& border)
     }
 
     //P matrix has only 2 columns
-    for(int i = 0; i < 1 /*P.getRows()*/; i++)
+    for(int i = 0; i < P.getRows(); i++)
     {
         //vectors of indeces used ot get submatrix of mask input
         vector<int> mask_x(2*d + 1), mask_y(2*d + 1);

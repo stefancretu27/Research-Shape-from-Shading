@@ -18,6 +18,32 @@ private:
 public:
     //constructors
      ColorWhitenParams(){};
+#ifdef U_PTR_CONTAINER
+    ColorWhitenParams(ColorWhitenParams& input)
+    {
+        this->mean = input.mean;
+        this->mapp = std::move(input.mapp);
+        this->inverse = std::move(input.inverse);
+        this->iC = std::move(input.iC);
+        this->C = std::move(input.C);
+        this->iD = std::move(input.iD);
+        this->D = std::move(input.D);
+        this->V = std::move(input.V);
+    };
+    //operators overloading
+    ColorWhitenParams& operator=(ColorWhitenParams& input)
+    {
+        this->mean = input.mean;
+        this->mapp = std::move(input.mapp);
+        this->inverse = std::move(input.inverse);
+        this->iC = std::move(input.iC);
+        this->C = std::move(input.C);
+        this->iD = std::move(input.iD);
+        this->D = std::move(input.D);
+        this->V = std::move(input.V);
+        return *this;
+    };
+#else
     ColorWhitenParams(const ColorWhitenParams& input)
     {
         this->mean = input.mean;
@@ -42,6 +68,7 @@ public:
         this->V = input.V;
         return *this;
     };
+#endif
 
     //getters
     inline std::vector<double>& getMean(){return this->mean;};

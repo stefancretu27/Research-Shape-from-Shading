@@ -13,14 +13,22 @@ private:
 public:
     //constructors
     Reflectance(){};
+#ifdef U_PTR_CONTAINER
+    Reflectance(Reflectance& new_reflectance)
+#else
     Reflectance(const Reflectance& new_reflectance)
+#endif // U_PTR_CONTAINER
     {
         this->color = new_reflectance.color;
         this->gray = new_reflectance.gray;
 
     };
     //operators overloading
+#ifdef U_PTR_CONTAINER
+    Reflectance& operator=( Reflectance& new_reflectance)
+#else
     Reflectance& operator=(const Reflectance& new_reflectance)
+#endif // U_PTR_CONTAINER
     {
         this->color = new_reflectance.color;
         this->gray = new_reflectance.gray;

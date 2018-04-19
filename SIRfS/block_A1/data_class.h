@@ -38,7 +38,14 @@ public:
     inline Matrix2D<double> * getAMedianFilterMatT(){return AMedianFilterMatT;};
 
     //setters
-    inline void setValid(Matrix2D<bool> &input){this->valid = input;};
+    inline void setValid(Matrix2D<bool> &input)
+    {
+#ifdef U_PTR_CONTAINER
+        this->valid = std::move(input);
+#else
+        this->valid = input;
+#endif
+    };
     inline void setPrior(Prior &input){this->prior = input;};
 };
 

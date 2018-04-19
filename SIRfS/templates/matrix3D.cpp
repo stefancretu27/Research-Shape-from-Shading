@@ -8,9 +8,21 @@ using namespace std;
 template <class Type>
 Matrix3D<Type>::Matrix3D(unsigned int new_xDim, unsigned int new_yDim, unsigned int new_zDim):width(new_xDim), height(new_yDim), depth(new_zDim)
 {
+#ifdef U_PTR_CONTAINER
+    this->container = unique_ptr<Type[]>(new Type[width*height*depth]);
+#else
     this->container = new Type[width*height*depth];
+#endif // U_PTR_CONTAINER
 }
 
+#ifdef U_PTR_CONTAINER
+//move constructor
+template <class Type>
+Matrix3D<Type>::Matrix3D(Matrix3D<Type>&& new_matrix):width(new_matrix.getWidth()), height(new_matrix.getHeight()), depth(new_matrix.getDepth())
+{
+    container = std::move(new_matrix.getContainer());
+}
+#else
 //copy constructor
 template <class Type>
 Matrix3D<Type>::Matrix3D(const Matrix3D<Type>& new_matrix):width(new_matrix.getWidth()), height(new_matrix.getHeight()), depth(new_matrix.getDepth())
@@ -19,8 +31,8 @@ Matrix3D<Type>::Matrix3D(const Matrix3D<Type>& new_matrix):width(new_matrix.getW
 
     for(unsigned int idx = 0; idx < this->getDim(); idx++)
         this->container[idx] = new_matrix.getMatrixValue(idx);
-
 }
+#endif // U_PTR_CONTAINER
 
 //index related operations
 template <class Type>
@@ -40,7 +52,11 @@ void Matrix3D<Type>::setMatrix3D(Type* data, int new_width,  int new_height, int
     this->depth = new_depth;
 
     //allocate memory
+#ifdef U_PTR_CONTAINER
+    this->container = unique_ptr<Type[]>(new Type[width*height*depth]);
+#else
     this->container = new Type[width*height*depth];
+#endif
 
     //copy elements
     if(transp)
@@ -49,7 +65,6 @@ void Matrix3D<Type>::setMatrix3D(Type* data, int new_width,  int new_height, int
             for(unsigned int yIdx = 0; yIdx < this->height; yIdx++)
                 for(unsigned int zIdx = 0; zIdx < this->depth; zIdx++)
                 {
-                    //this->matrix3d.push_back(data[xIdx+ yIdx*this->width + zIdx*this->height*this->width]);
                     //better execution time than push_back
                     this->container[this->getLinearIndex(xIdx,yIdx,zIdx)] = data[xIdx+ yIdx*this->width + zIdx*this->height*this->width];
                 }
@@ -62,7 +77,6 @@ void Matrix3D<Type>::setMatrix3D(Type* data, int new_width,  int new_height, int
             this->container[idx] = data[idx];
         }
     }
-
 }
 
 //operators overloading
@@ -73,6 +87,22 @@ Type& Matrix3D<Type>::operator()(unsigned int xIdx, unsigned int yIdx, unsigned 
     return this->container[xIdx*this->height*this->depth + yIdx*this->depth + zIdx];
 }
 
+#ifdef U_PTR_CONTAINER
+//move assignment operator
+template <class Type>
+Matrix3D<Type>& Matrix3D<Type>::operator=(Matrix3D<Type>&& new_matrix)
+{
+    this->width = new_matrix.getWidth();
+    this->height = new_matrix.getHeight();
+    this->depth = new_matrix.getDepth();
+
+    //allocate memory and copy elements
+    this->container = unique_ptr<Type[]>(new Type[width*height*depth]);
+
+    return *this;
+}
+#else
+//assignment operator
 template <class Type>
 Matrix3D<Type>& Matrix3D<Type>::operator=(const Matrix3D<Type>& new_matrix)
 {
@@ -90,14 +120,15 @@ Matrix3D<Type>& Matrix3D<Type>::operator=(const Matrix3D<Type>& new_matrix)
 
     return *this;
 }
+#endif
 
 //matrix operations
 template <class Type>
 void  Matrix3D<Type>::normalizeData(int factor)
 {
     //iterator and size-Type require a known type and not a generical one
-    for(unsigned int  i = 0; i < this->matrix3d.size(); i++)
-        this->matrix3d[i] /= (double)factor;
+    for(unsigned int  i = 0; i < this->getDim(); i++)
+        this->container[i] /= (double)factor;
 }
 
 template <class Type>

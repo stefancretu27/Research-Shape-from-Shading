@@ -11,13 +11,21 @@ private:
 public:
     //constructors
     ColorMA(){};
+#ifdef U_PTR_CONTAINER
+    ColorMA(ColorMA& input)
+#else
     ColorMA(const ColorMA& input)
+#endif
     {
         this->gsm_mvn = input.gsm_mvn;
     };
 
     //operators overloading
+#ifdef U_PTR_CONTAINER
+    ColorMA& operator=(ColorMA& input)
+#else
     ColorMA& operator=(const ColorMA& input)
+#endif
     {
         this->gsm_mvn = input.gsm_mvn;
         return *this;

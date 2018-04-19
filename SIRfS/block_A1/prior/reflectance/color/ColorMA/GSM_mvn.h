@@ -16,6 +16,34 @@ private:
 public:
     //operators overloading
     GSM_mvn(){};
+#ifdef U_PTR_CONTAINER
+    GSM_mvn(GSM_mvn& input)
+    {
+        this->lut = input.lut;
+        this->LL_zero = input.LL_zero;
+        this->pis = input.pis;
+        this->vars = input.vars;
+        this->logmults = input.logmults;
+        this->Sigma = std::move(input.Sigma);
+        this->Sigma_inv = std::move(input.Sigma_inv);
+        this->Sigma_whiten = std::move(input.Sigma_whiten);
+        this->Sigma_R = std::move(input.Sigma_R);
+    };
+    //operators overloading
+    GSM_mvn& operator=(GSM_mvn& input)
+    {
+        this->lut = input.lut;
+        this->LL_zero = input.LL_zero;
+        this->pis = input.pis;
+        this->vars = input.vars;
+        this->logmults = input.logmults;
+        this->Sigma = std::move(input.Sigma);
+        this->Sigma_inv = std::move(input.Sigma_inv);
+        this->Sigma_whiten = std::move(input.Sigma_whiten);
+        this->Sigma_R = std::move(input.Sigma_R);
+        return *this;
+    };
+#else
     GSM_mvn(const GSM_mvn& input)
     {
         this->lut = input.lut;
@@ -28,7 +56,6 @@ public:
         this->Sigma_whiten = input.Sigma_whiten;
         this->Sigma_R = input.Sigma_R;
     };
-
     //operators overloading
     GSM_mvn& operator=(const GSM_mvn& input)
     {
@@ -43,7 +70,7 @@ public:
         this->Sigma_R = input.Sigma_R;
         return *this;
     };
-
+#endif
     //getters
     inline  ReflectanceColorLut& getLut(){return this->lut;};
     inline  double getLLzero(){return this->LL_zero;};

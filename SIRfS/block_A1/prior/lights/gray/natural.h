@@ -14,14 +14,22 @@ private:
 public:
     //constructors
     GrayNatural(){};
+#ifdef U_PTR_CONTAINER
+    GrayNatural(GrayNatural &input)
+#else
     GrayNatural(const GrayNatural &input)
+#endif
     {
         this->gaussian = input.gaussian;
         this->whiten_params = input.whiten_params;
     };
 
     //operators overloading
+#ifdef U_PTR_CONTAINER
+    GrayNatural& operator=(GrayNatural& input)
+#else
     GrayNatural& operator=(const GrayNatural& input)
+#endif
     {
         this->gaussian = input.gaussian;
         this->whiten_params = input.whiten_params;

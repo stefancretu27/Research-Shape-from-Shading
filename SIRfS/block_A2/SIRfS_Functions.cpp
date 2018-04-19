@@ -8,14 +8,20 @@ using namespace std;
 //SIRfS operations
 //conv2mat return of output would fail due to =operator failure as it doesn't know hoe to assign pointers to KeyValue.
 //Instead use an adress of a pointer declared in medianFilterMatMask, which is allocated  inside conv2mat
-void conv2mat(int maskRows, int maskCols, Matrix2D<int> input_filter, Matrix2D<KeysValue<double>  >** output)
+void conv2mat(int maskRows, int maskCols, Matrix2D<int> input_filter, Matrix2D<KeysValue<double> >** output)
+
 {
     int x, y, col, index, counter_dim = 0;
     int mask_matrix_linear_size = maskRows*maskCols;                         //also referred as n in matlab code
     Matrix2D<int> F(input_filter.getRows(), input_filter.getCols(), 0);
 
     //reverse values from the input_filter and store them in F matrix
+#ifdef U_PTR_CONTAINER
+    F.reverseMatrix(std::move(input_filter));
+#else
     F.reverseMatrix(input_filter);
+#endif // U_PTR_CONTAINER
+
 
     //vectors used to store indeces before applying filter
     vector<int> i0(mask_matrix_linear_size, 0), j0( mask_matrix_linear_size, 0), idx0(mask_matrix_linear_size, 0);
@@ -202,7 +208,11 @@ void medianFilterMatMask(Matrix2D<bool>& input_mask, int half_width, Matrix2D<do
 
                 //allocate space for sub matrix
                 Matrix2D<int> f_sub(abs(x_last - x_first) + 1, abs(y_last - y_first) + 1);
-                f_sub.getSubMatrix(f, x_first, x_last, y_first, y_last);
+#ifdef U_PTR_CONTAINER
+                 f_sub.getSubMatrix(std::move(f), x_first, x_last, y_first, y_last);
+#else
+                 f_sub.getSubMatrix(f, x_first, x_last, y_first, y_last);
+#endif // U_PTR_CONTAINER
 
                 //it's a vector of matrix2D. Iterate from 0.
                 fs_index = (i+half_width)*width + (j+half_width);
@@ -211,8 +221,11 @@ void medianFilterMatMask(Matrix2D<bool>& input_mask, int half_width, Matrix2D<do
                 {
                     fs_index -= 1;
                 }
-
+#ifdef U_PTR_CONTAINER
+                fs[fs_index] = std::move(f_sub);
+#else
                 fs[fs_index] = f_sub;
+#endif // U_PTR_CONTAINER
         }
 
     vector<int> do_remove(fs_size, 0);
@@ -221,8 +234,14 @@ void medianFilterMatMask(Matrix2D<bool>& input_mask, int half_width, Matrix2D<do
         {
             //declare matrices whose values are the absolute values of the matrices contained by the vector fs
             Matrix2D<int> absi(fs[i].getRows(), fs[i].getCols()), absj(fs[j].getRows(), fs[j].getCols());
+#ifdef U_PTR_CONTAINER
+            absi.getAbsoluteValuesMatrix(std::move(fs[i]));
+            absj.getAbsoluteValuesMatrix(std::move(fs[j]));
+#else
             absi.getAbsoluteValuesMatrix(fs[i]);
             absj.getAbsoluteValuesMatrix(fs[j]);
+#endif // U_PTR_CONTAINER
+
 
             //declare the matrix that will hold the convolution's result an dinitialize it to 0
             Matrix2D<int> C(abs(fs[i].getRows() - fs[j].getRows()) + 1, abs(fs[i].getCols() - fs[j].getCols()) + 1);
@@ -233,7 +252,11 @@ void medianFilterMatMask(Matrix2D<bool>& input_mask, int half_width, Matrix2D<do
             //2D convolution product between absi and absj only if the kernel's size can fit in the input matrix
             if(fs[i].getRows() >= fs[j].getRows() && fs[i].getCols() >= fs[j].getCols())
             {
-                absi.conv2DValid(absj, C);
+#ifdef U_PTR_CONTAINER
+                C.conv2DValid(std::move(absj), std::move(absi));
+#else
+                C.conv2DValid(absj, absi);
+#endif // U_PTR_CONTAINER
                 C.anyGreater(res, 1, 1);
             }
             else
@@ -257,7 +280,8 @@ void medianFilterMatMask(Matrix2D<bool>& input_mask, int half_width, Matrix2D<do
 
     //use it as temporary matrix, to store output from conv2mat, It is allocated and gets its values set inside conv2mat
     Matrix2D<KeysValue<double> > *A;
-     Matrix2D<KeysValue<double> > *keysVal_output;
+    Matrix2D<KeysValue<double> > *keysVal_output;
+
     //vector of matrices
     vector<Matrix2D<KeysValue<double> > > matrices_vector;
 
@@ -266,21 +290,37 @@ void medianFilterMatMask(Matrix2D<bool>& input_mask, int half_width, Matrix2D<do
         if(do_remove[k] == 0)
         {
             //A is dynamically allocated in conv2mat
+#ifdef U_PTR_CONTAINER
+            conv2mat(input_mask.getRows(), input_mask.getCols(), std::move(fs[k]), std::move(&A));
+#else
             conv2mat(input_mask.getRows(), input_mask.getCols(), fs[k], &A);
+#endif // U_PTR_CONTAINER
 
             Matrix2D<bool> bool_f( fs[k].getRows(), fs[k].getCols());
             //if a value is not zero, store 1, else store 1 in the new matrix f
+#ifdef U_PTR_CONTAINER
+            fs[k].compareValuesToTreshold(std::move(bool_f), 0, NonEqual);
+#else
             fs[k].compareValuesToTreshold(bool_f, 0, NonEqual);
+#endif // U_PTR_CONTAINER
             //convert into double
             Matrix2D<double> f( fs[k].getRows(), fs[k].getCols());
-            convertBoolToDoubleMatrix2D(bool_f, f);
+
+            //convert to double
+            for(unsigned int i = 0; i < bool_f.getDim(); i++)
+                f.setMatrixValue(i, (double) bool_f.getMatrixValue(i));
 
             //convert matrix input_mask to double
-            convertBoolToDoubleMatrix2D(input_mask, d_input_mask);
+            for(unsigned int i = 0; i < input_mask.getDim(); i++)
+                d_input_mask.setMatrixValue(i, (double) input_mask.getMatrixValue(i));
 
             //Apply convolution between filter f and input_mask (after converted to double). Store the result in the matrix conv_res
             Matrix2D<double> conv_res( abs(d_input_mask.getRows() - f.getRows() + 1), abs(d_input_mask.getCols() - f.getCols() + 1), 0);
-            d_input_mask.conv2DValid(f, conv_res);
+#ifdef U_PTR_CONTAINER
+            conv_res.conv2DValid(std::move(f), std::move(d_input_mask));
+#else
+            conv_res.conv2DValid(f, d_input_mask);
+#endif // U_PTR_CONTAINER
 
             //reshape conv_res matrix to vector R. R's dimension should be equal to A.getRows()
             vector<double> R((*A).getRows(), 0);
@@ -296,11 +336,15 @@ void medianFilterMatMask(Matrix2D<bool>& input_mask, int half_width, Matrix2D<do
             //apply mask to A and  store in temp_A
             applyMaskOnKeysValueMatrix(keep, &A,  &temp_A);
 
+             //store temp_A in the vector of matrixes
+#ifdef U_PTR_CONTAINER
+            matrices_vector.push_back(std::move(temp_A));
+#else
             //delete dinamically allocated Matrix2D object
              delete A;
 
-             //store temp_A in the vector of matrixes
-             matrices_vector.push_back(temp_A);
+            matrices_vector.push_back(temp_A);
+#endif // U_PTR_CONTAINER
         }
     }
 
@@ -317,7 +361,35 @@ void medianFilterMatMask(Matrix2D<bool>& input_mask, int half_width, Matrix2D<do
     keysVal_output = new Matrix2D<KeysValue<double> >(temp_rows_nr, matrices_vector[0].getCols());
 
     //input is vector of matrices, output is a matrix whose number of rows is the sum of all matrices rows from the vector of matrixes
-    appendMatrixBelow(matrices_vector,  &keysVal_output);
+    //appendMatrixBelow(matrices_vector,  &keysVal_output);
+    int start, finish;
+    //iterate through the vector of matrices
+    for(unsigned int id = 0; id < matrices_vector.size(); id++)
+    {
+        KeysValue<double> temp;
+        //for the first matrix, start indexing output's rows from 0
+        if(id == 0)
+        {
+            start = 0;
+            finish = matrices_vector[0].getRows();
+        }
+        //for the rest of matrices, the index starts with the sum of the previous matrices rows
+        else
+        {
+            start += matrices_vector[id-1].getRows();
+            finish  = start + matrices_vector[id].getRows();
+        }
+
+        for(int idx = start; idx < finish; idx++)
+        {
+            for(int idy = 0; idy < keysVal_output->getCols(); idy++)
+            {
+                temp = matrices_vector[id].getMatrixValue(idx-start, idy);
+                temp.setKeyX(idx);
+                keysVal_output->setMatrixValue(idx, idy, temp);
+            }
+        }
+    }
 
     *output = new Matrix2D<double>(temp_rows_nr , keysVal_output->getCols()*3);
 
@@ -334,7 +406,7 @@ void medianFilterMatMask(Matrix2D<bool>& input_mask, int half_width, Matrix2D<do
 }
 
 //outputs 4 matrices stored in Border object
-void getBorderNormals(Matrix2D<bool> mask, Border& border)
+void getBorderNormals(Matrix2D<bool>& mask, Border& border)
 {
     int d = 5;
 
@@ -344,58 +416,113 @@ void getBorderNormals(Matrix2D<bool> mask, Border& border)
     filter.setMatrixValue(1, 0, 1); filter.setMatrixValue(1, 1, 1), filter.setMatrixValue(1, 2, 1);
     filter.setMatrixValue(2, 0, 0); filter.setMatrixValue(2, 1, 1), filter.setMatrixValue(2, 2, 0);
     //it seems Matlab reverses filter when applies it
+#ifdef U_PTR_CONTAINER
+    reversed_filter.reverseMatrix(std::move(filter));
+#else
     reversed_filter.reverseMatrix(filter);
+#endif // U_PTR_CONTAINER
 
     //build ~mask matrix
     Matrix2D<bool>negated_mask(mask.getRows(), mask.getCols()), conv_greater_than(mask.getRows(), mask.getCols()), B(mask.getRows(), mask.getCols());
-    mask.negateMatrixMask(negated_mask);
+#ifdef U_PTR_CONTAINER
+    negated_mask.negateMatrixMask(std::move(mask));
+#else
+    negated_mask.negateMatrixMask(mask);
+#endif // U_PTR_CONTAINER
+
     //convert the negated mask from bool to double
     Matrix2D<double> d_negated_mask(mask.getRows(), mask.getCols()), conv_same(mask.getRows(), mask.getCols(), 0);
-    convertBoolToDoubleMatrix2D(negated_mask, d_negated_mask);
+    for(unsigned int i = 0; i < negated_mask.getDim(); i++)
+        d_negated_mask.setMatrixValue(i, (double) negated_mask.getMatrixValue(i));
+
+    int no_nonzeros_in_B = 0;
+#ifdef U_PTR_CONTAINER
     //convolution result: conv_same returns a result with the same size as the input (calller)
-    d_negated_mask.conv2DSame(reversed_filter, conv_same);
+    conv_same.conv2DSame(std::move(reversed_filter), std::move(d_negated_mask));
+    //once convolution is computed, it checks which values are greater than 0, creating a bolean matrix storing the results (1 if greater, 0 else)
+    conv_same.compareValuesToTreshold(std::move(conv_greater_than), 0, GreaterThan);
+    //Compute B: the obtained boolean matrix and the input mask perform a logical and operation, storing the result in B and returning the number of non zero elements
+    no_nonzeros_in_B = conv_greater_than.logicalAnd(std::move(B), std::move(mask));
+    //store the indeces of nonzero elements in this matrix. In comparison to the Matlab ones, they'll always  lower by 1 (0 vs 1 base indexing)
+    Matrix2D<int>int_P(no_nonzeros_in_B, 2);
+    //Convert the previous matrix from int to double
+    Matrix2D<double>P(no_nonzeros_in_B, 2);
+    B.mFindIndeces(std::move(int_P), 1, Equal);
+#else
+    //convolution result: conv_same returns a result with the same size as the input (calller)
+    conv_same.conv2DSame(reversed_filter, d_negated_mask);
     //once convolution is computed, it checks which values are greater than 0, creating a bolean matrix storing the results (1 if greater, 0 else)
     conv_same.compareValuesToTreshold(conv_greater_than, 0, GreaterThan);
-    //Calculate B: the obtained boolean matrix and the input mask perform a logical and operation, storing the result in B and returning the number of non zero elements
-    int no_nonzeros_in_B = 0;
+    //Compute B: the obtained boolean matrix and the input mask perform a logical and operation, storing the result in B and returning the number of non zero elements
     no_nonzeros_in_B = conv_greater_than.logicalAnd(B, mask);
     //store the indeces of nonzero elements in this matrix. In comparison to the Matlab ones, they'll always  lower by 1 (0 vs 1 base indexing)
     Matrix2D<int>int_P(no_nonzeros_in_B, 2);
-    B.mFindIndeces(int_P, 1, Equal);
     //Convert the previous matrix from int to double
     Matrix2D<double>P(no_nonzeros_in_B, 2);
-    convertIntToDoubleMatrix2D(int_P, P);
+    B.mFindIndeces(int_P, 1, Equal);
+#endif // U_PTR_CONTAINER
+
+    //convert int_P to double
+    for(unsigned int i = 0; i < P.getDim(); i++)
+    {
+        P.setMatrixValue(i, int_P.getMatrixValue(i));
+    }
 
     //create meshgrid
     Matrix2D<double>X_meshgrid(2*d +1, 2*d + 1), Y_meshgrid(2*d + 1, 2*d +1), pow_X_meshgrid(2*d +1, 2*d + 1), pow_Y_meshgrid(2*d + 1, 2*d +1);
     meshgrid(-d, d, -d, d, X_meshgrid, Y_meshgrid);
     //square matrices elements
+#ifdef U_PTR_CONTAINER
+    X_meshgrid.elementsOperation(std::move(pow_X_meshgrid), 2, Pow);
+    Y_meshgrid.elementsOperation(std::move(pow_Y_meshgrid), 2, Pow);
+    //add powered matrices
+    pow_X_meshgrid + std::move(pow_Y_meshgrid);
+#else
     X_meshgrid.elementsOperation(pow_X_meshgrid, 2, Pow);
     Y_meshgrid.elementsOperation(pow_Y_meshgrid, 2, Pow);
     //add powered matrices
     pow_X_meshgrid + pow_Y_meshgrid;
+#endif // U_PTR_CONTAINER
+
     //Multiply by -5/d^2
-    Matrix2D<double>factorized_sum_of_powered_meshgrids(2*d + 1, 2*d +1), gaussian(2*d + 1, 2*d +1);
+    Matrix2D<double>factorized_sum_of_powered_meshgrids(2*d + 1, 2*d +1), gaussian(2*d + 1, 2*d +1), P_plus_d(no_nonzeros_in_B, 2), P_minus_d(no_nonzeros_in_B, 2);
     double multiply_factor = -5/pow(d, 2);
+
+#ifdef U_PTR_CONTAINER
+    pow_X_meshgrid.elementsOperation(std::move(factorized_sum_of_powered_meshgrids), multiply_factor, Multiply);
+    //finally, compute gaussian
+    factorized_sum_of_powered_meshgrids.elementsOperation(std::move(gaussian), 0, Exp);
+    //compute inner operations needed for the new P
+    P.elementsOperation(std::move(P_plus_d), d, Sum);
+    P.elementsOperation(std::move(P_minus_d), d, Substract);
+#else
     pow_X_meshgrid.elementsOperation(factorized_sum_of_powered_meshgrids, multiply_factor, Multiply);
     //finally, compute gaussian
     factorized_sum_of_powered_meshgrids.elementsOperation(gaussian, 0, Exp);
-
     //compute inner operations needed for the new P
-    Matrix2D<double>P_plus_d(no_nonzeros_in_B, 2), P_minus_d(no_nonzeros_in_B, 2);
     P.elementsOperation(P_plus_d, d, Sum);
     P.elementsOperation(P_minus_d, d, Substract);
+#endif // U_PTR_CONTAINER
+
 
     //compute the  masks for the above matrices, afterwards perform logical and on them
     Matrix2D<bool>P_plus_d_mask(no_nonzeros_in_B, 2), P_minus_d_mask(no_nonzeros_in_B, 2), and_P_masks(no_nonzeros_in_B, 2);
     //create size vector containing V's dimensions, needed for comparison
     vector<double>size_mask(2);
     size_mask[0] = mask.getRows(); size_mask[1] =  mask.getCols();
+#ifdef U_PTR_CONTAINER
+    //compute the bsxfun operations, which return boolean matrices
+    P_plus_d.compareMatrixColumnsToVector(std::move(P_plus_d_mask), size_mask, LessThanOrEqual);
+    P_minus_d.compareValuesToTreshold(std::move(P_minus_d_mask), 1, GreaterThanOrEqual);
+    //logical AND between the above resulted boolean matrices
+    P_plus_d_mask.logicalAnd(std::move(and_P_masks), std::move(P_minus_d_mask));
+#else
     //compute the bsxfun operations, which return boolean matrices
     P_plus_d.compareMatrixColumnsToVector(P_plus_d_mask, size_mask, LessThanOrEqual);
     P_minus_d.compareValuesToTreshold(P_minus_d_mask, 1, GreaterThanOrEqual);
     //logical AND between the above resulted boolean matrices
     P_plus_d_mask.logicalAnd(and_P_masks, P_minus_d_mask);
+#endif // U_PTR_CONTAINER
 
     //check rows that contain at least one 0 value
     vector<bool>allNonZeroLines(and_P_masks.getRows());
@@ -404,7 +531,11 @@ void getBorderNormals(Matrix2D<bool> mask, Border& border)
     int notzero_lines_in_P = count(allNonZeroLines.begin(), allNonZeroLines.end(), true);
     //declare N, matrix for storing normal's values computed in the for loop. Also, masked_P stores values from P kept after applying mask
     Matrix2D<double> masked_P(notzero_lines_in_P, P.getCols()), N(notzero_lines_in_P, masked_P.getCols(), numeric_limits<double>::quiet_NaN());
-    P.applyVectorMask(masked_P, allNonZeroLines);
+#ifdef U_PTR_CONTAINER
+    masked_P.applyVectorMask(std::move(P), allNonZeroLines);
+#else
+    masked_P.applyVectorMask(P, allNonZeroLines);
+#endif // U_PTR_CONTAINER
 
     //create [-d:d] vector and initialize it. It is needed inside the for loop
     vector<int>d_vector(2*d + 1);
@@ -413,8 +544,8 @@ void getBorderNormals(Matrix2D<bool> mask, Border& border)
         d_vector[i] = i - d;
     }
 
-    //P matrix has only 2 columns
-    for(int i = 0; i < 1 /*P.getRows()*/; i++)
+    //P matrix has only 2 columns, so do not loop through them
+    for(int i = 0; i < P.getRows(); i++)
     {
         //vectors of indeces used ot get submatrix of mask input
         vector<int> mask_x(2*d + 1), mask_y(2*d + 1);
@@ -447,20 +578,33 @@ void getBorderNormals(Matrix2D<bool> mask, Border& border)
 
         //calculate bsxfun substractions
         Matrix2D<int> substract_ii(no_nonzeros_in_patch, no_nonzeros_in_patch), substract_jj(no_nonzeros_in_patch, no_nonzeros_in_patch);
+        Matrix2D<int> sq_substract_ii(no_nonzeros_in_patch, no_nonzeros_in_patch), sq_substract_jj(no_nonzeros_in_patch, no_nonzeros_in_patch);
+        Matrix2D<double> d_patch(patch.getRows(), patch.getCols(), 0);
+
         vectorOpItsTranspose(ii, substract_ii, Substract);
         vectorOpItsTranspose(jj, substract_jj, Substract);
+#ifdef U_PTR_CONTAINER
         //square up the above matrices' elements
-        Matrix2D<int> sq_substract_ii(no_nonzeros_in_patch, no_nonzeros_in_patch), sq_substract_jj(no_nonzeros_in_patch, no_nonzeros_in_patch);
+        substract_ii.elementsOperation(std::move(sq_substract_ii),  2, Pow);
+        substract_jj.elementsOperation(std::move(sq_substract_jj),  2, Pow);
+        //add the precedently computed and store the result in sq_substract_ii (overwrite tis values)
+        sq_substract_ii + std::move(sq_substract_jj);
+        sq_substract_ii.compareValuesToTreshold(std::move(temp_a), 2, LessThanOrEqual);
+        a.applyDoubleVectorMask(std::move(temp_a), vector_patch, vector_patch);
+        //apply patch mask to the gaussian
+        d_patch.applyMatrixMask(std::move(gaussian), std::move(patch));
+#else
+        //square up the above matrices' elements
         substract_ii.elementsOperation(sq_substract_ii,  2, Pow);
         substract_jj.elementsOperation(sq_substract_jj,  2, Pow);
         //add the precedently computed and store the result in sq_substract_ii (overwrite tis values)
         sq_substract_ii + sq_substract_jj;
         sq_substract_ii.compareValuesToTreshold(temp_a, 2, LessThanOrEqual);
-        temp_a.applyDoubleVectorMask(a, vector_patch, vector_patch);
-
+        a.applyDoubleVectorMask(temp_a, vector_patch, vector_patch);
         //apply patch mask to the gaussian
-        Matrix2D<double> d_patch(patch.getRows(), patch.getCols(), 0);
-        gaussian.applyMatrixMask(d_patch, patch);
+        d_patch.applyMatrixMask(gaussian, patch);
+#endif
+
         //then, get indeces and values of non zeros in d_patch
         int no_nonzeros_in_d_patch = 0;
         no_nonzeros_in_d_patch = d_patch.countValuesDifferentFromInput(0);
@@ -479,6 +623,7 @@ void getBorderNormals(Matrix2D<bool> mask, Border& border)
             d_patch_i[idx] = patch_i[idx] * v[idx];
             d_patch_j[idx] = patch_j[idx] * v[idx];
         }
+
         //compute the mean in the above computed vectors, and store the result in a vector
         double sum_i = 0, sum_j = 0;
         for(int idx = 0; idx < no_nonzeros_in_d_patch; idx++)
@@ -486,6 +631,7 @@ void getBorderNormals(Matrix2D<bool> mask, Border& border)
             sum_i += d_patch_i[idx];
             sum_j += d_patch_j[idx];
         }
+
         vector<double>n(2);
         double sqrt_sum_squared_n;
         n[0] = -sum_i/no_nonzeros_in_d_patch;
@@ -518,7 +664,11 @@ void getBorderNormals(Matrix2D<bool> mask, Border& border)
     }
 
     //since masked_P stores indexes, they have to be incremented by 1 due to 1-based Matlab indexing
+#ifdef U_PTR_CONTAINER
+    masked_P.elementsOperation(std::move(masked_P), 1, Sum);
+#else
     masked_P.elementsOperation(masked_P, 1, Sum);
+#endif // U_PTR_CONTAINER
 
     border.setIdx(idx);
     border.setPosition(masked_P);

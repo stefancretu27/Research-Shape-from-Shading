@@ -18,14 +18,22 @@ private:
 public:
     //constructors: Since the copy constructor is overridden as it is needed for = operator, the default constructor needs to be defined as the implicit constructor cannot be called anymore (once any kind of constructor is defined)
     Prior(){};
+#ifdef U_PTR_CONTAINER
+    Prior(Prior& new_prior)
+#else
     Prior(const Prior& new_prior)
+#endif // U_PTR_CONTAINER
     {
         this->height = new_prior.height;
         this->light = new_prior.light;
         this->reflectance = new_prior.reflectance;
     }
     //operators overloading
+#ifdef U_PTR_CONTAINER
+    Prior& operator=(Prior& new_prior)
+#else
     Prior& operator=(const Prior& new_prior)
+#endif // U_PTR_CONTAINER
     {
         this->height = new_prior.height;
         this->light = new_prior.light;

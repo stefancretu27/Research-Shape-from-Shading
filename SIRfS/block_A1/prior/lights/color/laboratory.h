@@ -14,14 +14,22 @@ private:
 public:
     //constructors
     ColorLaboratory(){};
+#ifdef U_PTR_CONTAINER
+    ColorLaboratory(ColorLaboratory &input)
+#else
     ColorLaboratory(const ColorLaboratory &input)
+#endif
     {
         this->gaussian = input.gaussian;
         this->whiten_params = input.whiten_params;
     };
 
     //operators overloading
+#ifdef U_PTR_CONTAINER
+    ColorLaboratory& operator=(ColorLaboratory& input)
+#else
     ColorLaboratory& operator=(const ColorLaboratory& input)
+#endif
     {
         this->gaussian = input.gaussian;
         this->whiten_params = input.whiten_params;

@@ -29,7 +29,12 @@ int main()
 
     //create mask for the input image
     Matrix2D<bool> inputMask(grayImage.getRows(), grayImage.getCols());
+#ifdef U_PTR_CONTAINER
+    grayImage.compareValuesToTreshold(std::move(inputMask), 0, GreaterThan);
+#else
     grayImage.compareValuesToTreshold(inputMask, 0, GreaterThan);
+#endif // U_PTR_CONTAINER
+
 
     //Initialize SIRfS parameters. Replaces CONSTANTS file from Matlab.
     cout<<"[SIRfS] Finished reading input. Initializing parameters"<<endl;
@@ -66,20 +71,32 @@ int main()
     clock_t build_data = clock();
     Data data;
     data.getDataTrue().setInputImage(grayImage);
-
+#ifdef U_PTR_CONTAINER
+    //im
+    Matrix2D<double> im(std::move(grayImage));
+    //valid
+    Matrix2D<bool>valid(std::move(inputMask));
+#else
     //im
     Matrix2D<double> im(grayImage);
     //valid
     Matrix2D<bool>valid(inputMask);
+#endif // U_PTR_CONTAINER
 
     //build ~valid matrix
     Matrix2D<bool>negated_valid(valid.getRows(), valid.getCols());
-    valid.negateMatrixMask(negated_valid);
+    Matrix2D<double>log_im(im.getRows(), im.getCols());
+#ifdef U_PTR_CONTAINER
+    negated_valid.negateMatrixMask(std::move(valid));
+    //replace 0 with NaN in im
+    im.insertNaNValues(std::move(negated_valid));
+     log_im.logNatMatrix(std::move(im));
+#else
+    negated_valid.negateMatrixMask(valid);
     //replace 0 with NaN in im
     im.insertNaNValues(negated_valid);
-
-    Matrix2D<double>log_im(im.getRows(), im.getCols());
     log_im.logNatMatrix(im);
+#endif // U_PTR_CONTAINER
 
     //set some fields of the "data" structure. This class keeps copies of the original data stored on matrixes im, valid and log_im, in case some get modified.
     data.getDataTrue().setIm(im);
@@ -95,8 +112,13 @@ int main()
     medianFilterMatMask(negated_valid,  params.getAMedianHalfwidth(), data.getAMedianFilterMatAddress());
 
     //compute transposes for the above matrices. Since they store they KeysValue they might not be necessary, as the original can be used, but keep them till determining their usefulness
+#ifdef U_PTR_CONTAINER
+    data.getZMedianFilterMat()->getTranspose(std::move(data.getZMedianFilterMatTAddress()));
+    data.getAMedianFilterMat()->getTranspose(std::move(data.getAMedianFilterMatTAddress()));
+#else
     data.getZMedianFilterMat()->getTranspose(data.getZMedianFilterMatTAddress());
     data.getAMedianFilterMat()->getTranspose(data.getAMedianFilterMatTAddress());
+#endif // U_PTR_CONTAINER
     cout<<"Time taken for median filter: "<<(double)(clock() - clock_median_filter)/CLOCKS_PER_SEC<<endl;
 
 #ifdef TEST_BLOCK_A2
@@ -107,7 +129,11 @@ int main()
 
     cout<<"[SIRfS] Building border normals"<<endl;
     clock_t clock_border_normals = clock();
+#ifdef U_PTR_CONTAINER
+    getBorderNormals(std::move(data.getDataTrue()).getMask(), data.getBorder());
+#else
     getBorderNormals(data.getDataTrue().getMask(), data.getBorder());
+#endif
     cout<<"Time taken for  border normals: "<<(double)(clock() - clock_border_normals)/CLOCKS_PER_SEC<<endl<<endl;
 
 #ifdef TEST_BLOCK_A2
@@ -115,7 +141,6 @@ int main()
     cout<<"Test Border.position: "<<test_matrix2D("block_A2/PositionM.txt", data.getBorder().getPosition(), Double)<<endl;
     cout<<"Test Border.normal: "<<test_matrix2D("block_A2/NormalM.txt", data.getBorder().getNormal(), Double)<<endl;
     cout<<"Test Border.tangent: "<<test_matrix2D("block_A2/TangentM.txt", data.getBorder().getTangent(), Double)<<endl;
-
 #endif
 
     data.setPrior(prior);

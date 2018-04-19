@@ -21,7 +21,11 @@ private:
 public:
     //operators overloading
     ReflectanceColorLut(){};
+#ifdef U_PTR_CONTAINER
+     ReflectanceColorLut(ReflectanceColorLut& input)
+#else
     ReflectanceColorLut(const ReflectanceColorLut& input)
+#endif
     {
         this->F = input.F;
         this->bin_range = input.bin_range;
@@ -30,7 +34,11 @@ public:
     };
 
     //operators overloading
+#ifdef U_PTR_CONTAINER
+    ReflectanceColorLut& operator=(ReflectanceColorLut& input)
+#else
     ReflectanceColorLut& operator=(const ReflectanceColorLut& input)
+#endif
     {
         this->F = input.F;
         this->bin_range = input.bin_range;

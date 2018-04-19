@@ -7,24 +7,32 @@ template <class Type>
 class Matrix3D
 {
 private:
+#ifdef U_PTR_CONTAINER
+    std::unique_ptr<Type []> container;
+#else
     Type *container;
+#endif // U_PTR_CONTAINER
     unsigned int width, height, depth;
 
 public:
     //constructors
-    Matrix3D()
-    {
-        this->width = 0;
-        this->height = 0;
-        this->depth = 0;
-        this->container = NULL;
-    };
+    Matrix3D():width(0), height(0), depth(0), container(nullptr){};
     Matrix3D(unsigned int new_xDim, unsigned int new_yDim, unsigned int new_zDim);
-    Matrix3D(const Matrix3D& new_matrix);
+
+#ifdef U_PTR_CONTAINER
+    //move constructor
+    Matrix3D(Matrix3D<Type> &&new_matrix);
+#else
+    //copy constructor
+    Matrix3D(const Matrix3D<Type>& new_matrix);
+#endif // U_PTR_CONTAINER
+
     //destructor
     ~Matrix3D()
     {
+#ifndef U_PTR_CONTAINER
         delete [] this->container;
+#endif // U_PTR_CONTAINER
     };
 
     //indexes operations
@@ -51,10 +59,17 @@ public:
     {
         return this->depth;
     };
+#ifdef U_PTR_CONTAINER
+    inline std::unique_ptr<Type []> getContainer()
+    {
+        return std::move(this->container);
+    }
+#else
     inline Type* getContainer()const
     {
         return this->container;
     };
+#endif // U_PTR_CONTAINER
     inline Type getMatrixValue(int i, int j, int k) const
     {
         return this->container[i*height*depth + j*depth + k];
@@ -85,13 +100,18 @@ public:
     };
     inline void setMatrixValue(int x, int y, int z, Type value)
     {
-        this->matrix3d[this->getLinearIndex(x, y, z)] = value;
+        this->container[this->getLinearIndex(x, y, z)] = value;
     };
     void setMatrix3D(Type* data, int new_width,  int new_height, int new_depth, bool transp);
 
     //operators overloading
     Type& operator()(unsigned int new_xDim, unsigned int new_yDim, unsigned int new_zDim);
-    Matrix3D& operator=(const Matrix3D& new_matrix);
+
+#ifdef U_PTR_CONTAINER
+    Matrix3D& operator=(Matrix3D<Type> &&new_matrix);
+#else
+    Matrix3D& operator=(const Matrix3D<Type>& new_matrix);
+#endif // U_PTR_CONTAINER
 
     //matrix operations
     void normalizeData(int factor);

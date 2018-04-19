@@ -16,17 +16,33 @@ private:
 public:
     //constructors
     GrayGaussian(){};
+#ifdef U_PTR_CONTAINER
+    GrayGaussian(GrayGaussian& input)
+#else
     GrayGaussian(const GrayGaussian& input)
+#endif
     {
         this->mu = input.mu;
+#ifdef U_PTR_CONTAINER
+        this->Sigma = std::move(input.Sigma);
+#else
         this->Sigma = input.Sigma;
+#endif
     };
 
     //operators overloading
+#ifdef U_PTR_CONTAINER
+    GrayGaussian& operator=(GrayGaussian& input)
+#else
     GrayGaussian& operator=(const GrayGaussian& input)
+#endif
     {
         this->mu = input.mu;
+#ifdef U_PTR_CONTAINER
+        this->Sigma = std::move(input.Sigma);
+#else
         this->Sigma = input.Sigma;
+#endif
         return *this;
     };
     //getters

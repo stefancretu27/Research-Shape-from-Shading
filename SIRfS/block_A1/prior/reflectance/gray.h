@@ -16,6 +16,25 @@ private:
 public:
     //constructors
     ReflectanceGray(){};
+#ifdef U_PTR_CONTAINER
+    //move constructor and assignment operator
+    ReflectanceGray(ReflectanceGray& input)
+    {
+        this->A_spline = std::move(input.A_spline);
+        this->A_train = std::move(input.A_train);
+        this->A_range = input.A_range;
+        this->MA = input.MA;
+    }
+
+    ReflectanceGray& operator=(ReflectanceGray& input)
+    {
+        this->A_spline = std::move(input.A_spline);
+        this->A_train = std::move(input.A_train);
+        this->A_range = input.A_range;
+        this->MA = input.MA;
+        return *this;
+    }
+#else
     ReflectanceGray(const ReflectanceGray& input)
     {
         this->A_spline = input.A_spline;
@@ -23,7 +42,6 @@ public:
         this->A_range = input.A_range;
         this->MA = input.MA;
     };
-
     //operators overloading
     ReflectanceGray& operator=(const ReflectanceGray& input)
     {
@@ -33,6 +51,7 @@ public:
         this->MA = input.MA;
         return *this;
     };
+#endif
 
     //getters
     inline std::vector<double>& getA_spline(){return this->A_spline;};

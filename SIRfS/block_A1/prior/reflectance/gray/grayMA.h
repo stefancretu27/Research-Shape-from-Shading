@@ -15,12 +15,25 @@ private:
 public:
     //operators overloading
     GrayMA(){};
+#ifdef U_PTR_CONTAINER
+    GrayMA(GrayMA& input)
+    {
+        this->gsm = input.gsm;
+        this->MA_train = std::move(input.MA_train);
+    };
+    //operators overloading
+    GrayMA& operator=(GrayMA& input)
+    {
+        this->gsm = input.gsm;
+        this->MA_train = std::move(input.MA_train);
+        return *this;
+    };
+#else
     GrayMA(const GrayMA& input)
     {
         this->gsm = input.gsm;
         this->MA_train = input.MA_train;
     };
-
     //operators overloading
     GrayMA& operator=(const GrayMA& input)
     {
@@ -28,6 +41,7 @@ public:
         this->MA_train = input.MA_train;
         return *this;
     };
+#endif
 
     //getters
     inline ReflectanceGSM& getGsm(){return this->gsm;};

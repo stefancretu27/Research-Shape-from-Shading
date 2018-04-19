@@ -14,7 +14,7 @@ private:
 
 public:
     //contructor initializes matrixes to point to one element. They get resized when new matrixesare assigned to them
-    DataTrue():inputImage(1,1), im(1,1), log_im(1,1), mask(1,1){};
+    DataTrue():inputImage(), im(), log_im(), mask(){};
     //getters
     inline Matrix2D<double>& getInputImage(){return this->inputImage;};
     inline Matrix2D<double>& getIm(){return this->im;};
@@ -22,10 +22,41 @@ public:
     inline Matrix2D<bool>& getMask(){return this->mask;};
 
     //setters
-    inline void setInputImage(Matrix2D<double>& in){this->inputImage = in;};
-    inline void setIm(Matrix2D<double>& in){this->im = in;};
-    inline void setLogIm(Matrix2D<double>& in){this->log_im = in;};
-    inline void setMask(Matrix2D<bool>& in){this->mask = in;};
+    inline void setInputImage(Matrix2D<double>& in)
+    {
+#ifdef U_PTR_CONTAINER
+         this->inputImage = std::move(in);
+#else
+        this->inputImage = in;
+#endif // U_PTR_CONTAINER
+    };
+
+    inline void setIm(Matrix2D<double>& in)
+    {
+#ifdef U_PTR_CONTAINER
+        this->im = std::move(in);
+#else
+        this->im = in;
+#endif // U_PTR_CONTAINER
+    };
+
+    inline void setLogIm(Matrix2D<double>& in)
+    {
+#ifdef U_PTR_CONTAINER
+        this->log_im = std::move(in);
+#else
+        this->log_im = in;
+#endif // U_PTR_CONTAINER
+    };
+
+    inline void setMask(Matrix2D<bool>& in)
+    {
+#ifdef U_PTR_CONTAINER
+        this->mask = std::move(in);
+#else
+        this->mask = in;
+#endif // U_PTR_CONTAINER
+    };
 };
 
 #endif // TRUE_H_INCLUDED

@@ -22,9 +22,30 @@ public:
     inline Matrix2D<double>& getTangent(){return this->Tangent;};
     //setters
     inline void setIdx(std::vector<double>& in){this->Idx = in;};
-    inline void setPosition(Matrix2D<double>& in){this->Position = in;};
-    inline void setNormal(Matrix2D<double>& in){this->Normal = in;};
-    inline void setTangent(Matrix2D<double>& in){this->Tangent = in;};
+    inline void setPosition(Matrix2D<double>& in)
+    {
+#ifdef U_PTR_CONTAINER
+        this->Position = std::move(in);
+#else
+        this->Position = in;
+#endif
+    };
+    inline void setNormal(Matrix2D<double>& in)
+    {
+#ifdef U_PTR_CONTAINER
+        this->Normal = std::move(in);
+#else
+        this->Normal = in;
+#endif
+    };
+    inline void setTangent(Matrix2D<double>& in)
+    {
+#ifdef U_PTR_CONTAINER
+        this->Tangent = std::move(in);
+#else
+        this->Tangent = in;
+#endif
+    };
 };
 
 #endif // BORDER_H_INCLUDED

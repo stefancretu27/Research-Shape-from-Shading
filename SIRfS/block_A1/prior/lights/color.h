@@ -13,13 +13,21 @@ private:
 public:
     //constructors
     LightsColor(){};
-    LIghtsColor(const LightsColor &input)
+#ifdef U_PTR_CONTAINER
+    LightsColor(LightsColor &input)
+#else
+    LightsColor(const LightsColor &input)
+#endif
     {
         this->lab = input.lab;
         this->nat = input.nat;
     };
     //operators overloading
+#ifdef U_PTR_CONTAINER
+    LightsColor& operator=(LightsColor& input)
+#else
     LightsColor& operator=(const LightsColor& input)
+#endif
     {
         this->lab = input.lab;
         this->nat = input.nat;

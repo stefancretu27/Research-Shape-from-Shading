@@ -17,27 +17,52 @@ private:
 public:
     //constructors
     ReflectanceColor(){};
+
+#ifdef U_PTR_CONTAINER
+    //move constructor and assignment operator
+    ReflectanceColor(ReflectanceColor& input)
+    {
+        this->Aw_hist = std::move(input.Aw_hist);
+        this->A_whiten = std::move(input.A_whiten);
+        this->A_train = std::move(input.A_train);
+        this->bin_low = std::move(input.bin_low);
+        this->bin_high = std::move(input.bin_high);
+        this->ma = input.ma;
+    }
+
+    ReflectanceColor& operator=(ReflectanceColor& input)
+    {
+        this->Aw_hist = std::move(input.Aw_hist);
+        this->A_whiten = std::move(input.A_whiten);
+        this->A_train = std::move(input.A_train);
+        this->bin_low = std::move(input.bin_low);
+        this->bin_high = std::move(input.bin_high);
+        this->ma = input.ma;
+
+        return *this;
+    }
+#else
     ReflectanceColor(const ReflectanceColor& input)
     {
+        this->Aw_hist = input.Aw_hist;
         this->A_whiten = input.A_whiten;
         this->A_train = input.A_train;
-        this->Aw_hist = input.Aw_hist;
         this->ma = input.ma;
         this->bin_low = input.bin_low;
         this->bin_high = input.bin_high;
     };
-
     //operators overloading
     ReflectanceColor& operator=(const ReflectanceColor& input)
     {
+        this->Aw_hist = input.Aw_hist;
         this->A_whiten = input.A_whiten;
         this->A_train = input.A_train;
-        this->Aw_hist = input.Aw_hist;
         this->ma = input.ma;
         this->bin_low = input.bin_low;
         this->bin_high = input.bin_high;
         return *this;
     };
+#endif
 
     //getters
     inline std::vector<double>& getA_whiten(){return this->A_whiten;};

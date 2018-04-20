@@ -11,7 +11,7 @@
 #include "keyValue.h"
 #include "../helpers/enums.h"
 
-//#define U_PTR_CONTAINER 0
+#define U_PTR_CONTAINER 0
 
 template <class Type>
 class Matrix2D

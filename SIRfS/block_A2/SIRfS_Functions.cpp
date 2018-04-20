@@ -233,7 +233,7 @@ void medianFilterMatMask(Matrix2D<bool>& input_mask, int half_width, Matrix2D<do
             //2D convolution product between absi and absj only if the kernel's size can fit in the input matrix
             if(fs[i].getRows() >= fs[j].getRows() && fs[i].getCols() >= fs[j].getCols())
             {
-                absi.conv2DValid(absj, C);
+                C.conv2DValid(absj, absi);
                 C.anyGreater(res, 1, 1);
             }
             else
@@ -280,7 +280,7 @@ void medianFilterMatMask(Matrix2D<bool>& input_mask, int half_width, Matrix2D<do
 
             //Apply convolution between filter f and input_mask (after converted to double). Store the result in the matrix conv_res
             Matrix2D<double> conv_res( abs(d_input_mask.getRows() - f.getRows() + 1), abs(d_input_mask.getCols() - f.getCols() + 1), 0);
-            d_input_mask.conv2DValid(f, conv_res);
+            conv_res.conv2DValid(f, d_input_mask);
 
             //reshape conv_res matrix to vector R. R's dimension should be equal to A.getRows()
             vector<double> R((*A).getRows(), 0);
@@ -348,12 +348,12 @@ void getBorderNormals(Matrix2D<bool> mask, Border& border)
 
     //build ~mask matrix
     Matrix2D<bool>negated_mask(mask.getRows(), mask.getCols()), conv_greater_than(mask.getRows(), mask.getCols()), B(mask.getRows(), mask.getCols());
-    mask.negateMatrixMask(negated_mask);
+    negated_mask.negateMatrixMask(mask);
     //convert the negated mask from bool to double
     Matrix2D<double> d_negated_mask(mask.getRows(), mask.getCols()), conv_same(mask.getRows(), mask.getCols(), 0);
     convertBoolToDoubleMatrix2D(negated_mask, d_negated_mask);
     //convolution result: conv_same returns a result with the same size as the input (calller)
-    d_negated_mask.conv2DSame(reversed_filter, conv_same);
+    conv_same.conv2DSame(reversed_filter, d_negated_mask);
     //once convolution is computed, it checks which values are greater than 0, creating a bolean matrix storing the results (1 if greater, 0 else)
     conv_same.compareValuesToTreshold(conv_greater_than, 0, GreaterThan);
     //Calculate B: the obtained boolean matrix and the input mask perform a logical and operation, storing the result in B and returning the number of non zero elements
@@ -404,7 +404,7 @@ void getBorderNormals(Matrix2D<bool> mask, Border& border)
     int notzero_lines_in_P = count(allNonZeroLines.begin(), allNonZeroLines.end(), true);
     //declare N, matrix for storing normal's values computed in the for loop. Also, masked_P stores values from P kept after applying mask
     Matrix2D<double> masked_P(notzero_lines_in_P, P.getCols()), N(notzero_lines_in_P, masked_P.getCols(), numeric_limits<double>::quiet_NaN());
-    P.applyVectorMask(masked_P, allNonZeroLines);
+    masked_P.applyVectorMask(P, allNonZeroLines);
 
     //create [-d:d] vector and initialize it. It is needed inside the for loop
     vector<int>d_vector(2*d + 1);
@@ -456,11 +456,11 @@ void getBorderNormals(Matrix2D<bool> mask, Border& border)
         //add the precedently computed and store the result in sq_substract_ii (overwrite tis values)
         sq_substract_ii + sq_substract_jj;
         sq_substract_ii.compareValuesToTreshold(temp_a, 2, LessThanOrEqual);
-        temp_a.applyDoubleVectorMask(a, vector_patch, vector_patch);
+        a.applyDoubleVectorMask(temp_a, vector_patch, vector_patch);
 
         //apply patch mask to the gaussian
         Matrix2D<double> d_patch(patch.getRows(), patch.getCols(), 0);
-        gaussian.applyMatrixMask(d_patch, patch);
+        d_patch.applyMatrixMask(gaussian, patch);
         //then, get indeces and values of non zeros in d_patch
         int no_nonzeros_in_d_patch = 0;
         no_nonzeros_in_d_patch = d_patch.countValuesDifferentFromInput(0);

@@ -14,7 +14,7 @@ private:
 
 public:
     //contructor initializes matrixes to point to one element. They get resized when new matrixesare assigned to them
-    Border():Position(1,1), Normal(1,1),Tangent(1,1){};
+    Border():Position(), Normal(),Tangent(){};
     //getters
     inline std::vector<double>& getIdx(){return this->Idx;};
     inline Matrix2D<double>& getPosition(){return this->Position;};

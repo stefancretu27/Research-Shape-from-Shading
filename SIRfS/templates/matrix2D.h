@@ -18,14 +18,18 @@ private:
 
 public:
     //constructors
-    Matrix2D(){this->rows = 0; this->cols = 0; this->container = NULL;};
+    Matrix2D(){this->rows = 0; this->cols = 0; this->container = nullptr;};
     //overload constructor
     Matrix2D( int new_rows,  int new_cols);
     Matrix2D( int new_rows,  int new_cols, Type value);
     //copy constructor
-    Matrix2D(const Matrix2D<Type>& new_matrix);
+    Matrix2D(const Matrix2D<Type>& input_matrix);
     //destructor
-    ~Matrix2D();
+    ~Matrix2D()
+    {
+        //delete the array
+        delete [] this->container;
+    };
 
     //indexes operations
     inline unsigned int getLinearIndex(int i, int j)
@@ -47,7 +51,7 @@ public:
     {
         return this->cols;
     };
-    inline int getDim()
+    inline int getDim() const
     {
         return this->rows*this->cols;
     };
@@ -93,18 +97,18 @@ public:
     {
         return this->container[rowsIdx * this->cols + colsIdx];
     };
-    bool operator==(const Matrix2D<Type>& new_matrix);
-    Matrix2D& operator=(const Matrix2D<Type>& new_matrix);
-    Matrix2D& operator+(Matrix2D<Type>& new_matrix);
-    Matrix2D& operator-(Matrix2D<Type>& new_matrix);
+    bool operator==(const Matrix2D<Type>& operand_matrix);
+    Matrix2D& operator=(const Matrix2D<Type>& operand_matrix);
+    Matrix2D& operator+(const Matrix2D<Type>& operand_matrix);
+    Matrix2D& operator-(const Matrix2D<Type>& operand_matrix);
 
     //helper: separate function from constructors, used data copying
     void initializeMatrixValues(Type value);
 
-    //convolution
-    void conv2DFull(Matrix2D<Type>& kernel, Matrix2D<Type>& result);
-    void conv2DValid(Matrix2D<Type>& kernel, Matrix2D<Type>& result);
-    void conv2DSame(Matrix2D<Type>& kernel, Matrix2D<Type>& result);
+    //convolution: apply kernel to the input matrix and store the conv result in the caller matrix
+    void conv2DFull(const Matrix2D<Type>& kernel, const Matrix2D<Type>& input);
+    void conv2DValid(const Matrix2D<Type>& kernel,  const Matrix2D<Type>& input);
+    void conv2DSame(const Matrix2D<Type>& kernel, const Matrix2D<Type>& input);
 
     //matrix operations. They are the C++ implementations for Matlab library functions for 2D matrices
     /*
@@ -114,21 +118,22 @@ public:
     void insertNaNValues(Matrix2D<bool>& mask);
     //creates a mask by comparing the caller's values to the given treshold
     void compareValuesToTreshold(Matrix2D<bool>& result, Type treshold, Comparison comp);
-    void negateMatrixMask(Matrix2D<bool>& result);
+//CHANGED
+    void negateMatrixMask(const Matrix2D<bool>& input_mask);
     //returns the # of non-zero elements
-    int logicalAnd(Matrix2D<bool>& result, Matrix2D<Type>& input);
+    int logicalAnd(Matrix2D<bool>& result, const Matrix2D<Type>& input);
     //only the number of columns has to be equal to size of vector
-    void compareMatrixColumnsToVector(Matrix2D<bool>& result, std::vector<Type>& input, Comparison comp);
-    void applyVectorMask(Matrix2D<Type>& result, std::vector<bool> mask);
-    void applyDoubleVectorMask(Matrix2D<Type>& result, std::vector<bool> mask1, std::vector<bool> mask2);
-    void applyMatrixMask(Matrix2D<Type>& result, Matrix2D<bool> mask);
+    void compareMatrixColumnsToVector(Matrix2D<bool>& result, const std::vector<Type>& input, Comparison comp);
+    void applyVectorMask(const Matrix2D<Type>& input, const std::vector<bool> mask);
+    void applyDoubleVectorMask(const Matrix2D<Type>& input, const std::vector<bool> mask1, const std::vector<bool> mask2);
+    void applyMatrixMask(const Matrix2D<Type>& input, const Matrix2D<bool> mask);
     void sortLines();
 
     /*
     *basic math-operations
     */
-    void getAbsoluteValuesMatrix(Matrix2D<Type>& source);
-    void logNatMatrix(Matrix2D<Type>& source);
+    void getAbsoluteValuesMatrix(const Matrix2D<Type>& input);
+    void logNatMatrix(const Matrix2D<Type>& input);
     void findFirstNonEqualElement(int &x_first, int &y_first, Type value);
     void findLastNonEqualElement(int &x_last, int &y_last, Type value);
     //for the following 2 functions, the output is a vector
@@ -153,8 +158,10 @@ public:
     void copyMatrixColumnToVector(std::vector<Type> &result, int col);
     void copyMatrixRowToVector(std::vector<Type> &result, int row);
     void reshapeToVector(std::vector<Type>& dest);
-    void getSubMatrix(Matrix2D<Type>& source, int x_first, int x_last, int y_first, int y_last);
-    void reverseMatrix(Matrix2D<Type>& source);
+//CHANGED
+    void getSubMatrix(const Matrix2D<Type>& input, int x_first, int x_last, int y_first, int y_last);
+//CHANGED
+    void reverseMatrix(const Matrix2D<Type>& input);
     void getTranspose(Matrix2D<Type>** result);
     //same as above, but result is stored in the caller (caller data is lost)
     void TransposeMatrix();

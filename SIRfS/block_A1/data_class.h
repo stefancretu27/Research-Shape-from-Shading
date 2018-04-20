@@ -19,7 +19,7 @@ private:
     Matrix2D<bool> valid;
 
 public:
-    Data():valid(1,1){};
+    Data():valid(){};
     //getters
     inline DataTrue& getDataTrue(){return this->dt;};
     inline Border& getBorder(){return this->border;};

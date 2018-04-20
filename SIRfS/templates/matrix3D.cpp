@@ -8,18 +8,23 @@ using namespace std;
 template <class Type>
 Matrix3D<Type>::Matrix3D(unsigned int new_xDim, unsigned int new_yDim, unsigned int new_zDim):width(new_xDim), height(new_yDim), depth(new_zDim)
 {
-    this->container = new Type[width*height*depth];
+    if(this->height > 0 && this->width > 0 && this->depth > 0)
+    {
+        this->container = new Type[width*height*depth];
+    }
 }
 
 //copy constructor
 template <class Type>
 Matrix3D<Type>::Matrix3D(const Matrix3D<Type>& new_matrix):width(new_matrix.getWidth()), height(new_matrix.getHeight()), depth(new_matrix.getDepth())
 {
-    this->container = new Type[width*height*depth];
+    if(this->height > 0 && this->width > 0 && this->depth > 0)
+    {
+        this->container = new Type[width*height*depth];
 
-    for(unsigned int idx = 0; idx < this->getDim(); idx++)
-        this->container[idx] = new_matrix.getMatrixValue(idx);
-
+        for(unsigned int idx = 0; idx < this->getDim(); idx++)
+            this->container[idx] = new_matrix.getMatrixValue(idx);
+    }
 }
 
 //index related operations
@@ -39,30 +44,32 @@ void Matrix3D<Type>::setMatrix3D(Type* data, int new_width,  int new_height, int
     this->height = new_height;
     this->depth = new_depth;
 
-    //allocate memory
-    this->container = new Type[width*height*depth];
+    if(this->height > 0 && this->width > 0 && this->depth > 0)
+    {
+        //allocate memory
+        this->container = new Type[width*height*depth];
 
-    //copy elements
-    if(transp)
-    {
-        for(unsigned int xIdx = 0; xIdx < this->width; xIdx++)
-            for(unsigned int yIdx = 0; yIdx < this->height; yIdx++)
-                for(unsigned int zIdx = 0; zIdx < this->depth; zIdx++)
-                {
-                    //this->matrix3d.push_back(data[xIdx+ yIdx*this->width + zIdx*this->height*this->width]);
-                    //better execution time than push_back
-                    this->container[this->getLinearIndex(xIdx,yIdx,zIdx)] = data[xIdx+ yIdx*this->width + zIdx*this->height*this->width];
-                }
-    }
-    else
-    {
         //copy elements
-        for(unsigned int idx = 0; idx < this->getDim(); idx++)
+        if(transp)
         {
-            this->container[idx] = data[idx];
+            for(unsigned int xIdx = 0; xIdx < this->width; xIdx++)
+                for(unsigned int yIdx = 0; yIdx < this->height; yIdx++)
+                    for(unsigned int zIdx = 0; zIdx < this->depth; zIdx++)
+                    {
+                        //this->matrix3d.push_back(data[xIdx+ yIdx*this->width + zIdx*this->height*this->width]);
+                        //better execution time than push_back
+                        this->container[this->getLinearIndex(xIdx,yIdx,zIdx)] = data[xIdx+ yIdx*this->width + zIdx*this->height*this->width];
+                    }
+        }
+        else
+        {
+            //copy elements
+            for(unsigned int idx = 0; idx < this->getDim(); idx++)
+            {
+                this->container[idx] = data[idx];
+            }
         }
     }
-
 }
 
 //operators overloading
@@ -80,14 +87,16 @@ Matrix3D<Type>& Matrix3D<Type>::operator=(const Matrix3D<Type>& new_matrix)
     this->height = new_matrix.getHeight();
     this->depth = new_matrix.getDepth();
 
-    //allocate memory and copy elements
-    this->container = new Type[width*height*depth];
-
-    for(unsigned int idx = 0; idx < this->getDim(); idx++)
+    if(this->height > 0 && this->width > 0 && this->depth > 0)
     {
-        this->container[idx] = new_matrix.getMatrixValue(idx);
-    }
+        //allocate memory and copy elements
+        this->container = new Type[width*height*depth];
 
+        for(unsigned int idx = 0; idx < this->getDim(); idx++)
+        {
+            this->container[idx] = new_matrix.getMatrixValue(idx);
+        }
+    }
     return *this;
 }
 

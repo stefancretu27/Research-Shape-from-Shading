@@ -74,7 +74,7 @@ int main()
 
     //build ~valid matrix
     Matrix2D<bool>negated_valid(valid.getRows(), valid.getCols());
-    valid.negateMatrixMask(negated_valid);
+    negated_valid.negateMatrixMask(valid);
     //replace 0 with NaN in im
     im.insertNaNValues(negated_valid);
 

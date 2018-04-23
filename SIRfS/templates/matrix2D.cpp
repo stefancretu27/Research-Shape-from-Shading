@@ -12,11 +12,14 @@ Matrix2D<Type>::Matrix2D( int new_rows,  int new_cols):rows(new_rows), cols(new_
     if(this->rows > 0 && this->cols > 0)
     {
         //allocate memory
-        this->container = new Type[this->rows*this->cols];
+        this->container.reserve(this->rows*this->cols);
     }
     else
     {
-        this->container = nullptr;
+        //set everything to 0 so to avoid garbage values being stored in
+        this->rows = 0;
+        this->cols = 0;
+        this->container.reserve(0);
     }
 }
 
@@ -27,7 +30,7 @@ Matrix2D<Type>::Matrix2D( int new_rows,  int new_cols, Type value):rows(new_rows
     if(this->rows > 0 && this->cols > 0)
     {
         //allocate memory
-        this->container = new Type[this->rows*this->cols];
+        this->container.reserve(this->rows*this->cols);
 
         for(unsigned int idx = 0; idx < this->getDim(); idx++)
         {
@@ -36,7 +39,10 @@ Matrix2D<Type>::Matrix2D( int new_rows,  int new_cols, Type value):rows(new_rows
     }
     else
     {
-        this->container = nullptr;
+        //set everything to 0 so to avoid garbage values being stored in
+        this->rows = 0;
+        this->cols = 0;
+        this->container.reserve(0);
     }
 }
 
@@ -47,7 +53,7 @@ Matrix2D<Type>::Matrix2D(const Matrix2D<Type>& input_matrix):rows(input_matrix.g
     if(this->rows > 0 && this->cols > 0)
     {
         //allocate memory
-        this->container = new Type[this->rows*this->cols];
+        this->container.reserve(this->rows*this->cols);
 
         //copy elements
         for(unsigned int idx = 0; idx < this->getDim(); idx++)
@@ -57,7 +63,10 @@ Matrix2D<Type>::Matrix2D(const Matrix2D<Type>& input_matrix):rows(input_matrix.g
     }
     else
     {
-        this->container = nullptr;
+        //set everything to 0 so to avoid garbage values being stored in
+        this->rows = 0;
+        this->cols = 0;
+        this->container.reserve(0);
     }
 }
 
@@ -70,7 +79,7 @@ void Matrix2D<Type>::setMatrix2D(Type* data, int new_rows,  int new_cols, bool t
     if(this->rows > 0 && this->cols > 0)
     {
         //allocate memory
-        this->container = new Type[this->rows*this->cols];
+        this->container.reserve(this->rows*this->cols);
 
         //in Matlab the matrices are stored column after column, in the contiguous array gotten as parameters (data), so it needs to be transposed
         if(transp)
@@ -91,6 +100,13 @@ void Matrix2D<Type>::setMatrix2D(Type* data, int new_rows,  int new_cols, bool t
                 this->container[idx] = data[idx];
             }
         }
+    }
+    else
+    {
+        //set everything to 0 so to avoid garbage values being stored in
+        this->rows = 0;
+        this->cols = 0;
+        this->container.reserve(0);
     }
 }
 
@@ -117,7 +133,7 @@ bool Matrix2D<Type>::operator==(const Matrix2D<Type>& operand_matrix)
 
     for(unsigned int idx = 0; idx < this->getDim() && k; idx++)
     {
-        if(this->container[idx]!= operand_matrix.getMatrixValue(idx))
+        if(this->container[idx] != operand_matrix.getMatrixValue(idx))
         {
             k = false;
             break;
@@ -135,15 +151,15 @@ Matrix2D<Type>& Matrix2D<Type>::operator=(const Matrix2D<Type>& operand_matrix)
     this->cols = operand_matrix.getCols();
 
     //delete previously stored data, if any
-    if(this->container != NULL)
+    if(!this->container.empty())
     {
-        delete this->container;
+        this->container.clear();
     }
 
     if(this->rows > 0 && this->cols > 0)
     {
         //allocate memory
-        this->container = new Type[this->rows*this->cols];
+        this->container.reserve(this->rows*this->cols);
 
         //copy elements
         for(unsigned int idx = 0; idx < this->getDim(); idx++)
@@ -201,7 +217,7 @@ Matrix2D<Type>& Matrix2D<Type>::operator-(const Matrix2D<Type>& operand_matrix)
 template <class Type>
 void Matrix2D<Type>::initializeMatrixValues(Type value)
 {
-    if(this->rows > 0 && this->cols > 0 && this->container != nullptr)
+    if(this->rows > 0 && this->cols > 0)
     {
         for(unsigned int idx = 0; idx < this->getDim(); idx++)
         {
@@ -453,7 +469,7 @@ void Matrix2D<Type>::compareMatrixColumnsToVector(Matrix2D<bool>& result, const 
 
     if((unsigned) this->getCols() != input.size())
     {
-        cout<<"Comparison couldn't be done. Input vector's size doesn't match calle rmatrix number of columns."<<endl;
+        cout<<"Comparison couldn't be done. Input vector's size doesn't match caller matrix number of columns."<<endl;
         exit(0);
     }
 
@@ -1101,12 +1117,6 @@ void Matrix2D<Type>::elementsOperation(Matrix2D<Type>& result, Type value, Opera
     switch(op)
     {
     case 0:
-        /*for(i = 0; i < this->getRows(); i++)
-            for(j = 0; j < this->getCols(); j++)
-            {
-                result.setMatrixValue(i, j, this->getMatrixValue(i, j) + value);
-            }
-            */
             for(unsigned int idx = 0; idx < this->getDim(); idx++)
             {
                 result.setMatrixValue(idx, this->container[idx] + value);
@@ -1195,15 +1205,6 @@ int Matrix2D<Type>::countValuesDifferentFromInput(Type value)
 {
     int counter = 0;
 
-    /*
-    for(int i = 0; i < this->getRows(); i++)
-        for(int j = 0; j < this->getCols(); j++)
-    {
-        if(this->getMatrixValue(i, j) != value)
-            counter++;
-    }
-    */
-
     for(unsigned int idx = 0; idx < this->getDim(); idx++)
     {
         if(this->container[idx] != value)
@@ -1261,7 +1262,7 @@ void Matrix2D<Type>::getSubMatrix(const Matrix2D<Type>& input, int x_first, int 
 
 //Reverse matrix elements: the first and the last lines are interchanged, the 2nd line with the 2nd-last one, but also th elements in the lines are reversed as the last becomes the first and viceversa
 template <class Type>
-void Matrix2D<Type>::reverseMatrix(const Matrix2D<Type>& input)
+void Matrix2D<Type>::reverseMatrix(Matrix2D<Type>& input)
 {
     Type temp;
 

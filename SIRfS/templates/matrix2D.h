@@ -13,33 +13,29 @@ template <class Type>
 class Matrix2D
 {
 private:
-    Type *container;
+    std::vector<Type> container;
      int rows, cols;
 
 public:
     //constructors
-    Matrix2D(){this->rows = 0; this->cols = 0; this->container = nullptr;};
+    Matrix2D():rows(0), cols(0), container(0){};
     //overload constructor
     Matrix2D( int new_rows,  int new_cols);
     Matrix2D( int new_rows,  int new_cols, Type value);
     //copy constructor
     Matrix2D(const Matrix2D<Type>& input_matrix);
     //destructor
-    ~Matrix2D()
-    {
-        //delete the array
-        delete [] this->container;
-    };
+    ~Matrix2D(){};
 
     //indexes operations
     inline unsigned int getLinearIndex(int i, int j)
     {
         return i*this->cols + j;
     };
-    void get2DIndecesFromLinearIndex(int index, int &rows, int &cols)
+    void get2DIndecesFromLinearIndex(int index, int &r, int &c)
     {
-        rows = index/this->cols;  //integer division . This is x
-        cols = index - rows; //This is y
+        r = index/this->cols;  //integer division . This is x
+        c = index - r; //This is y
     };
 
     //getters
@@ -55,7 +51,7 @@ public:
     {
         return this->rows*this->cols;
     };
-    inline Type* getContainerPointer()
+    inline std::vector<Type> getContainerPointer()
     {
         return this->container;
     };
@@ -93,7 +89,7 @@ public:
     void setMatrix2D(Type* data, int new_rows,  int new_cols, bool transp);
 
     //operators overloading
-    inline Type& operator() (int rowsIdx, int colsIdx) const
+    inline Type& operator() (int rowsIdx, int colsIdx)
     {
         return this->container[rowsIdx * this->cols + colsIdx];
     };
@@ -161,7 +157,7 @@ public:
 //CHANGED
     void getSubMatrix(const Matrix2D<Type>& input, int x_first, int x_last, int y_first, int y_last);
 //CHANGED
-    void reverseMatrix(const Matrix2D<Type>& input);
+    void reverseMatrix(Matrix2D<Type>& input);
     void getTranspose(Matrix2D<Type>** result);
     //same as above, but result is stored in the caller (caller data is lost)
     void TransposeMatrix();

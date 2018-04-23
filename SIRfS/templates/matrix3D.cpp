@@ -10,7 +10,15 @@ Matrix3D<Type>::Matrix3D(unsigned int new_xDim, unsigned int new_yDim, unsigned 
 {
     if(this->height > 0 && this->width > 0 && this->depth > 0)
     {
-        this->container = new Type[width*height*depth];
+        this->container.reserve(this->width * this->height * this->depth);
+    }
+    else
+    {
+        //set everything to 0 so to avoid garbage values being stored in
+        this->width = 0;
+        this->height = 0;
+        this->depth = 0;
+        this->container.reserve(0);
     }
 }
 
@@ -20,10 +28,18 @@ Matrix3D<Type>::Matrix3D(const Matrix3D<Type>& new_matrix):width(new_matrix.getW
 {
     if(this->height > 0 && this->width > 0 && this->depth > 0)
     {
-        this->container = new Type[width*height*depth];
+        this->container.reserve(this->width * this->height * this->depth);
 
         for(unsigned int idx = 0; idx < this->getDim(); idx++)
             this->container[idx] = new_matrix.getMatrixValue(idx);
+    }
+    else
+    {
+        //set everything to 0 so to avoid garbage values being stored in
+        this->width = 0;
+        this->height = 0;
+        this->depth = 0;
+        this->container.reserve(0);
     }
 }
 
@@ -47,7 +63,7 @@ void Matrix3D<Type>::setMatrix3D(Type* data, int new_width,  int new_height, int
     if(this->height > 0 && this->width > 0 && this->depth > 0)
     {
         //allocate memory
-        this->container = new Type[width*height*depth];
+        this->container.reserve(this->width * this->height * this->depth);
 
         //copy elements
         if(transp)
@@ -56,7 +72,6 @@ void Matrix3D<Type>::setMatrix3D(Type* data, int new_width,  int new_height, int
                 for(unsigned int yIdx = 0; yIdx < this->height; yIdx++)
                     for(unsigned int zIdx = 0; zIdx < this->depth; zIdx++)
                     {
-                        //this->matrix3d.push_back(data[xIdx+ yIdx*this->width + zIdx*this->height*this->width]);
                         //better execution time than push_back
                         this->container[this->getLinearIndex(xIdx,yIdx,zIdx)] = data[xIdx+ yIdx*this->width + zIdx*this->height*this->width];
                     }
@@ -69,6 +84,14 @@ void Matrix3D<Type>::setMatrix3D(Type* data, int new_width,  int new_height, int
                 this->container[idx] = data[idx];
             }
         }
+    }
+    else
+    {
+        //set everything to 0 so to avoid garbage values being stored in
+        this->width = 0;
+        this->height = 0;
+        this->depth = 0;
+        this->container.reserve(0);
     }
 }
 
@@ -90,12 +113,20 @@ Matrix3D<Type>& Matrix3D<Type>::operator=(const Matrix3D<Type>& new_matrix)
     if(this->height > 0 && this->width > 0 && this->depth > 0)
     {
         //allocate memory and copy elements
-        this->container = new Type[width*height*depth];
+        this->container.reserve(this->width * this->height * this->depth);
 
         for(unsigned int idx = 0; idx < this->getDim(); idx++)
         {
             this->container[idx] = new_matrix.getMatrixValue(idx);
         }
+    }
+    else
+    {
+        //set everything to 0 so to avoid garbage values being stored in
+        this->width = 0;
+        this->height = 0;
+        this->depth = 0;
+        this->container.reserve(0);
     }
     return *this;
 }
@@ -105,8 +136,8 @@ template <class Type>
 void  Matrix3D<Type>::normalizeData(int factor)
 {
     //iterator and size-Type require a known type and not a generical one
-    for(unsigned int  i = 0; i < this->matrix3d.size(); i++)
-        this->matrix3d[i] /= (double)factor;
+    for(unsigned int  i = 0; i < this->container.size(); i++)
+        this->container[i] /= (double)factor;
 }
 
 template <class Type>

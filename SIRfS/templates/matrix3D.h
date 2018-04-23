@@ -7,25 +7,16 @@ template <class Type>
 class Matrix3D
 {
 private:
-    Type *container;
+    std::vector<Type> container;
     unsigned int width, height, depth;
 
 public:
     //constructors
-    Matrix3D()
-    {
-        this->width = 0;
-        this->height = 0;
-        this->depth = 0;
-        this->container = NULL;
-    };
+    Matrix3D():width(0), height(0), depth(0), container(0){};
     Matrix3D(unsigned int new_xDim, unsigned int new_yDim, unsigned int new_zDim);
     Matrix3D(const Matrix3D& new_matrix);
     //destructor
-    ~Matrix3D()
-    {
-        delete [] this->container;
-    };
+    ~Matrix3D(){};
 
     //indexes operations
     inline unsigned int getLinearIndex(int i, int j, int k)
@@ -51,7 +42,7 @@ public:
     {
         return this->depth;
     };
-    inline Type* getContainer()const
+    inline std::vector<Type> getContainer()const
     {
         return this->container;
     };
@@ -85,7 +76,7 @@ public:
     };
     inline void setMatrixValue(int x, int y, int z, Type value)
     {
-        this->matrix3d[this->getLinearIndex(x, y, z)] = value;
+        this->container[this->getLinearIndex(x, y, z)] = value;
     };
     void setMatrix3D(Type* data, int new_width,  int new_height, int new_depth, bool transp);
 

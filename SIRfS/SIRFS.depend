@@ -1,11 +1,11 @@
 # depslib dependency file v1.0
-1524241784 source:c:\users\stefa_000\documents\githublocalrepos\research-shape-from-shading\sirfs\templates\matrix3d.cpp
+1524482310 source:c:\users\stefa_000\documents\githublocalrepos\research-shape-from-shading\sirfs\templates\matrix3d.cpp
 	"matrix3D.h"
 
-1524222831 c:\users\stefa_000\documents\githublocalrepos\research-shape-from-shading\sirfs\templates\matrix3d.h
+1524481825 c:\users\stefa_000\documents\githublocalrepos\research-shape-from-shading\sirfs\templates\matrix3d.h
 	"Matrix2D.h"
 
-1524235792 c:\users\stefa_000\documents\githublocalrepos\research-shape-from-shading\sirfs\templates\matrix2d.h
+1524484623 c:\users\stefa_000\documents\githublocalrepos\research-shape-from-shading\sirfs\templates\matrix2d.h
 	<vector>
 	<iostream>
 	<math.h>
@@ -88,7 +88,7 @@
 	<inttypes.h>
 	<stdint.h>
 
-1524236129 c:\users\stefa_000\documents\githublocalrepos\research-shape-from-shading\sirfs\helpers\validation.h
+1524484923 c:\users\stefa_000\documents\githublocalrepos\research-shape-from-shading\sirfs\helpers\validation.h
 	<vector>
 	<cstring>
 	"templates/dataFile.h"
@@ -108,7 +108,7 @@
 
 1523381076 c:\users\stefa_000\documents\githublocalrepos\research-shape-from-shading\sirfs\\templates\keyvalue.h
 
-1524235792 c:\users\stefa_000\documents\githublocalrepos\research-shape-from-shading\sirfs\\templates\matrix2d.h
+1524484623 c:\users\stefa_000\documents\githublocalrepos\research-shape-from-shading\sirfs\\templates\matrix2d.h
 	<vector>
 	<iostream>
 	<math.h>
@@ -118,7 +118,7 @@
 
 1517670704 c:\users\stefa_000\documents\githublocalrepos\research-shape-from-shading\sirfs\\helpers\enums.h
 
-1524222831 c:\users\stefa_000\documents\githublocalrepos\research-shape-from-shading\sirfs\\templates\matrix3d.h
+1524481825 c:\users\stefa_000\documents\githublocalrepos\research-shape-from-shading\sirfs\\templates\matrix3d.h
 	"Matrix2D.h"
 
 1520342932 c:\users\stefa_000\documents\githublocalrepos\research-shape-from-shading\sirfs\block_a1\prior\height\normal.h
@@ -155,7 +155,7 @@
 	"../../../prior_struct_node.h"
 	"../../../../helpers/validation.h"
 
-1524235895 c:\users\stefa_000\documents\githublocalrepos\research-shape-from-shading\sirfs\templates\matrix2d.cpp
+1524484377 c:\users\stefa_000\documents\githublocalrepos\research-shape-from-shading\sirfs\templates\matrix2d.cpp
 	"matrix2D.h"
 
 1522331264 source:c:\users\stefa_000\documents\githublocalrepos\research-shape-from-shading\sirfs\block_a1\prior\lights\color\whitenparams.cpp
@@ -212,7 +212,7 @@
 	"../../../../../prior_struct_node.h"
 	"../../../../../../helpers/validation.h"
 
-1524241784 c:\users\stefa_000\documents\githublocalrepos\research-shape-from-shading\sirfs\templates\matrix3d.cpp
+1524482310 c:\users\stefa_000\documents\githublocalrepos\research-shape-from-shading\sirfs\templates\matrix3d.cpp
 	"matrix3D.h"
 
 1522331083 source:c:\users\stefa_000\documents\githublocalrepos\research-shape-from-shading\sirfs\block_a1\prior\reflectance\color\colorma\gsm_mvn.cpp
@@ -245,7 +245,7 @@
 1520099872 source:c:\users\stefa_000\documents\githublocalrepos\research-shape-from-shading\sirfs\block_a1\prior_struct_node.cpp
 	"prior_struct_node.h"
 
-1522696337 source:c:\users\stefa_000\documents\githublocalrepos\research-shape-from-shading\sirfs\block_a1\read_input_image_libpng.cpp
+1524484887 source:c:\users\stefa_000\documents\githublocalrepos\research-shape-from-shading\sirfs\block_a1\read_input_image_libpng.cpp
 	"read_input_image_libpng.h"
 	"../templates/matrix2D.cpp"
 
@@ -393,6 +393,6 @@
 1517670704 source:c:\users\stefa_000\documents\githublocalrepos\research-shape-from-shading\sirfs\matlab\matlab_vector.cpp
 	"matlab_vector.h"
 
-1524235895 source:c:\users\stefa_000\documents\githublocalrepos\research-shape-from-shading\sirfs\templates\matrix2d.cpp
+1524484377 source:c:\users\stefa_000\documents\githublocalrepos\research-shape-from-shading\sirfs\templates\matrix2d.cpp
 	"matrix2D.h"
 

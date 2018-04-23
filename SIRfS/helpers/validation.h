@@ -66,7 +66,6 @@ bool test_vectors(const char* filename1, const vector<Type> &cpp_data, DataType 
             for(int i = 0; i < cpp_data.size(); i++)
                 if(fabs(matlab_data[i] - cpp_data[i]) > pow(10, -14))
                 {
-                    cout<<i<<" "<<matlab_data[i]<<" "<<cpp_data[i]<<endl;
                     verification_result = false;
                     break;
                 }
@@ -83,7 +82,7 @@ bool test_vectors(const char* filename1, const vector<Type> &cpp_data, DataType 
 * The second matrix represents the one computed by the ported code. The pointer is used for memory efficiency, so the values can be read from the same memory location
 */
 template <class Type>
-bool test_matrix2D(const char* filename1,  const Matrix2D<Type> &cpp_data, DataType dtype)
+bool test_matrix2D(const char* filename1,   Matrix2D<Type> &cpp_data, DataType dtype)
 {
     bool verification_result = true, do_loop = true;
     //create file reader object. For each type of data, create apropriate destination to read data into, from the input files
@@ -143,7 +142,6 @@ bool test_matrix2D(const char* filename1,  const Matrix2D<Type> &cpp_data, DataT
                 {
                     if(fabs(matlab_data(i, j) - cpp_data(i, j)) > pow(10, -15))
                     {
-                        cout<<i<<" "<<j<<" "<<matlab_data(i,j)<<" "<<cpp_data(i,j)<<endl;
                         verification_result = false;
                         do_loop = false;
                         break;

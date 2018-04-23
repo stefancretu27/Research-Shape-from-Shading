@@ -9,6 +9,8 @@
 #include "keyValue.h"
 #include "../helpers/enums.h"
 
+#define INDEXING_METHOD_3
+
 template <class Type>
 class Matrix2D
 {
@@ -21,7 +23,7 @@ public:
     Matrix2D():rows(0), cols(0), container(0){};
     //overload constructor
     Matrix2D( int new_rows,  int new_cols);
-    Matrix2D( int new_rows,  int new_cols, Type value);
+    Matrix2D( int new_rows,  int new_cols, const Type value);
     //copy constructor
     Matrix2D(const Matrix2D<Type>& input_matrix);
     //destructor

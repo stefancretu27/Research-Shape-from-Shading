@@ -25,14 +25,18 @@ Matrix2D<Type>::Matrix2D( int new_rows,  int new_cols):rows(new_rows), cols(new_
 
 //Constructor with data initializations: this constructor creates a matrix2D that has the specified dimensions and whose elements are initialized to the given value
 template <class Type>
-Matrix2D<Type>::Matrix2D( int new_rows,  int new_cols, Type value):rows(new_rows), cols(new_cols)
+Matrix2D<Type>::Matrix2D( int new_rows,  int new_cols, const Type value):rows(new_rows), cols(new_cols)
 {
     if(this->rows > 0 && this->cols > 0)
     {
         //allocate memory
         this->container.reserve(this->rows*this->cols);
 
+#ifdef INDEXING_METHOD_3
+        for(typename vector<Type>::size_type idx = 0; idx != this->getDim(); idx++)
+#else
         for(unsigned int idx = 0; idx < this->getDim(); idx++)
+#endif  //INDEXING_METHOD_3
         {
             this->container[idx] = value;
         }
@@ -56,7 +60,11 @@ Matrix2D<Type>::Matrix2D(const Matrix2D<Type>& input_matrix):rows(input_matrix.g
         this->container.reserve(this->rows*this->cols);
 
         //copy elements
+#ifdef INDEXING_METHOD_3
+        for(typename vector<Type>::size_type idx = 0; idx != this->getDim(); idx++)
+#else
         for(unsigned int idx = 0; idx < this->getDim(); idx++)
+#endif //INDEXING_METHOD_3
         {
             this->container[idx] = input_matrix.getMatrixValue(idx);
         }
@@ -95,7 +103,11 @@ void Matrix2D<Type>::setMatrix2D(Type* data, int new_rows,  int new_cols, bool t
         else
         {
             //copy elements
+#ifdef INDEXING_METHOD_3
+            for(typename vector<Type>::size_type idx = 0; idx != this->getDim(); idx++)
+#else
             for(unsigned int idx = 0; idx < this->getDim(); idx++)
+#endif // INDEXING_METHOD_3
             {
                 this->container[idx] = data[idx];
             }
@@ -131,7 +143,11 @@ bool Matrix2D<Type>::operator==(const Matrix2D<Type>& operand_matrix)
         exit(0);
     }
 
+#ifdef INDEXING_METHOD_3
+    for(typename vector<Type>::size_type idx = 0; idx != this->getDim() &&k; idx++)
+#else
     for(unsigned int idx = 0; idx < this->getDim() && k; idx++)
+#endif // INDEXING_METHOD_3
     {
         if(this->container[idx] != operand_matrix.getMatrixValue(idx))
         {
@@ -162,7 +178,11 @@ Matrix2D<Type>& Matrix2D<Type>::operator=(const Matrix2D<Type>& operand_matrix)
         this->container.reserve(this->rows*this->cols);
 
         //copy elements
+#ifdef INDEXING_METHOD_3
+        for(typename vector<Type>::size_type idx = 0; idx != this->getDim(); idx++)
+#else
         for(unsigned int idx = 0; idx < this->getDim(); idx++)
+#endif // INDEXING_METHOD_3
         {
             this->container[idx] = operand_matrix.getMatrixValue(idx);
         }
@@ -183,7 +203,11 @@ Matrix2D<Type>& Matrix2D<Type>::operator+(const Matrix2D<Type>& operand_matrix)
     }
 
     //sum the elements
-    for(unsigned int idx = 0; idx < this->getDim(); idx++)
+#ifdef INDEXING_METHOD_3
+        for(typename vector<Type>::size_type idx = 0; idx != this->getDim(); idx++)
+#else
+        for(unsigned int idx = 0; idx < this->getDim(); idx++)
+#endif // INDEXING_METHOD_3
     {
         this->container[idx] += operand_matrix.getMatrixValue(idx);
     }
@@ -203,7 +227,11 @@ Matrix2D<Type>& Matrix2D<Type>::operator-(const Matrix2D<Type>& operand_matrix)
     }
 
     //substract elements
-    for(unsigned int idx = 0; idx < this->getDim(); idx++)
+#ifdef INDEXING_METHOD_3
+        for(typename vector<Type>::size_type idx = 0; idx != this->getDim(); idx++)
+#else
+        for(unsigned int idx = 0; idx < this->getDim(); idx++)
+#endif // INDEXING_METHOD_3
     {
         this->container[idx] -= operand_matrix.getMatrixValue(idx);
     }
@@ -219,7 +247,11 @@ void Matrix2D<Type>::initializeMatrixValues(Type value)
 {
     if(this->rows > 0 && this->cols > 0)
     {
+#ifdef INDEXING_METHOD_3
+        for(typename vector<Type>::size_type idx = 0; idx != this->getDim(); idx++)
+#else
         for(unsigned int idx = 0; idx < this->getDim(); idx++)
+#endif // INDEXING_METHOD_3
         {
             this->container[idx] = value;
         }
@@ -332,7 +364,11 @@ void Matrix2D<Type>::insertNaNValues(Matrix2D<bool>& mask)
     }
     else
     {
+#ifdef INDEXING_METHOD_3
+        for(typename vector<Type>::size_type idx = 0; idx != this->getDim(); idx++)
+#else
         for(unsigned int idx = 0; idx < this->getDim(); idx++)
+#endif // INDEXING_METHOD_3
         {
             if(mask.getMatrixValue(idx) == 1)
             {
@@ -351,7 +387,11 @@ void Matrix2D<Type>::compareValuesToTreshold(Matrix2D<bool>& result, Type tresho
     switch(comp)
     {
         case 0:
+#ifdef INDEXING_METHOD_3
+            for(typename vector<Type>::size_type idx = 0; idx != this->getDim(); idx++)
+#else
             for(unsigned int idx = 0; idx < this->getDim(); idx++)
+#endif // INDEXING_METHOD_3
             {
                 if(this->container[idx] == treshold)
                 {
@@ -364,7 +404,11 @@ void Matrix2D<Type>::compareValuesToTreshold(Matrix2D<bool>& result, Type tresho
             }
             break;
         case 1:
+#ifdef INDEXING_METHOD_3
+            for(typename vector<Type>::size_type idx = 0; idx != this->getDim(); idx++)
+#else
             for(unsigned int idx = 0; idx < this->getDim(); idx++)
+#endif // INDEXING_METHOD_3
             {
                 if(this->container[idx] != treshold)
                 {
@@ -377,7 +421,11 @@ void Matrix2D<Type>::compareValuesToTreshold(Matrix2D<bool>& result, Type tresho
             }
             break;
         case 2:
+#ifdef INDEXING_METHOD_3
+            for(typename vector<Type>::size_type idx = 0; idx != this->getDim(); idx++)
+#else
             for(unsigned int idx = 0; idx < this->getDim(); idx++)
+#endif // INDEXING_METHOD_3
             {
                 if(this->container[idx] < treshold)
                 {
@@ -390,7 +438,11 @@ void Matrix2D<Type>::compareValuesToTreshold(Matrix2D<bool>& result, Type tresho
             }
             break;
         case 3:
+#ifdef INDEXING_METHOD_3
+            for(typename vector<Type>::size_type idx = 0; idx != this->getDim(); idx++)
+#else
             for(unsigned int idx = 0; idx < this->getDim(); idx++)
+#endif // INDEXING_METHOD_3
             {
                 if(this->container[idx] <= treshold)
                 {
@@ -403,7 +455,11 @@ void Matrix2D<Type>::compareValuesToTreshold(Matrix2D<bool>& result, Type tresho
             }
             break;
         case 4:
+#ifdef INDEXING_METHOD_3
+            for(typename vector<Type>::size_type idx = 0; idx != this->getDim(); idx++)
+#else
             for(unsigned int idx = 0; idx < this->getDim(); idx++)
+#endif // INDEXING_METHOD_3
             {
                 if(this->container[idx] >= treshold)
                 {
@@ -416,7 +472,11 @@ void Matrix2D<Type>::compareValuesToTreshold(Matrix2D<bool>& result, Type tresho
             }
             break;
         case 5:
+#ifdef INDEXING_METHOD_3
+            for(typename vector<Type>::size_type idx = 0; idx != this->getDim(); idx++)
+#else
             for(unsigned int idx = 0; idx < this->getDim(); idx++)
+#endif // INDEXING_METHOD_3
             {
                 if(this->container[idx] > treshold)
                 {
@@ -435,7 +495,11 @@ void Matrix2D<Type>::compareValuesToTreshold(Matrix2D<bool>& result, Type tresho
 template <class Type>
 void Matrix2D<Type>::negateMatrixMask(const Matrix2D<bool>& input_mask)
 {
-    for(unsigned int idx = 0; idx < input_mask.getDim(); idx++)
+#ifdef INDEXING_METHOD_3
+    for(typename vector<Type>::size_type idx = 0; idx != this->getDim(); idx++)
+#else
+    for(unsigned int idx = 0; idx < this->getDim(); idx++)
+#endif // INDEXING_METHOD_3
     {
         this->setMatrixValue(idx, 1 - input_mask.getMatrixValue(idx));
     }
@@ -447,7 +511,11 @@ int Matrix2D<Type>::logicalAnd(Matrix2D<bool>& result, const Matrix2D<Type>& inp
 {
     unsigned int counter = 0;
 
+#ifdef INDEXING_METHOD_3
+    for(typename vector<Type>::size_type idx = 0; idx != this->getDim(); idx++)
+#else
     for(unsigned int idx = 0; idx < this->getDim(); idx++)
+#endif // INDEXING_METHOD_3
     {
         result.setMatrixValue(idx, this->container[idx] & input.getMatrixValue(idx));
 
@@ -609,7 +677,11 @@ void Matrix2D<Type>::applyDoubleVectorMask(const Matrix2D<Type>& input, const st
 template <class Type>
 void Matrix2D<Type>::applyMatrixMask(const Matrix2D<Type>& input, const Matrix2D<bool> mask)
 {
-    for(unsigned int idx = 0; idx < input.getDim(); idx++)
+#ifdef INDEXING_METHOD_3
+    for(typename vector<Type>::size_type idx = 0; idx != this->getDim(); idx++)
+#else
+    for(unsigned int idx = 0; idx < this->getDim(); idx++)
+#endif // INDEXING_METHOD_3
     {
         if(mask.getMatrixValue(idx) == 1)
         {
@@ -644,7 +716,11 @@ void Matrix2D<Type>::sortLines()
 template <class Type>
 void Matrix2D<Type>::getAbsoluteValuesMatrix(const Matrix2D<Type>& input)
 {
-    for(unsigned int idx = 0; idx < input.getDim(); idx++)
+#ifdef INDEXING_METHOD_3
+    for(typename vector<Type>::size_type idx = 0; idx != this->getDim(); idx++)
+#else
+    for(unsigned int idx = 0; idx < this->getDim(); idx++)
+#endif // INDEXING_METHOD_3
     {
         this->container[idx] = abs(input.getMatrixValue(idx));
     }
@@ -654,7 +730,11 @@ void Matrix2D<Type>::getAbsoluteValuesMatrix(const Matrix2D<Type>& input)
 template <class Type>
 void Matrix2D<Type>::logNatMatrix(const Matrix2D<Type>& input)
 {
-    for(unsigned int idx = 0; idx < input.getDim(); idx++)
+#ifdef INDEXING_METHOD_3
+    for(typename vector<Type>::size_type idx = 0; idx != this->getDim(); idx++)
+#else
+    for(unsigned int idx = 0; idx < this->getDim(); idx++)
+#endif // INDEXING_METHOD_3
     {
         this->container[idx] = log(input.getMatrixValue(idx));
     }
@@ -692,8 +772,6 @@ void Matrix2D<Type>::findLastNonEqualElement(int &x_first, int &y_first, Type va
             return ;
         }
     }
-
-    return;
 }
 
 //Returns 1 if a row/column has at least a non-zero value, else it returns 0 for that row/column. The output is a vector. Direction: 1 = check on columns; 2 = check on rows
@@ -760,7 +838,11 @@ void Matrix2D<Type>::anyGreater(vector<int>& result, int direction, int treshold
 template <class Type>
 bool Matrix2D<Type>::checkNonZero()
 {
+#ifdef INDEXING_METHOD_3
+    for(typename vector<Type>::size_type idx = 0; idx != this->getDim(); idx++)
+#else
     for(unsigned int idx = 0; idx < this->getDim(); idx++)
+#endif // INDEXING_METHOD_3
     {
         if(this->container[idx] != 0)
             return true;
@@ -1117,37 +1199,61 @@ void Matrix2D<Type>::elementsOperation(Matrix2D<Type>& result, Type value, Opera
     switch(op)
     {
     case 0:
+#ifdef INDEXING_METHOD_3
+            for(typename vector<Type>::size_type idx = 0; idx != this->getDim(); idx++)
+#else
             for(unsigned int idx = 0; idx < this->getDim(); idx++)
+#endif // INDEXING_METHOD_3
             {
                 result.setMatrixValue(idx, this->container[idx] + value);
             }
         break;
     case 1:
+#ifdef INDEXING_METHOD_3
+            for(typename vector<Type>::size_type idx = 0; idx != this->getDim(); idx++)
+#else
             for(unsigned int idx = 0; idx < this->getDim(); idx++)
+#endif // INDEXING_METHOD_3
             {
                 result.setMatrixValue(idx, this->container[idx] - value);
             }
         break;
     case 2:
+#ifdef INDEXING_METHOD_3
+            for(typename vector<Type>::size_type idx = 0; idx != this->getDim(); idx++)
+#else
             for(unsigned int idx = 0; idx < this->getDim(); idx++)
+#endif // INDEXING_METHOD_3
             {
                 result.setMatrixValue(idx, this->container[idx] * value);
             }
         break;
     case 3:
+#ifdef INDEXING_METHOD_3
+            for(typename vector<Type>::size_type idx = 0; idx != this->getDim(); idx++)
+#else
             for(unsigned int idx = 0; idx < this->getDim(); idx++)
+#endif // INDEXING_METHOD_3
             {
                 result.setMatrixValue(idx, this->container[idx]/value);
             }
         break;
     case 4:
+#ifdef INDEXING_METHOD_3
+            for(typename vector<Type>::size_type idx = 0; idx != this->getDim(); idx++)
+#else
             for(unsigned int idx = 0; idx < this->getDim(); idx++)
+#endif // INDEXING_METHOD_3
             {
                 result.setMatrixValue(idx, pow(this->container[idx], value));
             }
         break;
     case 5:
+#ifdef INDEXING_METHOD_3
+            for(typename vector<Type>::size_type idx = 0; idx != this->getDim(); idx++)
+#else
             for(unsigned int idx = 0; idx < this->getDim(); idx++)
+#endif // INDEXING_METHOD_3
             {
                 result.setMatrixValue(idx, exp(this->container[idx]));
             }
@@ -1205,7 +1311,11 @@ int Matrix2D<Type>::countValuesDifferentFromInput(Type value)
 {
     int counter = 0;
 
+#ifdef INDEXING_METHOD_3
+    for(typename vector<Type>::size_type idx = 0; idx != this->getDim(); idx++)
+#else
     for(unsigned int idx = 0; idx < this->getDim(); idx++)
+#endif // INDEXING_METHOD_3
     {
         if(this->container[idx] != value)
             counter++;

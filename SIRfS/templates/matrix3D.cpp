@@ -30,8 +30,14 @@ Matrix3D<Type>::Matrix3D(const Matrix3D<Type>& new_matrix):width(new_matrix.getW
     {
         this->container.reserve(this->width * this->height * this->depth);
 
+#ifdef INDEXING_METHOD_3
+        for(typename vector<Type>::size_type idx = 0; idx != this->getDim(); idx++)
+#else
         for(unsigned int idx = 0; idx < this->getDim(); idx++)
+#endif // INDEXING_METHOD_3
+        {
             this->container[idx] = new_matrix.getMatrixValue(idx);
+        }
     }
     else
     {
@@ -79,7 +85,11 @@ void Matrix3D<Type>::setMatrix3D(Type* data, int new_width,  int new_height, int
         else
         {
             //copy elements
+#ifdef INDEXING_METHOD_3
+            for(typename vector<Type>::size_type idx = 0; idx != this->getDim(); idx++)
+#else
             for(unsigned int idx = 0; idx < this->getDim(); idx++)
+#endif // INDEXING_METHOD_3
             {
                 this->container[idx] = data[idx];
             }
@@ -115,7 +125,11 @@ Matrix3D<Type>& Matrix3D<Type>::operator=(const Matrix3D<Type>& new_matrix)
         //allocate memory and copy elements
         this->container.reserve(this->width * this->height * this->depth);
 
+#ifdef INDEXING_METHOD_3
+        for(typename vector<Type>::size_type idx = 0; idx != this->getDim(); idx++)
+#else
         for(unsigned int idx = 0; idx < this->getDim(); idx++)
+#endif // INDEXING_METHOD_3
         {
             this->container[idx] = new_matrix.getMatrixValue(idx);
         }
@@ -136,8 +150,12 @@ template <class Type>
 void  Matrix3D<Type>::normalizeData(int factor)
 {
     //iterator and size-Type require a known type and not a generical one
-    for(unsigned int  i = 0; i < this->container.size(); i++)
-        this->container[i] /= (double)factor;
+#ifdef INDEXING_METHOD_3
+        for(typename vector<Type>::size_type idx = 0; idx != this->getDim(); idx++)
+#else
+        for(unsigned int idx = 0; idx < this->getDim(); idx++)
+#endif // INDEXING_METHOD_3
+        this->container[idx] /= (double)factor;
 }
 
 template <class Type>

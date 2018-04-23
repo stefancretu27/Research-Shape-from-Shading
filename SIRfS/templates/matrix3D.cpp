@@ -8,11 +8,20 @@ using namespace std;
 template <class Type>
 Matrix3D<Type>::Matrix3D(unsigned int new_xDim, unsigned int new_yDim, unsigned int new_zDim):width(new_xDim), height(new_yDim), depth(new_zDim)
 {
+    if(this->height > 0 && this->width > 0 && this->depth > 0)
+    {
 #ifdef U_PTR_CONTAINER
-    this->container = unique_ptr<Type[]>(new Type[width*height*depth]);
+        this->container = unique_ptr<Type[]>(new Type[this->width * this->height * this->depth]);
 #else
-    this->container = new Type[width*height*depth];
+        this->container = new Type[this->width * this->height * this->depth];
 #endif // U_PTR_CONTAINER
+    }
+    else
+    {
+        //set everything to 0 so to avoid garbage values being stored in
+        this->width = this->height = this->depth = 0;
+        this->container = nullptr;
+    }
 }
 
 #ifdef U_PTR_CONTAINER
@@ -20,17 +29,35 @@ Matrix3D<Type>::Matrix3D(unsigned int new_xDim, unsigned int new_yDim, unsigned 
 template <class Type>
 Matrix3D<Type>::Matrix3D(Matrix3D<Type>&& new_matrix):width(new_matrix.getWidth()), height(new_matrix.getHeight()), depth(new_matrix.getDepth())
 {
-    container = std::move(new_matrix.getContainer());
+    if(this->height > 0 && this->width > 0 && this->depth > 0)
+    {
+        this->container = std::move(new_matrix.getContainer());
+    }
+    else
+    {
+        //set everything to 0 so to avoid garbage values being stored in
+        this->width = this->height = this->depth = 0;
+        this->container = nullptr;
+    }
 }
 #else
 //copy constructor
 template <class Type>
 Matrix3D<Type>::Matrix3D(const Matrix3D<Type>& new_matrix):width(new_matrix.getWidth()), height(new_matrix.getHeight()), depth(new_matrix.getDepth())
 {
-    this->container = new Type[width*height*depth];
+    if(this->height > 0 && this->width > 0 && this->depth > 0)
+    {
+        this->container = new Type[this->width * this->height * this->depth];
 
-    for(unsigned int idx = 0; idx < this->getDim(); idx++)
-        this->container[idx] = new_matrix.getMatrixValue(idx);
+        for(unsigned int idx = 0; idx < this->getDim(); idx++)
+            this->container[idx] = new_matrix.getMatrixValue(idx);
+    }
+    else
+    {
+        //set everything to 0 so to avoid garbage values being stored in
+        this->width = this->height = this->depth = 0;
+        this->container = nullptr;
+    }
 }
 #endif // U_PTR_CONTAINER
 
@@ -51,31 +78,40 @@ void Matrix3D<Type>::setMatrix3D(Type* data, int new_width,  int new_height, int
     this->height = new_height;
     this->depth = new_depth;
 
-    //allocate memory
+    if(this->height > 0 && this->width > 0 && this->depth > 0)
+    {
+        //allocate memory
 #ifdef U_PTR_CONTAINER
-    this->container = unique_ptr<Type[]>(new Type[width*height*depth]);
+        this->container = unique_ptr<Type[]>(new Type[this->width * this->height * this->depth]);
 #else
-    this->container = new Type[width*height*depth];
+        this->container = new Type[this->width * this->height * this->depth];
 #endif
 
-    //copy elements
-    if(transp)
-    {
-        for(unsigned int xIdx = 0; xIdx < this->width; xIdx++)
-            for(unsigned int yIdx = 0; yIdx < this->height; yIdx++)
-                for(unsigned int zIdx = 0; zIdx < this->depth; zIdx++)
-                {
-                    //better execution time than push_back
-                    this->container[this->getLinearIndex(xIdx,yIdx,zIdx)] = data[xIdx+ yIdx*this->width + zIdx*this->height*this->width];
-                }
+        //copy elements
+        if(transp)
+        {
+            for(unsigned int xIdx = 0; xIdx < this->width; xIdx++)
+                for(unsigned int yIdx = 0; yIdx < this->height; yIdx++)
+                    for(unsigned int zIdx = 0; zIdx < this->depth; zIdx++)
+                    {
+                        //better execution time than push_back
+                        this->container[this->getLinearIndex(xIdx,yIdx,zIdx)] = data[xIdx+ yIdx*this->width + zIdx*this->height*this->width];
+                    }
+        }
+        else
+        {
+            //copy elements
+            for(unsigned int idx = 0; idx < this->getDim(); idx++)
+            {
+                this->container[idx] = data[idx];
+            }
+        }
     }
     else
     {
-        //copy elements
-        for(unsigned int idx = 0; idx < this->getDim(); idx++)
-        {
-            this->container[idx] = data[idx];
-        }
+        //set everything to 0 so to avoid garbage values being stored in
+        this->width = this->height = this->depth = 0;
+        this->container = nullptr;
     }
 }
 
@@ -96,8 +132,16 @@ Matrix3D<Type>& Matrix3D<Type>::operator=(Matrix3D<Type>&& new_matrix)
     this->height = new_matrix.getHeight();
     this->depth = new_matrix.getDepth();
 
-    //allocate memory and copy elements
-    this->container = unique_ptr<Type[]>(new Type[width*height*depth]);
+    if(this->height > 0 && this->width > 0 && this->depth > 0)
+    {
+        this->container = std::move(new_matrix.getContainer());
+    }
+    else
+    {
+        //set everything to 0 so to avoid garbage values being stored in
+        this->width = this->height = this->depth = 0;
+        this->container = nullptr;
+    }
 
     return *this;
 }
@@ -110,12 +154,21 @@ Matrix3D<Type>& Matrix3D<Type>::operator=(const Matrix3D<Type>& new_matrix)
     this->height = new_matrix.getHeight();
     this->depth = new_matrix.getDepth();
 
-    //allocate memory and copy elements
-    this->container = new Type[width*height*depth];
-
-    for(unsigned int idx = 0; idx < this->getDim(); idx++)
+    if(this->height > 0 && this->width > 0 && this->depth > 0)
     {
-        this->container[idx] = new_matrix.getMatrixValue(idx);
+        //allocate memory and copy elements
+        this->container = new Type[this->width * this->height * this->depth];
+
+        for(unsigned int idx = 0; idx < this->getDim(); idx++)
+        {
+            this->container[idx] = new_matrix.getMatrixValue(idx);
+        }
+    }
+    else
+    {
+        //set everything to 0 so to avoid garbage values being stored in
+        this->width = this->height = this->depth = 0;
+        this->container = nullptr;
     }
 
     return *this;

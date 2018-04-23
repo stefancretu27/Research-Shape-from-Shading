@@ -20,6 +20,8 @@ Matrix2D<Type>::Matrix2D( int new_rows,  int new_cols):rows(new_rows), cols(new_
     }
     else
     {
+        //set everything to 0 so to avoid garbage values being stored in
+        this->rows = this->cols = 0;
         this->container = nullptr;
     }
 }
@@ -45,6 +47,8 @@ Matrix2D<Type>::Matrix2D( int new_rows,  int new_cols, Type value):rows(new_rows
     }
     else
     {
+        //set everything to 0 so to avoid garbage values being stored in
+        this->rows = this->cols = 0;
         this->container = nullptr;
     }
 }
@@ -67,6 +71,8 @@ Matrix2D<Type>::Matrix2D(Matrix2D<Type>&& new_matrix):rows(new_matrix.getRows())
     }
     else
     {
+        //set everything to 0 so to avoid garbage values being stored in
+        this->rows = this->cols = 0;
         this->container = nullptr;
     }
 }
@@ -88,6 +94,8 @@ Matrix2D<Type>::Matrix2D(const Matrix2D<Type>& new_matrix):rows(new_matrix.getRo
     }
     else
     {
+        //set everything to 0 so to avoid garbage values being stored in
+        this->rows = this->cols = 0;
         this->container = nullptr;
     }
 }
@@ -100,31 +108,40 @@ void Matrix2D<Type>::setMatrix2D(Type* data, int new_rows,  int new_cols, bool t
     this->rows = new_rows;
     this->cols = new_cols;
 
-    //allocate memory
+    if(this->rows != 0 && this->cols !=0)
+    {
+        //allocate memory
 #ifdef U_PTR_CONTAINER
-    this->container = unique_ptr<Type[]>(new Type[this->rows*this->cols]);
+        this->container = unique_ptr<Type[]>(new Type[this->rows*this->cols]);
 #else
-    this->container = new Type[this->rows*this->cols];
+        this->container = new Type[this->rows*this->cols];
 #endif // U_PTR_CONTAINER
 
-    //in Matlab the matrices are stored column after column, in the contiguous array gotten as parameters (data), so it needs to be transposed
-    if(transp)
-    {
-        //copy elements
-        for( int rowsIdx = 0; rowsIdx < this->rows; rowsIdx++)
-            for( int colsIdx = 0; colsIdx < this->cols; colsIdx++)
+        //in Matlab the matrices are stored column after column, in the contiguous array gotten as parameters (data), so it needs to be transposed
+        if(transp)
+        {
+            //copy elements
+            for( int rowsIdx = 0; rowsIdx < this->rows; rowsIdx++)
+                for( int colsIdx = 0; colsIdx < this->cols; colsIdx++)
+                {
+                    //this->setMatrixValue(rowsIdx, colsIdx, data[rowsIdx + this->rows*colsIdx]);
+                    this->container[rowsIdx*this->cols +colsIdx] = data[rowsIdx + this->rows*colsIdx];
+                }
+        }
+        else
+        {
+            //copy elements
+            for(unsigned int idx = 0; idx < this->getDim(); idx++)
             {
-                //this->setMatrixValue(rowsIdx, colsIdx, data[rowsIdx + this->rows*colsIdx]);
-                this->container[rowsIdx*this->cols +colsIdx] = data[rowsIdx + this->rows*colsIdx];
+                this->container[idx] = data[idx];
             }
+        }
     }
     else
     {
-        //copy elements
-        for(unsigned int idx = 0; idx < this->getDim(); idx++)
-        {
-            this->container[idx] = data[idx];
-        }
+        //set everything to 0 so to avoid garbage values being stored in
+        this->rows = this->cols = 0;
+        this->container = nullptr;
     }
 }
 
@@ -172,21 +189,30 @@ Matrix2D<Type>& Matrix2D<Type>::operator=(const Matrix2D<Type>& new_matrix)
     this->rows = new_matrix.getRows();
     this->cols = new_matrix.getCols();
 
-    //allocate memory
-#ifdef U_PTR_CONTAINER
-    this->container = unique_ptr<Type[]>(new Type[this->rows*this->cols]);
-#else
-    if(this->container != NULL)
+    if(this->rows != 0 && this->cols !=0)
     {
-        delete this->container;
-    }
-    this->container = new Type[this->rows*this->cols];
+        //allocate memory
+#ifdef U_PTR_CONTAINER
+        this->container = unique_ptr<Type[]>(new Type[this->rows*this->cols]);
+#else
+        if(this->container != NULL)
+        {
+            delete this->container;
+        }
+        this->container = new Type[this->rows*this->cols];
 #endif
 
-    //copy elements
-    for(unsigned int idx = 0; idx < this->getDim(); idx++)
+        //copy elements
+        for(unsigned int idx = 0; idx < this->getDim(); idx++)
+        {
+            this->container[idx] = new_matrix.getMatrixValue(idx);
+        }
+    }
+    else
     {
-        this->container[idx] = new_matrix.getMatrixValue(idx);
+        //set everything to 0 so to avoid garbage values being stored in
+        this->rows = this->cols = 0;
+        this->container = nullptr;
     }
     return *this;
 }
@@ -289,7 +315,6 @@ void Matrix2D<Type>::conv2DFull(const Matrix2D<Type>& kernel, const Matrix2D<Typ
         }
     }
 }
-
 
 template <class Type>
 #ifdef U_PTR_CONTAINER

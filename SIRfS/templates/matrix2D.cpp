@@ -16,6 +16,8 @@ Matrix2D<Type>::Matrix2D( int new_rows,  int new_cols):rows(new_rows), cols(new_
     }
     else
     {
+        //set everything to 0 so to avoid garbage values being stored in
+        this->rows = this->cols = 0;
         this->container = nullptr;
     }
 }
@@ -36,6 +38,8 @@ Matrix2D<Type>::Matrix2D( int new_rows,  int new_cols, Type value):rows(new_rows
     }
     else
     {
+        //set everything to 0 so to avoid garbage values being stored in
+        this->rows = this->cols = 0;
         this->container = nullptr;
     }
 }
@@ -57,6 +61,8 @@ Matrix2D<Type>::Matrix2D(const Matrix2D<Type>& input_matrix):rows(input_matrix.g
     }
     else
     {
+        //set everything to 0 so to avoid garbage values being stored in
+        this->rows = this->cols = 0;
         this->container = nullptr;
     }
 }
@@ -91,6 +97,12 @@ void Matrix2D<Type>::setMatrix2D(Type* data, int new_rows,  int new_cols, bool t
                 this->container[idx] = data[idx];
             }
         }
+    }
+    else
+    {
+        //set everything to 0 so to avoid garbage values being stored in
+        this->rows = this->cols = 0;
+        this->container = nullptr;
     }
 }
 
@@ -135,7 +147,7 @@ Matrix2D<Type>& Matrix2D<Type>::operator=(const Matrix2D<Type>& operand_matrix)
     this->cols = operand_matrix.getCols();
 
     //delete previously stored data, if any
-    if(this->container != NULL)
+    if(this->container != nullptr)
     {
         delete this->container;
     }
@@ -150,6 +162,12 @@ Matrix2D<Type>& Matrix2D<Type>::operator=(const Matrix2D<Type>& operand_matrix)
         {
             this->container[idx] = operand_matrix.getMatrixValue(idx);
         }
+    }
+    else
+    {
+        //set everything to 0 so to avoid garbage values being stored in
+        this->rows = this->cols = 0;
+        this->container = nullptr;
     }
 
     return *this;
@@ -676,8 +694,6 @@ void Matrix2D<Type>::findLastNonEqualElement(int &x_first, int &y_first, Type va
             return ;
         }
     }
-
-    return;
 }
 
 //Returns 1 if a row/column has at least a non-zero value, else it returns 0 for that row/column. The output is a vector. Direction: 1 = check on columns; 2 = check on rows
@@ -1101,12 +1117,6 @@ void Matrix2D<Type>::elementsOperation(Matrix2D<Type>& result, Type value, Opera
     switch(op)
     {
     case 0:
-        /*for(i = 0; i < this->getRows(); i++)
-            for(j = 0; j < this->getCols(); j++)
-            {
-                result.setMatrixValue(i, j, this->getMatrixValue(i, j) + value);
-            }
-            */
             for(unsigned int idx = 0; idx < this->getDim(); idx++)
             {
                 result.setMatrixValue(idx, this->container[idx] + value);
@@ -1194,15 +1204,6 @@ template <class Type>
 int Matrix2D<Type>::countValuesDifferentFromInput(Type value)
 {
     int counter = 0;
-
-    /*
-    for(int i = 0; i < this->getRows(); i++)
-        for(int j = 0; j < this->getCols(); j++)
-    {
-        if(this->getMatrixValue(i, j) != value)
-            counter++;
-    }
-    */
 
     for(unsigned int idx = 0; idx < this->getDim(); idx++)
     {

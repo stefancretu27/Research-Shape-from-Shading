@@ -12,12 +12,9 @@ private:
 
 public:
     //constructors
-    Matrix3D()
+    Matrix3D():width(0), height(0), depth(0)
     {
-        this->width = 0;
-        this->height = 0;
-        this->depth = 0;
-        this->container = NULL;
+        this->container = nullptr;
     };
     Matrix3D(unsigned int new_xDim, unsigned int new_yDim, unsigned int new_zDim);
     Matrix3D(const Matrix3D& new_matrix);

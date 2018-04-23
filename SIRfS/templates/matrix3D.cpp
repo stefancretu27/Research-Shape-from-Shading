@@ -12,6 +12,12 @@ Matrix3D<Type>::Matrix3D(unsigned int new_xDim, unsigned int new_yDim, unsigned 
     {
         this->container = new Type[width*height*depth];
     }
+    else
+    {
+        //set everything to 0 so to avoid garbage values being stored in
+        this->width = this->height = this->depth = 0;
+        this->container = nullptr;
+    }
 }
 
 //copy constructor
@@ -24,6 +30,12 @@ Matrix3D<Type>::Matrix3D(const Matrix3D<Type>& new_matrix):width(new_matrix.getW
 
         for(unsigned int idx = 0; idx < this->getDim(); idx++)
             this->container[idx] = new_matrix.getMatrixValue(idx);
+    }
+    else
+    {
+        //set everything to 0 so to avoid garbage values being stored in
+        this->width = this->height = this->depth = 0;
+        this->container = nullptr;
     }
 }
 
@@ -70,6 +82,12 @@ void Matrix3D<Type>::setMatrix3D(Type* data, int new_width,  int new_height, int
             }
         }
     }
+    else
+    {
+        //set everything to 0 so to avoid garbage values being stored in
+        this->width = this->height = this->depth = 0;
+        this->container = nullptr;
+    }
 }
 
 //operators overloading
@@ -97,6 +115,12 @@ Matrix3D<Type>& Matrix3D<Type>::operator=(const Matrix3D<Type>& new_matrix)
             this->container[idx] = new_matrix.getMatrixValue(idx);
         }
     }
+    else
+    {
+        //set everything to 0 so to avoid garbage values being stored in
+        this->width = this->height = this->depth = 0;
+        this->container = nullptr;
+    }
     return *this;
 }
 
@@ -105,8 +129,8 @@ template <class Type>
 void  Matrix3D<Type>::normalizeData(int factor)
 {
     //iterator and size-Type require a known type and not a generical one
-    for(unsigned int  i = 0; i < this->matrix3d.size(); i++)
-        this->matrix3d[i] /= (double)factor;
+    for(unsigned int  i = 0; i < this->getDim(); i++)
+        this->container[i] /= (double)factor;
 }
 
 template <class Type>

@@ -153,7 +153,7 @@ Matrix2D<double> read_png_file()
         }
 
 #ifdef TEST_INPUT_IMAGE
-    cout<<"Test input image reading: "<< test_matrix2D("images/input_image.txt", grayImage, Double)<<endl;
+    cout<<"Test input image reading: "<< test_matrix2D("validation_files/input_image.txt", grayImage, Double)<<endl;
 #endif // TEST_INPUT_IMAGE
 
     //cleanup

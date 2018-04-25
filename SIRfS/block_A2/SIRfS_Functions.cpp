@@ -98,7 +98,14 @@ void conv2mat(int maskRows, int maskCols, Matrix2D<int> input_filter, Matrix2D<K
 
         //the vectors computed in the previous double loop are stored in a vector of vectors (idxs) which is now converted into a matrix
         Matrix2D<int> idxsMat( mask_matrix_linear_size, idxs.size());
-        convertVectorOfVectorsToMatrix(idxs, idxsMat);
+        //convertVectorOfVectorsToMatrix(idxs, idxsMat);
+        for(unsigned int i = 0; i < idxs.size(); i ++)
+            for(unsigned int j = 0; j < idxs[i].size(); j++)
+            {
+                //put a vector's elements on the same column, not on the same line
+                idxsMat.setMatrixValue(j, i, idxs[i][j]);
+            }
+
 
         //a new matrix is computed. It stores all the lines in the idxsMat that do not have a Nan (-1) value.
         //Thus, it's number of lines equals the number of lines of the vectors in idxs with the most Nan values (-1)
@@ -225,8 +232,7 @@ void medianFilterMatMask(Matrix2D<bool>& input_mask, int half_width, Matrix2D<do
             absj.getAbsoluteValuesMatrix(fs[j]);
 
             //declare the matrix that will hold the convolution's result an dinitialize it to 0
-            Matrix2D<int> C(abs(fs[i].getRows() - fs[j].getRows()) + 1, abs(fs[i].getCols() - fs[j].getCols()) + 1);
-            C.initializeMatrixValues(0);
+            Matrix2D<int> C(abs(fs[i].getRows() - fs[j].getRows()) + 1, abs(fs[i].getCols() - fs[j].getCols()) + 1, 0);
             //create a result vector that contains values of 1 if in C is a column containing a value >=2
             vector<int> res(C.getCols());
 
@@ -257,7 +263,6 @@ void medianFilterMatMask(Matrix2D<bool>& input_mask, int half_width, Matrix2D<do
 
     //use it as temporary matrix, to store output from conv2mat, It is allocated and gets its values set inside conv2mat
     Matrix2D<KeysValue<double> > *A;
-     Matrix2D<KeysValue<double> > *keysVal_output;
     //vector of matrices
     vector<Matrix2D<KeysValue<double> > > matrices_vector;
 
@@ -273,10 +278,18 @@ void medianFilterMatMask(Matrix2D<bool>& input_mask, int half_width, Matrix2D<do
             fs[k].compareValuesToTreshold(bool_f, 0, NonEqual);
             //convert into double
             Matrix2D<double> f( fs[k].getRows(), fs[k].getCols());
-            convertBoolToDoubleMatrix2D(bool_f, f);
+            //convertBoolToDoubleMatrix2D(bool_f, f);
+            for(int idx = 0; idx < bool_f.getDim(); idx++)
+            {
+                f.setMatrixValue(idx, (double) bool_f.getMatrixValue(idx));
+            }
 
             //convert matrix input_mask to double
-            convertBoolToDoubleMatrix2D(input_mask, d_input_mask);
+            //convertBoolToDoubleMatrix2D(input_mask, d_input_mask);
+            for(int idx = 0; idx < input_mask.getDim(); idx++)
+            {
+                d_input_mask.setMatrixValue(idx,  (double) input_mask.getMatrixValue(idx));
+            }
 
             //Apply convolution between filter f and input_mask (after converted to double). Store the result in the matrix conv_res
             Matrix2D<double> conv_res( abs(d_input_mask.getRows() - f.getRows() + 1), abs(d_input_mask.getCols() - f.getCols() + 1), 0);
@@ -294,7 +307,21 @@ void medianFilterMatMask(Matrix2D<bool>& input_mask, int half_width, Matrix2D<do
             //temp_A stores the lines in A corresponding to true values in keep mask
             Matrix2D<KeysValue<double> > temp_A(notnull_lines_in_A,  (*A).getCols());
             //apply mask to A and  store in temp_A
-            applyMaskOnKeysValueMatrix(keep, &A,  &temp_A);
+            //applyMaskOnKeysValueMatrix(keep, &A,  &temp_A);
+            int t_idx = 0;
+
+            //mask.getRows = source.getRows. For each line, check if mask is 1, then iterate through cols,  then set the values
+            for(int idx = 0; idx < A->getRows(); idx++)
+            {
+                if(keep[idx] == true)
+                {
+                    for( int idy = 0; idy < A->getCols(); idy++)
+                    {
+                        temp_A(t_idx,idy).setKeysValue(t_idx,  (*A)(idx, idy).getKeyY(), (*A)(idx, idy).getValue());
+                    }
+                    t_idx++;
+                }
+            }
 
             //delete dinamically allocated Matrix2D object
              delete A;
@@ -313,11 +340,39 @@ void medianFilterMatMask(Matrix2D<bool>& input_mask, int half_width, Matrix2D<do
         temp_rows_nr += matrices_vector[idx].getRows();
     }
 
-    //allocate memory for the output matrix
-    keysVal_output = new Matrix2D<KeysValue<double> >(temp_rows_nr, matrices_vector[0].getCols());
+    //allocate memory for the result matrix
+    Matrix2D<KeysValue<double> > *keysVal_output = new Matrix2D<KeysValue<double> >(temp_rows_nr, matrices_vector[0].getCols());
 
     //input is vector of matrices, output is a matrix whose number of rows is the sum of all matrices rows from the vector of matrixes
-    appendMatrixBelow(matrices_vector,  &keysVal_output);
+    //appendMatrixBelow(matrices_vector,  &keysVal_output);
+    int start, finish;
+    //iterate through the vector of matrices
+    for(unsigned int id = 0; id < matrices_vector.size(); id++)
+    {
+        KeysValue<double> temp;
+        //for the first matrix, start indexing output's rows from 0
+        if(id == 0)
+        {
+            start = 0;
+            finish = matrices_vector[0].getRows();
+        }
+        //for the rest of matrices, the index starts with the sum of the previous matrices rows
+        else
+        {
+            start += matrices_vector[id - 1].getRows();
+            finish  = start + matrices_vector[id].getRows();
+        }
+
+        for(int idx = start; idx < finish; idx++)
+        {
+            for(int idy = 0; idy < keysVal_output->getCols(); idy++)
+            {
+                temp = matrices_vector[id].getMatrixValue(idx-start, idy);
+                temp.setKeyX(idx);
+                keysVal_output->setMatrixValue(idx, idy, temp);
+            }
+        }
+    }
 
     *output = new Matrix2D<double>(temp_rows_nr , keysVal_output->getCols()*3);
 
@@ -351,7 +406,12 @@ void getBorderNormals(Matrix2D<bool> mask, Border& border)
     negated_mask.negateMatrixMask(mask);
     //convert the negated mask from bool to double
     Matrix2D<double> d_negated_mask(mask.getRows(), mask.getCols()), conv_same(mask.getRows(), mask.getCols(), 0);
-    convertBoolToDoubleMatrix2D(negated_mask, d_negated_mask);
+    //convertBoolToDoubleMatrix2D(negated_mask, d_negated_mask);
+    for(int idx = 0; idx < negated_mask.getDim(); idx++)
+    {
+        d_negated_mask.setMatrixValue(idx, (double) negated_mask.getMatrixValue(idx));
+    }
+
     //convolution result: conv_same returns a result with the same size as the input (calller)
     conv_same.conv2DSame(reversed_filter, d_negated_mask);
     //once convolution is computed, it checks which values are greater than 0, creating a bolean matrix storing the results (1 if greater, 0 else)
@@ -364,7 +424,11 @@ void getBorderNormals(Matrix2D<bool> mask, Border& border)
     B.mFindIndeces(int_P, 1, Equal);
     //Convert the previous matrix from int to double
     Matrix2D<double>P(no_nonzeros_in_B, 2);
-    convertIntToDoubleMatrix2D(int_P, P);
+    //convertIntToDoubleMatrix2D(int_P, P);
+    for(int idx = 0; idx < P.getDim(); idx++)
+    {
+        P.setMatrixValue(idx, (double) int_P.getMatrixValue(idx));
+    }
 
     //create meshgrid
     Matrix2D<double>X_meshgrid(2*d +1, 2*d + 1), Y_meshgrid(2*d + 1, 2*d +1), pow_X_meshgrid(2*d +1, 2*d + 1), pow_Y_meshgrid(2*d + 1, 2*d +1);

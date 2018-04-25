@@ -5,30 +5,28 @@ using namespace std;
 //matrix operations
 void convertBoolToDoubleMatrix2D(Matrix2D<bool>& source, Matrix2D<double>& dest)
 {
-    for(int i = 0; i < source.getRows(); i++)
-        for(int j = 0; j < source.getCols(); j++)
-        {
-            dest.setMatrixValue(i, j, (double) source.getMatrixValue(i,j));
-        }
+    for(int j = 0; j < source.getDim(); j++)
+    {
+        dest.setMatrixValue(j, (double) source.getMatrixValue(j));
+    }
 }
 
 void convertDoubleToIntMatrix2D(Matrix2D<double>& source, Matrix2D<int>& dest)
 {
-    for(int i = 0; i < source.getRows(); i++)
-        for(int j = 0; j < source.getCols(); j++)
-        {
-            dest.setMatrixValue(i, j, (int) source.getMatrixValue(i,j));
-        }
+    for(int j = 0; j < source.getDim(); j++)
+    {
+        dest.setMatrixValue(j, (int) source.getMatrixValue(j));
+    }
 }
 
 void convertIntToDoubleMatrix2D(Matrix2D<int>& source, Matrix2D<double>& dest)
 {
-        for(int i = 0; i < source.getRows(); i++)
-        for(int j = 0; j < source.getCols(); j++)
-        {
-            dest.setMatrixValue(i, j, (double) source.getMatrixValue(i,j));
-        }
+    for(int j = 0; j < source.getDim(); j++)
+    {
+        dest.setMatrixValue(j, (double) source.getMatrixValue(j));
+    }
 }
+
 
 //store in dest the lines in sotrce corresponding to true values in  mask
 void applyMaskOnKeysValueMatrix(std::vector<bool>& mask, Matrix2D<KeysValue<double> >** source, Matrix2D<KeysValue<double> > *dest)
@@ -42,7 +40,6 @@ void applyMaskOnKeysValueMatrix(std::vector<bool>& mask, Matrix2D<KeysValue<doub
         {
             for( int idy = 0; idy < (**source).getCols(); idy++)
             {
-                //(*dest)(t_idx,idy).setKeysValue((**source)(idx, idy).getKeyX(),  (**source)(idx, idy).getKeyY(), (**source)(idx, idy).getValue());
                 (*dest)(t_idx,idy).setKeysValue(t_idx,  (**source)(idx, idy).getKeyY(), (**source)(idx, idy).getValue());
             }
             t_idx++;

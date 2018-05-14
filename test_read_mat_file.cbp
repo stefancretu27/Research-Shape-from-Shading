@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="test_read_mat_file" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Debug">
+				<Option output="bin/Debug/test_read_mat_file" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Debug/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Option projectCompilerOptionsRelation="1" />
+				<Option projectLinkerOptionsRelation="1" />
+				<Option projectIncludeDirsRelation="1" />
+				<Option projectResourceIncludeDirsRelation="1" />
+				<Option projectLibDirsRelation="1" />
+				<Compiler>
+					<Add option="-std=c++11" />
+					<Add option="-m32" />
+					<Add option="-g" />
+					<Add directory="../../../Downloads/matio-1.5.11/matio-1.5.11/src" />
+					<Add directory="../../../../../Program Files (x86)/GnuWin32/include" />
+				</Compiler>
+				<Linker>
+					<Add option="-m32" />
+					<Add library="../../../Downloads/matio-1.5.11/matio-1.5.11/visual_studio/Release/libmatio.dll" />
+					<Add library="../../../../../Program Files (x86)/GnuWin32/bin/zlib1.dll" />
+					<Add directory="../../../Downloads/matio-1.5.11/matio-1.5.11/visual_studio/Release" />
+					<Add directory="../../../../../Program Files (x86)/GnuWin32/lib" />
+					<Add directory="../../../../../Program Files (x86)/GnuWin32/bin" />
+				</Linker>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="-Wall" />
+			<Add option="-fexceptions" />
+		</Compiler>
+		<Unit filename="main.cpp" />
+		<Unit filename="prior_struct_node.cpp" />
+		<Unit filename="prior_struct_node.h" />
+		<Extensions>
+			<code_completion />
+			<debugger />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>

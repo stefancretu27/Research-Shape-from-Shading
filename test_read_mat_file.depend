@@ -1,0 +1,28 @@
+# depslib dependency file v1.0
+1519740973 source:c:\users\stefa_000\documents\codeblocks_projects\test_read_mat_file\main.cpp
+	<stdlib.h>
+	<stdio.h>
+	<cstring>
+	<iostream>
+	<vector>
+	<typeinfo>
+	"prior_struct_node.h"
+
+1508668964 c:\users\stefa_000\downloads\matio-1.5.11\matio-1.5.11\src\matio.h
+	<stdlib.h>
+	<stdio.h>
+	"matio_pubconf.h"
+	<stdarg.h>
+
+1508668964 c:\users\stefa_000\downloads\matio-1.5.11\matio-1.5.11\src\matio_pubconf.h
+	<inttypes.h>
+	<stdint.h>
+
+1519731923 c:\users\stefa_000\documents\codeblocks_projects\test_read_mat_file\prior_struct_node.h
+	<iostream>
+	<vector>
+	"C:\Users\stefa_000\Downloads\matio-1.5.11\matio-1.5.11\src\matio.h"
+
+1519731649 source:c:\users\stefa_000\documents\codeblocks_projects\test_read_mat_file\prior_struct_node.cpp
+	"prior_struct_node.h"
+

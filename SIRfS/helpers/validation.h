@@ -4,9 +4,9 @@
 #include <vector>
 #include <cstring>
 
-#include "templates/dataFile.h"
-#include "templates/matrix2d.h"
-#include "templates/matrix3d.h"
+#include "../templates/dataFile.h"
+#include "../templates/matrix2D.h"
+#include "../templates/matrix3D.h"
 #include "enums.h"
 
 //#define TEST_INPUT_IMAGE 0

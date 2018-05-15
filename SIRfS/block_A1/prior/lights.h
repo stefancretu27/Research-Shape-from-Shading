@@ -1,8 +1,8 @@
 #ifndef LIGHT_H_INCLUDED
 #define LIGHT_H_INCLUDED
 
-#include "lights\color.h"
-#include "lights\gray.h"
+#include "lights/color.h"
+#include "lights/gray.h"
 
 class Lights
 {
@@ -13,7 +13,7 @@ private:
 public:
     //constructors
     Lights(){};
-    LIghts(const Lights &input)
+    Lights(const Lights &input)
     {
         this->color = input.color;
         this->gray = input.gray;

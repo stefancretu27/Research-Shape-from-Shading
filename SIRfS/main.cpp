@@ -91,12 +91,13 @@ int main()
     cout<<"[SIRfS] Applying median filter"<<endl;
     //the output matrices are written at the address given as input
     clock_t clock_median_filter = clock();
-    medianFilterMatMask(negated_valid,  params.getZMedianHalfwidth(), data.getZMedianFilterMatAddress());
+    /*medianFilterMatMask(negated_valid,  params.getZMedianHalfwidth(), data.getZMedianFilterMatAddress());
     medianFilterMatMask(negated_valid,  params.getAMedianHalfwidth(), data.getAMedianFilterMatAddress());
 
     //compute transposes for the above matrices. Since they store they KeysValue they might not be necessary, as the original can be used, but keep them till determining their usefulness
     data.getZMedianFilterMat()->getTranspose(data.getZMedianFilterMatTAddress());
     data.getAMedianFilterMat()->getTranspose(data.getAMedianFilterMatTAddress());
+    * */
     cout<<"Time taken for median filter: "<<(double)(clock() - clock_median_filter)/CLOCKS_PER_SEC<<endl;
 
 #ifdef TEST_BLOCK_A2
@@ -121,6 +122,6 @@ int main()
     data.setPrior(prior);
     cout<<"[SIRfS] Finished setting 'data' class"<<endl;
 
-    cout<<"Time taken "<<(double)(clock() - tStart)/CLOCKS_PER_SEC;
+    cout<<"Time taken "<<(double)(clock() - tStart)/CLOCKS_PER_SEC<<endl;
     return 0;
 }

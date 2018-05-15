@@ -1,7 +1,7 @@
 #ifndef MKZ_H_INCLUDED
 #define MKZ_H_INCLUDED
 
-#include "MKZ\GSM.h"
+#include "MKZ/GSM.h"
 
 class MKZ
 {

@@ -3,7 +3,7 @@
 
 #include "gaussian.h"
 #include "whitenParams.h"
-#include "../../../prior_struct_node.h"
+//#include "../../../../helpers/prior_struct_node.h"
 
 class ColorNatural
 {

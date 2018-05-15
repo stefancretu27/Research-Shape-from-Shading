@@ -1,7 +1,7 @@
 #ifndef REFLECTANCECOLOR_H_INCLUDED
 #define REFLECTANCECOLOR_H_INCLUDED
 
-#include "color\MA.h"
+#include "color/MA.h"
 #include "../../../templates/matrix3D.h"
 #include "../../../templates/matrix3D.cpp"
 

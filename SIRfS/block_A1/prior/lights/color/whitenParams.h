@@ -5,7 +5,7 @@
 #include <vector>
 #include "../../../../templates/matrix2D.h"
 //#include "../../../../templates/dataFile.h"
-#include "../../../prior_struct_node.h"
+#include "../../../../helpers/prior_struct_node.h"
 //#include "../../../../helpers/validation.h"
 
 class ColorWhitenParams

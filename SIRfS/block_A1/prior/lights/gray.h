@@ -13,7 +13,7 @@ private:
 public:
     //constructors
     LightsGray(){};
-    LIghtsGray(const LightsGray &input)
+    LightsGray(const LightsGray &input)
     {
         this->lab = input.lab;
         this->nat = input.nat;

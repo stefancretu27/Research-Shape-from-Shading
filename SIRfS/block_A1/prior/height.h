@@ -1,8 +1,8 @@
 #ifndef HEIGHT_H_INCLUDED
 #define HEIGHT_H_INCLUDED
 
-#include "height\MKZ.h"
-#include "height\normal.h"
+#include "height/MKZ.h"
+#include "height/normal.h"
 
 class Height
 {

@@ -1,9 +1,9 @@
 #ifndef PRIOR_H_INCLUDED
 #define PRIOR_H_INCLUDED
 
-#include "prior\height.h"
-#include "prior\lights.h"
-#include "prior\reflectance.h"
+#include "prior/height.h"
+#include "prior/lights.h"
+#include "prior/reflectance.h"
 
 class Prior
 {

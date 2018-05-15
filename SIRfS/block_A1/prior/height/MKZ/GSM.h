@@ -2,7 +2,7 @@
 #define GSM_H_INCLUDED
 
 #include "limits"
-#include "GSM\lut.h"
+#include "GSM/lut.h"
 
 class GSM
 {

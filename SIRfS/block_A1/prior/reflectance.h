@@ -1,8 +1,8 @@
 #ifndef REFLECTANCE_H_INCLUDED
 #define REFLECTANCE_H_INCLUDED
 
-#include "reflectance\gray.h"
-#include "reflectance\color.h"
+#include "reflectance/gray.h"
+#include "reflectance/color.h"
 
 class Reflectance
 {

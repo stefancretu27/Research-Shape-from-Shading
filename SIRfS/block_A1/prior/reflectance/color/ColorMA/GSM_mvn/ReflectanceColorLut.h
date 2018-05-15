@@ -7,7 +7,7 @@
 
 #include "../../../../../../helpers/range.h"
 #include "../../../../../../templates/dataFile.h"
-#include "../../../../../prior_struct_node.h"
+#include "../../../../../../helpers/prior_struct_node.h"
 #include "../../../../../../helpers/validation.h"
 
 class ReflectanceColorLut

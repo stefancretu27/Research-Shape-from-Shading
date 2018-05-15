@@ -3,9 +3,9 @@
 
 #include <string>
 #include <vector>
-#include "params\height_data.h"
-#include "params\light_data.h"
-#include "params\reflectance_data.h"
+#include "params/height_data.h"
+#include "params/light_data.h"
+#include "params/reflectance_data.h"
 
 class Parameters
 {

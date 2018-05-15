@@ -3,12 +3,8 @@
 
 #include <iostream>
 #include <stdlib.h>
-
 //library used for reading input image
-extern "C"
-{
-    #include "../libpng/include/png.h"
-}
+#include <png.h>
 //temporary
 #include <fstream>
 

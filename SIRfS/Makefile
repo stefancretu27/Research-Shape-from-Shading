@@ -1,5 +1,5 @@
 CC := g++
-CFLAGS := -std=c++11 -g 
+CFLAGS := -std=c++11 -g -W
 BLOCKA2_SRCS := $(wildcard block_A2/*.cpp)
 MATLAB_SRCS := $(wildcard matlab/*.cpp)
 REFLECTANCE_SRCS := $(wildcard reflectance/*.cpp)

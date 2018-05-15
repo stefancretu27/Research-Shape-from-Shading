@@ -146,7 +146,7 @@ Matrix2D<double> read_png_file()
     //convert RGB images to grayscale using classic average
     //RGB => rowbytes/width = 3
     for(int height_id = 0; height_id < height; height_id++)
-        for(int width_id = 0; width_id < rowbytes; width_id+=3)
+        for(unsigned int width_id = 0; width_id < rowbytes; width_id+=3)
         {
             scaled_sum =  ((double)row_pointers[height_id][width_id])/255 + ((double)row_pointers[height_id][width_id+1])/255+  ((double)row_pointers[height_id][width_id+2])/255;
             grayImage.setMatrixValue(height_id, width_id/3, scaled_sum/3);

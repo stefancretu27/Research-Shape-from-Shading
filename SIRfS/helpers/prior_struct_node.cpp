@@ -62,7 +62,7 @@ void StructNode::setNodeFieldsData()
     //Secondly, for each inner structure, store its pointer in an array of pointers
     this->struct_fields_p = new matvar_t*[this->fields_no];
 
-     for(int i = 0; i < this->getFieldsNo(); i++)
+     for(unsigned int i = 0; i < this->getFieldsNo(); i++)
     {
         //get pointer to inner structs, by names
        this->struct_fields_p[i] = Mat_VarGetStructFieldByName(this->structure_p, this->fields_names[i], 0);
@@ -75,7 +75,7 @@ vector<StructNode*>  StructNode::getChildrenNodes()
     vector<StructNode*> children_nodes;
     children_nodes.reserve(this->getFieldsNo());
 
-     for(int i = 0; i < this->getFieldsNo(); i++)
+     for(unsigned int i = 0; i < this->getFieldsNo(); i++)
     {
         //create a StructNode instance for 1st level fields
         children_nodes.push_back(new StructNode(this->getNodeLevel()+1, this->getFieldP(i)));

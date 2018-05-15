@@ -5,7 +5,7 @@ void GSM_mvn::initializeGSM_mvnData(StructNode& color_ma_gsm_metadata)
     //create a StructNode instance for 5th level fields
     vector<StructNode*> nodes5 = color_ma_gsm_metadata.getChildrenNodes();
 
-    for(int v = 0; v <  nodes5.size(); v++)
+    for(unsigned int v = 0; v <  nodes5.size(); v++)
     {
         if(strcmp(nodes5[v]->getStructureP()->name, "pis") == 0)
         {

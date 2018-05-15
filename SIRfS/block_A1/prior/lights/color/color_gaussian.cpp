@@ -8,7 +8,7 @@ void ColorGaussian::initializeColorGaussianData(StructNode& color_g_metadata)
     //create a node instance for each inner field and store it in a vector
     vector<StructNode*> nodes5 = color_g_metadata.getChildrenNodes();
 
-    for(int v = 0; v <  nodes5.size(); v++)
+    for(unsigned int v = 0; v <  nodes5.size(); v++)
     {
         if(strcmp(nodes5[v]->getStructureP()->name, "mu") == 0)
         {

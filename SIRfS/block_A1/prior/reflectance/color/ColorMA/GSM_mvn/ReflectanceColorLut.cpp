@@ -5,7 +5,7 @@ void ReflectanceColorLut::initializeLutReflectanceColorData(StructNode& color_ma
     //create a StructNode instance for 5th level fields
     vector<StructNode*> nodes6 = color_ma_gsm_lut_metadata.getChildrenNodes();
 
-    for(int vi = 0; vi < nodes6.size(); vi++)
+    for(unsigned int vi = 0; vi < nodes6.size(); vi++)
     {
         if(strcmp(nodes6[vi]->getStructureP()->name, "bin_range") == 0)
         {

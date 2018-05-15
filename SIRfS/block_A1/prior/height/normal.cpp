@@ -7,7 +7,7 @@ void Normal::initializeNormalData(StructNode& normal_metadata)
     //create a StructNode instance for 3rd level fields
     vector<StructNode*> nodes3 = normal_metadata.getChildrenNodes();
 
-    for(int iii = 0; iii <  nodes3.size(); iii++)
+    for(unsigned int iii = 0; iii <  nodes3.size(); iii++)
     {
         //get data for Normal structure directly, as it does not have any inner fields
         if(strcmp(nodes3[iii]->getStructureP()->name, "mult") == 0)

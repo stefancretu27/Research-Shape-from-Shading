@@ -9,11 +9,11 @@
 #include "../templates/matrix3D.h"
 #include "enums.h"
 
-//#define TEST_INPUT_IMAGE 0
-//#define TEST_PRIOR_HEIGHT 1
-//#define TEST_PRIOR_LIGHT 2
-//#define TEST_PRIOR_REFLECTANCE 3
-//#define TEST_BLOCK_A2 4
+#define TEST_INPUT_IMAGE 0
+#define TEST_PRIOR_HEIGHT 1
+#define TEST_PRIOR_LIGHT 2
+#define TEST_PRIOR_REFLECTANCE 3
+#define TEST_BLOCK_A2 4
 
 /*
 * Function used to test 2 vectors.

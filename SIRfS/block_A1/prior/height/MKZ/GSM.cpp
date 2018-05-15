@@ -9,7 +9,7 @@ void GSM::initializeGSMHeightData(StructNode& GSMHeight_metadata)
      //create a node instance for each inner field and store it in a vector
     vector<StructNode*> nodes4 = GSMHeight_metadata.getChildrenNodes();
 
-    for(int iv = 0; iv <  nodes4.size(); iv++)
+    for(unsigned int iv = 0; iv <  nodes4.size(); iv++)
     {
          if(strcmp(nodes4[iv]->getStructureP()->name, "mu") == 0)
          {

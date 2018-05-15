@@ -38,7 +38,7 @@ public:
         //create a node instance for each inner fields, that are gaussian and whiten params, which are inner fields of color and laboratory
         vector<StructNode*> nodes4 = color_lab_metadata.getChildrenNodes();
 
-        for(int iv = 0; iv <  nodes4.size(); iv++)
+        for(unsigned int iv = 0; iv <  nodes4.size(); iv++)
         {
             if(strcmp(nodes4[iv]->getStructureP()->name, "whiten_params") == 0)
             {

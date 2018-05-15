@@ -7,7 +7,7 @@ void Lut::initializeLutData(StructNode& lut_metadata)
     //create a node instance for each inner field and store it in a vector
     vector<StructNode*> nodes5 = lut_metadata.getChildrenNodes();
 
-    for(int v = 0; v < nodes5.size(); v++)
+    for(unsigned int v = 0; v < nodes5.size(); v++)
     {
         if(strcmp(nodes5[v]->getStructureP()->name, "bin_range") == 0)
         {

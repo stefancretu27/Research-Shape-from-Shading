@@ -7,7 +7,7 @@ void GrayMA::initializeGrayMAdata(StructNode& gray_ma_metadata)
     //create a StructNode instance for 4th level fields, that is GSM for gray.MA and GSM_mvn for color.MA + a matrix for gray.MA
     vector<StructNode*> nodes4 = gray_ma_metadata.getChildrenNodes();
 
-    for(int iv = 0; iv <  nodes4.size(); iv++)
+    for(unsigned int iv = 0; iv <  nodes4.size(); iv++)
     {
         if(strcmp(nodes4[iv]->getStructureP()->name, "MA_train") == 0)
         {

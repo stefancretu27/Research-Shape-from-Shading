@@ -222,8 +222,10 @@ void medianFilterMatMask(Matrix2D<bool>& input_mask, int half_width, Matrix2D<do
                 fs[fs_index] = f_sub;
         }
 
+	
     vector<int> do_remove(fs_size, 0);
     for(i = 0; i < fs_size; i++)
+    {
         for(j = i+1;  j < fs_size - i; j++)
         {
             //declare matrices whose values are the absolute values of the matrices contained by the vector fs
@@ -257,15 +259,20 @@ void medianFilterMatMask(Matrix2D<bool>& input_mask, int half_width, Matrix2D<do
                 break;
             }
         }
+	}
 
+	
     //all float data sets should have been double, but in order to save some memory...
     Matrix2D<double> d_input_mask(input_mask.getRows(), input_mask.getCols());
 
     //use it as temporary matrix, to store output from conv2mat, It is allocated and gets its values set inside conv2mat
     Matrix2D<KeysValue<double> > *A;
     //vector of matrices
-    vector<Matrix2D<KeysValue<double> > > matrices_vector;
+    vector<Matrix2D<KeysValue<double> > > matrices_vector(fs_size);
 
+	
+	unsigned int matrices_vector_size = 0;
+	
     for(int k = 0; k < fs_size; k++)
     {
         if(do_remove[k] == 0)
@@ -283,7 +290,7 @@ void medianFilterMatMask(Matrix2D<bool>& input_mask, int half_width, Matrix2D<do
             {
                 f.setMatrixValue(idx, (double) bool_f.getMatrixValue(idx));
             }
-
+			
             //convert matrix input_mask to double
             //convertBoolToDoubleMatrix2D(input_mask, d_input_mask);
             for(int idx = 0; idx < input_mask.getDim(); idx++)
@@ -304,14 +311,15 @@ void medianFilterMatMask(Matrix2D<bool>& input_mask, int half_width, Matrix2D<do
             createVectorMask(R, keep, 0);
             int notnull_lines_in_A = count(keep.begin(), keep.end(), true);
 
+			
             //temp_A stores the lines in A corresponding to true values in keep mask
             Matrix2D<KeysValue<double> > temp_A(notnull_lines_in_A,  (*A).getCols());
             //apply mask to A and  store in temp_A
-            //applyMaskOnKeysValueMatrix(keep, &A,  &temp_A);
+            applyMaskOnKeysValueMatrix(keep, &A,  &temp_A);
             int t_idx = 0;
 
             //mask.getRows = source.getRows. For each line, check if mask is 1, then iterate through cols,  then set the values
-            for(int idx = 0; idx < A->getRows(); idx++)
+            /*for(int idx = 0; idx < A->getRows(); idx++)
             {
                 if(keep[idx] == true)
                 {
@@ -321,16 +329,15 @@ void medianFilterMatMask(Matrix2D<bool>& input_mask, int half_width, Matrix2D<do
                     }
                     t_idx++;
                 }
-            }
-
-            //delete dinamically allocated Matrix2D object
-             delete A;
+            }*/
+			
 
              //store temp_A in the vector of matrixes
              matrices_vector.push_back(temp_A);
         }
     }
-
+	
+	
     int temp_rows_nr = 0;
     //All matrixes from the vector of matrixes Av are concatenated by putting the 2nd one's first row after the 1st ones last row and so on.
     //Thus they form a big matrix wihich has as as number of rows the sum of those matrixes rows
@@ -575,7 +582,7 @@ void getBorderNormals(Matrix2D<bool> mask, Border& border)
     //convert indeces stored in masked_P to linear form with respect to input mask's size
     vector<double> idx(masked_P.getRows());
     //these values = matlab values -1 - mask.getRows()
-    for(int i = 0; i< idx.size(); i++)
+    for(unsigned int i = 0; i< idx.size(); i++)
     {
         //since idx stores indexes, they have to be incremented by 1 due to 1-based Matlab indexing
         idx[i] = masked_P(i, 0) + masked_P(i, 1)*mask.getRows() + 1;

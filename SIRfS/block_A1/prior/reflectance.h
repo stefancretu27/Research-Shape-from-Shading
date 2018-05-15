@@ -36,7 +36,7 @@ public:
     {
         vector<StructNode*>  nodes2 = reflectance_metadata.getChildrenNodes();
 
-        for(int ii = 0; ii < nodes2.size(); ii++)
+        for(unsigned int ii = 0; ii < nodes2.size(); ii++)
         {
             if(strcmp(nodes2[ii]->getStructureP()->name, "color") == 0)
             {

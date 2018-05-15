@@ -38,7 +38,7 @@ public:
         //create a node instance for each inner fields, that are gaussian and whiten params, which are inner fields of color and laboratory
         vector<StructNode*> nodes4 = gray_nat_metadata.getChildrenNodes();
 
-        for(int iv = 0; iv < nodes4.size(); iv++)
+        for(unsigned int iv = 0; iv < nodes4.size(); iv++)
         {
             if(strcmp(nodes4[iv]->getStructureP()->name, "whiten_params") == 0)
             {
@@ -80,7 +80,7 @@ public:
             cout<<"Test reading priors on lights->gray->"<<gray_nat_metadata.getStructureP()->name<<"->"<<nodes4[iv]->getStructureP()->name<<"-> mu "<<\
                         test_vectors("block_A1/prior/lights/gray/natural/gaussian/mu20.txt", this->gaussian.getMu(), Double)<<endl;
             cout<<"Test reading priors on lights->gray->"<<gray_nat_metadata.getStructureP()->name<<"->"<<nodes4[iv]->getStructureP()->name<<"->Sigma "<<\
-                        test_matrix2D("block_A1/prior/lights/gray/natural/gaussian/sigma20.txt", this->gaussian.getSigma(), Double)<<endl<<endl;
+                        test_matrix2D("block_A1/prior/lights/gray/natural/gaussian/Sigma20.txt", this->gaussian.getSigma(), Double)<<endl<<endl;
 #endif // TEST_PRIOR_LIGHT
             }
         }

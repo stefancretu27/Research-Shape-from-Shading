@@ -36,7 +36,7 @@ public:
         //create a StructNode instance for 3rd level fields, that are natural and laboratory structs, which are inner structs for both color and gray
         vector<StructNode*> nodes3 = color_metadata.getChildrenNodes();
 
-        for(int iii = 0; iii < nodes3.size(); iii++)
+        for(unsigned int iii = 0; iii < nodes3.size(); iii++)
         {
             if(strcmp(nodes3[iii]->getStructureP()->name, "laboratory") == 0)
             {

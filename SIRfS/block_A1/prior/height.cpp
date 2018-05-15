@@ -8,7 +8,7 @@ void Height::initializeHeightData(StructNode& height_metadata)
     vector<StructNode*>  nodes2 = height_metadata.getChildrenNodes();
 
     //iterate thorugh the nodes which are 2 structures(MKZ and Normal) and one vector (NZ_train)
-    for(int ii = 0; ii < nodes2.size(); ii++)
+    for(unsigned int ii = 0; ii < nodes2.size(); ii++)
     {
         //get the data for the vector
         if(strcmp(nodes2[ii]->getStructureP()->name, "NZ_train") == 0)

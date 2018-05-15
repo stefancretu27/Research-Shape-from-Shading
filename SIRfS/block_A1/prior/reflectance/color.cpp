@@ -6,7 +6,7 @@ void ReflectanceColor::initializeReflectanceColorData(StructNode& color_metadata
 {
     vector<StructNode*> nodes3 = color_metadata.getChildrenNodes();
 
-    for(int iii = 0; iii <  nodes3.size(); iii++)
+    for(unsigned int iii = 0; iii <  nodes3.size(); iii++)
     {
         if(strcmp(nodes3[iii]->getStructureP()->name, "A_whiten") == 0)
         {

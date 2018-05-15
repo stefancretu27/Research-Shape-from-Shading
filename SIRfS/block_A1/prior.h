@@ -58,7 +58,7 @@ public:
             //store in a vector childern nodes' metadata, such as names, number of inner fields and pointers to these inner fields
             vector<StructNode*> nodes1 = this->prior_metadata.getChildrenNodes();
 
-            for(int i = 0; i < nodes1.size(); i++)
+            for(unsigned int i = 0; i < nodes1.size(); i++)
             {
                 if(nodes1[i]->getFieldsNo() > 0)
                 {

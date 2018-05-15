@@ -7,7 +7,7 @@ void MKZ::initilalizeMKZData(StructNode& MKZ_metadata)
     //create a StructNode instance for 3rd level fields
     vector<StructNode*> nodes3 = MKZ_metadata.getChildrenNodes();
 
-    for(int iii = 0; iii <  nodes3.size(); iii++)
+    for(unsigned int iii = 0; iii <  nodes3.size(); iii++)
     {
         if(strcmp(nodes3[iii]->getStructureP()->name, "MKZ_train") == 0)
         {

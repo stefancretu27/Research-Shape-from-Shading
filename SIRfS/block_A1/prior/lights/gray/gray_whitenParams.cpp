@@ -7,7 +7,7 @@ void GrayWhitenParams::initializeGrayWhitenParamsData(StructNode &gray_wp_metada
     //create a node instance for each inner field and store it in a vector
     vector<StructNode*> nodes5 = gray_wp_metadata.getChildrenNodes();
 
-    for(int v = 0; v <  nodes5.size(); v++)
+    for(unsigned int v = 0; v <  nodes5.size(); v++)
     {
         if(strcmp(nodes5[v]->getStructureP()->name, "mean") == 0)
         {

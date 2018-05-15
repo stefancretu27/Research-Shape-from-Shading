@@ -6,7 +6,7 @@ void ReflectanceGray::initializeReflectanceGrayData(StructNode& gray_metadata)
 {
     vector<StructNode*> nodes3 = gray_metadata.getChildrenNodes();
 
-    for(int iii = 0; iii <  nodes3.size(); iii++)
+    for(unsigned int iii = 0; iii <  nodes3.size(); iii++)
     {
         if(strcmp(nodes3[iii]->getStructureP()->name, "A_train") == 0)
         {

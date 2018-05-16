@@ -31,6 +31,7 @@ void conv2mat(int maskRows, int maskCols, Matrix2D<int> input_filter, Matrix2D<K
 
     //indeces of non-zero elements in a matrix that contains only logical ones . The indeces are stored in 2 vectors. They are used as follows A(i0[0], j0[0])
     for(x = 0; x < maskRows; x++)
+    {
         for(y = 0; y < maskCols; y++)
         {
             //firstly, compute 2 vectors that store indeces for the input mask
@@ -39,8 +40,10 @@ void conv2mat(int maskRows, int maskCols, Matrix2D<int> input_filter, Matrix2D<K
             //linearize the mask matrix indexing
             idx0[x*maskCols + y] = x*maskCols + y;
         }
+	}
 
     for(int oi = 0; oi < F.getRows(); oi++)
+    {
         for(int oj = 0; oj < F.getCols(); oj++)
         {
             //for each non zero value in the reversed input filter compute an array of indeces
@@ -95,89 +98,90 @@ void conv2mat(int maskRows, int maskCols, Matrix2D<int> input_filter, Matrix2D<K
                 counter_dim++;
             }
         }
+	}
 
-        //the vectors computed in the previous double loop are stored in a vector of vectors (idxs) which is now converted into a matrix
-        Matrix2D<int> idxsMat( mask_matrix_linear_size, idxs.size());
-        //convertVectorOfVectorsToMatrix(idxs, idxsMat);
-        for(unsigned int i = 0; i < idxs.size(); i ++)
-            for(unsigned int j = 0; j < idxs[i].size(); j++)
-            {
-                //put a vector's elements on the same column, not on the same line
-                idxsMat.setMatrixValue(j, i, idxs[i][j]);
-            }
+	//the vectors computed in the previous double loop are stored in a vector of vectors (idxs) which is now converted into a matrix
+	Matrix2D<int> idxsMat( mask_matrix_linear_size, idxs.size());
+	//convertVectorOfVectorsToMatrix(idxs, idxsMat);
+	for(unsigned int i = 0; i < idxs.size(); i ++)
+		for(unsigned int j = 0; j < idxs[i].size(); j++)
+		{
+			//put a vector's elements on the same column, not on the same line
+			idxsMat.setMatrixValue(j, i, idxs[i][j]);
+		}
 
 
-        //a new matrix is computed. It stores all the lines in the idxsMat that do not have a Nan (-1) value.
-        //Thus, it's number of lines equals the number of lines of the vectors in idxs with the most Nan values (-1)
-        Matrix2D<int> idxsMat_noNaN( mask_matrix_linear_size, idxs.size());
-        vector<int> nan_values_line_index(mask_matrix_linear_size);
-        int nan_counter = 0;
+	//a new matrix is computed. It stores all the lines in the idxsMat that do not have a Nan (-1) value.
+	//Thus, it's number of lines equals the number of lines of the vectors in idxs with the most Nan values (-1)
+	Matrix2D<int> idxsMat_noNaN( mask_matrix_linear_size, idxs.size(), 0);
+	vector<int> nan_values_line_index(mask_matrix_linear_size);
+	int nan_counter = 0;
 
-        //iterate over the maximum number of lines
-        for(x = 0; x < mask_matrix_linear_size; x++)
-        {
-            //loop over the elements of each line to check for -1 values
-            for( y = 0; y < (int) idxs.size(); y++)
-            {
-                //find the first -1 value, store its line index and increase the counter
-                if(idxsMat.getMatrixValue(x, y) == -1)
-                {
-                    nan_values_line_index[nan_counter++] = x;
-                    break;
-                }
-            }
+	//iterate over the maximum number of lines
+	for(x = 0; x < mask_matrix_linear_size; x++)
+	{
+		//loop over the elements of each line to check for -1 values
+		for( y = 0; y < (int) idxs.size(); y++)
+		{
+			//find the first -1 value, store its line index and increase the counter
+			if(idxsMat.getMatrixValue(x, y) == -1)
+			{
+				nan_values_line_index[nan_counter++] = x;
+				break;
+			}
+		}
 
-            //if the current line does not contain any -1 (nan) values, copy it to idxsMat_noNaN
-            if(x != nan_values_line_index[nan_counter-1])
-            {
-                for( y = 0; y < (int) idxs.size(); y++)
-                {
-                    idxsMat_noNaN(x - nan_counter, y) = idxsMat(x, y);
-                }
-            }
-        }
+		//if the current line does not contain any -1 (nan) values, copy it to idxsMat_noNaN
+		if(x != nan_values_line_index[nan_counter-1])
+		{
+			for( y = 0; y < (int) idxs.size(); y++)
+			{
+				idxsMat_noNaN(x - nan_counter, y) = idxsMat(x, y);
+			}
+		}
+	}
 
-        //the number of lines for the output matrix is the linear size of the input mask subtsracting the # lines containing NaN values
-        int m = mask_matrix_linear_size - nan_counter;
+	//the number of lines for the output matrix is the linear size of the input mask subtsracting the # lines containing NaN values
+	int m = mask_matrix_linear_size - nan_counter;
 
-       //almost 50k by 50k it takes some time to allocate it, especially if it contains double values.
-       //matrix initialization takes almost 15-16 secs
-        //Since it is impossible to work with such big matrices as the system goes out of RAM, use a matrix that stores only non zero values
-        //These values are actually  triples (keyX, keyY, value), hat are indices in a spare matrix and the afferent value
-        //output is a double pointer as it can't be allocated outside this function, since its dimensions are only known here
-        *output = new Matrix2D<KeysValue<double> >(m, idxsMat_noNaN.getCols());
+   //almost 50k by 50k it takes some time to allocate it, especially if it contains double values.
+   //matrix initialization takes almost 15-16 secs
+	//Since it is impossible to work with such big matrices as the system goes out of RAM, use a matrix that stores only non zero values
+	//These values are actually  triples (keyX, keyY, value), hat are indices in a spare matrix and the afferent value
+	//output is a double pointer as it can't be allocated outside this function, since its dimensions are only known here
+	*output = new Matrix2D<KeysValue<double> >(m, idxsMat_noNaN.getCols());
 
-        //Instead of storing a sparse matrix, use a vector for saving memory.
-        //By this way, the idea of sparse matrix from Matlab is preserved, as it is meant to save memory by not storing 0 values
-        vector<int> sparse_vec(mask_matrix_linear_size, 0);
-        int temp_idx;
+	//Instead of storing a sparse matrix, use a vector for saving memory.
+	//By this way, the idea of sparse matrix from Matlab is preserved, as it is meant to save memory by not storing 0 values
+	vector<int> sparse_vec(mask_matrix_linear_size, 0);
+	int temp_idx;
 
-        for(y = 0; y < idxsMat_noNaN.getCols(); y++)
-        {
-            //In MATLAB the matrix is generating to store the values in ascending order of their column indexes
-            //Thus check if these indexes are in ascending order. If not, change value of y so it indexes in reverse order
-            if(idxsMat_noNaN.getCols() > 1 && idxsMat_noNaN(0, 0) > idxsMat_noNaN(0, 1))
-            {
-                //idxsMat_noNaN.sortLines();
-                col = idxsMat_noNaN.getCols() - 1 - y;
-            }
-            else
-            {
-                col = y;
-            }
+	for(y = 0; y < idxsMat_noNaN.getCols(); y++)
+	{
+		//In MATLAB the matrix is generating to store the values in ascending order of their column indexes
+		//Thus check if these indexes are in ascending order. If not, change value of y so it indexes in reverse order
+		if(idxsMat_noNaN.getCols() > 1 && idxsMat_noNaN(0, 0) > idxsMat_noNaN(0, 1))
+		{
+			//idxsMat_noNaN.sortLines();
+			col = idxsMat_noNaN.getCols() - 1 - y;
+		}
+		else
+		{
+			col = y;
+		}
 
-            //for each column in idxsMat_noNaN, m values are stored in mask_matrix_linear_size sized array, where m <= mask_matrix_linear_size
-            //the values do not necessarily start with 0, as they might start indexing from 502, for instance
-            for(x = 0; x < m; x++)
-            {
-                temp_idx = idxsMat_noNaN(x, col);
-                //the values from filter fs are stored in the vector sparse_vec at the index shown by idxsMat_noNan
-                sparse_vec[temp_idx] = fs[col];
+		//for each column in idxsMat_noNaN, m values are stored in mask_matrix_linear_size sized array, where m <= mask_matrix_linear_size
+		//the values do not necessarily start with 0, as they might start indexing from 502, for instance
+		for(x = 0; x < 100 /*m*/; x++)
+		{
+			temp_idx = idxsMat_noNaN(x, col);
+			//the values from filter fs are stored in the vector sparse_vec at the index shown by idxsMat_noNan
+			sparse_vec[temp_idx] = fs[col];
 
-                //if 2 or more values were on the same line, they will still be, as A stores on the lines x a number of y KeysValue triple
-                (**output)(x, y) .setKeysValue(x, temp_idx, sparse_vec[temp_idx]);
-            }
-        }
+			//if 2 or more values were on the same line, they will still be, as A stores on the lines x a number of y KeysValue triple
+			(**output)(x, y) .setKeysValue(x, temp_idx, sparse_vec[temp_idx]);
+		}
+	}
 }
 
 /*
@@ -194,34 +198,35 @@ void medianFilterMatMask(Matrix2D<bool>& input_mask, int half_width, Matrix2D<do
     int i, j, fs_index, x_first, x_last, y_first, y_last;
 
    for(i = -half_width; i <= half_width; i++)
+   {
         for(j = -half_width; j<= half_width; j++)
         {
-                if ((i == 0) && (j == 0))
-                    continue;
+			if ((i == 0) && (j == 0))
+				continue;
 
-                f.initializeMatrixValues(0);
-                f.setMatrixValue(i + half_width, j + half_width, -1);
-                f.setMatrixValue(half_width , half_width , 1);
+			f.initializeMatrixValues(0);
+			f.setMatrixValue(i + half_width, j + half_width, -1);
+			f.setMatrixValue(half_width , half_width , 1);
 
-                //get indeces of the first and last non zero elements
-                f.findFirstNonEqualElement(x_first, y_first, 0);
-                f.findLastNonEqualElement(x_last, y_last, 0);
+			//get indeces of the first and last non zero elements
+			f.findFirstNonEqualElement(x_first, y_first, 0);
+			f.findLastNonEqualElement(x_last, y_last, 0);
 
-                //allocate space for sub matrix
-                Matrix2D<int> f_sub(abs(x_last - x_first) + 1, abs(y_last - y_first) + 1);
-                f_sub.getSubMatrix(f, x_first, x_last, y_first, y_last);
+			//allocate space for sub matrix
+			Matrix2D<int> f_sub(abs(x_last - x_first) + 1, abs(y_last - y_first) + 1);
+			f_sub.getSubMatrix(f, x_first, x_last, y_first, y_last);
 
-                //it's a vector of matrix2D. Iterate from 0.
-                fs_index = (i+half_width)*width + (j+half_width);
-                //index #12 is missed as it corresponds to i == 0 and j == 0 case that is omitted, thus it needs an adjustment
-                if(fs_index > half_width*width + half_width)
-                {
-                    fs_index -= 1;
-                }
+			//it's a vector of matrix2D. Iterate from 0.
+			fs_index = (i+half_width)*width + (j+half_width);
+			//index #12 is missed as it corresponds to i == 0 and j == 0 case that is omitted, thus it needs an adjustment
+			if(fs_index > half_width*width + half_width)
+			{
+				fs_index -= 1;
+			}
 
-                fs[fs_index] = f_sub;
+			fs[fs_index] = f_sub;
         }
-
+	}
 	
     vector<int> do_remove(fs_size, 0);
     for(i = 0; i < fs_size; i++)
@@ -229,7 +234,7 @@ void medianFilterMatMask(Matrix2D<bool>& input_mask, int half_width, Matrix2D<do
         for(j = i+1;  j < fs_size - i; j++)
         {
             //declare matrices whose values are the absolute values of the matrices contained by the vector fs
-            Matrix2D<int> absi(fs[i].getRows(), fs[i].getCols()), absj(fs[j].getRows(), fs[j].getCols());
+            Matrix2D<int> absi(fs[i].getRows(), fs[i].getCols(), 0), absj(fs[j].getRows(), fs[j].getCols(), 0);
             absi.getAbsoluteValuesMatrix(fs[i]);
             absj.getAbsoluteValuesMatrix(fs[j]);
 
@@ -263,15 +268,12 @@ void medianFilterMatMask(Matrix2D<bool>& input_mask, int half_width, Matrix2D<do
 
 	
     //all float data sets should have been double, but in order to save some memory...
-    Matrix2D<double> d_input_mask(input_mask.getRows(), input_mask.getCols());
+    Matrix2D<double> d_input_mask(input_mask.getRows(), input_mask.getCols(), 0);
 
     //use it as temporary matrix, to store output from conv2mat, It is allocated and gets its values set inside conv2mat
     Matrix2D<KeysValue<double> > *A;
     //vector of matrices
     vector<Matrix2D<KeysValue<double> > > matrices_vector(fs_size);
-
-	
-	unsigned int matrices_vector_size = 0;
 	
     for(int k = 0; k < fs_size; k++)
     {
@@ -280,11 +282,11 @@ void medianFilterMatMask(Matrix2D<bool>& input_mask, int half_width, Matrix2D<do
             //A is dynamically allocated in conv2mat
             conv2mat(input_mask.getRows(), input_mask.getCols(), fs[k], &A);
 
-            Matrix2D<bool> bool_f( fs[k].getRows(), fs[k].getCols());
+            Matrix2D<bool> bool_f( fs[k].getRows(), fs[k].getCols(), false);
             //if a value is not zero, store 1, else store 1 in the new matrix f
             fs[k].compareValuesToTreshold(bool_f, 0, NonEqual);
             //convert into double
-            Matrix2D<double> f( fs[k].getRows(), fs[k].getCols());
+            Matrix2D<double> f( fs[k].getRows(), fs[k].getCols(), 0);
             //convertBoolToDoubleMatrix2D(bool_f, f);
             for(int idx = 0; idx < bool_f.getDim(); idx++)
             {
@@ -316,8 +318,8 @@ void medianFilterMatMask(Matrix2D<bool>& input_mask, int half_width, Matrix2D<do
             Matrix2D<KeysValue<double> > temp_A(notnull_lines_in_A,  (*A).getCols());
             //apply mask to A and  store in temp_A
             applyMaskOnKeysValueMatrix(keep, &A,  &temp_A);
-            int t_idx = 0;
-
+            
+            //int t_idx = 0;
             //mask.getRows = source.getRows. For each line, check if mask is 1, then iterate through cols,  then set the values
             /*for(int idx = 0; idx < A->getRows(); idx++)
             {
@@ -409,7 +411,7 @@ void getBorderNormals(Matrix2D<bool> mask, Border& border)
     reversed_filter.reverseMatrix(filter);
 
     //build ~mask matrix
-    Matrix2D<bool>negated_mask(mask.getRows(), mask.getCols()), conv_greater_than(mask.getRows(), mask.getCols()), B(mask.getRows(), mask.getCols());
+    Matrix2D<bool>negated_mask(mask.getRows(), mask.getCols(), false), conv_greater_than(mask.getRows(), mask.getCols(), false), B(mask.getRows(), mask.getCols(), false);
     negated_mask.negateMatrixMask(mask);
     //convert the negated mask from bool to double
     Matrix2D<double> d_negated_mask(mask.getRows(), mask.getCols()), conv_same(mask.getRows(), mask.getCols(), 0);
@@ -427,10 +429,10 @@ void getBorderNormals(Matrix2D<bool> mask, Border& border)
     int no_nonzeros_in_B = 0;
     no_nonzeros_in_B = conv_greater_than.logicalAnd(B, mask);
     //store the indeces of nonzero elements in this matrix. In comparison to the Matlab ones, they'll always  lower by 1 (0 vs 1 base indexing)
-    Matrix2D<int>int_P(no_nonzeros_in_B, 2);
+    Matrix2D<int>int_P(no_nonzeros_in_B, 2, 0);
     B.mFindIndeces(int_P, 1, Equal);
     //Convert the previous matrix from int to double
-    Matrix2D<double>P(no_nonzeros_in_B, 2);
+    Matrix2D<double>P(no_nonzeros_in_B, 2, 0);
     //convertIntToDoubleMatrix2D(int_P, P);
     for(int idx = 0; idx < P.getDim(); idx++)
     {
@@ -438,7 +440,7 @@ void getBorderNormals(Matrix2D<bool> mask, Border& border)
     }
 
     //create meshgrid
-    Matrix2D<double>X_meshgrid(2*d +1, 2*d + 1), Y_meshgrid(2*d + 1, 2*d +1), pow_X_meshgrid(2*d +1, 2*d + 1), pow_Y_meshgrid(2*d + 1, 2*d +1);
+    Matrix2D<double>X_meshgrid(2*d +1, 2*d + 1, 0), Y_meshgrid(2*d + 1, 2*d +1, 0), pow_X_meshgrid(2*d +1, 2*d + 1, 0), pow_Y_meshgrid(2*d + 1, 2*d +1, 0);
     meshgrid(-d, d, -d, d, X_meshgrid, Y_meshgrid);
     //square matrices elements
     X_meshgrid.elementsOperation(pow_X_meshgrid, 2, Pow);
@@ -446,19 +448,19 @@ void getBorderNormals(Matrix2D<bool> mask, Border& border)
     //add powered matrices
     pow_X_meshgrid + pow_Y_meshgrid;
     //Multiply by -5/d^2
-    Matrix2D<double>factorized_sum_of_powered_meshgrids(2*d + 1, 2*d +1), gaussian(2*d + 1, 2*d +1);
+    Matrix2D<double>factorized_sum_of_powered_meshgrids(2*d + 1, 2*d +1, 0), gaussian(2*d + 1, 2*d +1, 0);
     double multiply_factor = -5/pow(d, 2);
     pow_X_meshgrid.elementsOperation(factorized_sum_of_powered_meshgrids, multiply_factor, Multiply);
     //finally, compute gaussian
     factorized_sum_of_powered_meshgrids.elementsOperation(gaussian, 0, Exp);
 
     //compute inner operations needed for the new P
-    Matrix2D<double>P_plus_d(no_nonzeros_in_B, 2), P_minus_d(no_nonzeros_in_B, 2);
+    Matrix2D<double>P_plus_d(no_nonzeros_in_B, 2, 0), P_minus_d(no_nonzeros_in_B, 2, 0);
     P.elementsOperation(P_plus_d, d, Sum);
     P.elementsOperation(P_minus_d, d, Substract);
 
     //compute the  masks for the above matrices, afterwards perform logical and on them
-    Matrix2D<bool>P_plus_d_mask(no_nonzeros_in_B, 2), P_minus_d_mask(no_nonzeros_in_B, 2), and_P_masks(no_nonzeros_in_B, 2);
+    Matrix2D<bool>P_plus_d_mask(no_nonzeros_in_B, 2, false), P_minus_d_mask(no_nonzeros_in_B, 2, false), and_P_masks(no_nonzeros_in_B, 2, false);
     //create size vector containing V's dimensions, needed for comparison
     vector<double>size_mask(2);
     size_mask[0] = mask.getRows(); size_mask[1] =  mask.getCols();
@@ -474,7 +476,7 @@ void getBorderNormals(Matrix2D<bool> mask, Border& border)
     //count the number of 1 values in the above computed mask. It will tell how many rows from P will be kept. In comparison to the Matlab ones, P's values are always  lower by 1 (0 vs 1 base indexing)
     int notzero_lines_in_P = count(allNonZeroLines.begin(), allNonZeroLines.end(), true);
     //declare N, matrix for storing normal's values computed in the for loop. Also, masked_P stores values from P kept after applying mask
-    Matrix2D<double> masked_P(notzero_lines_in_P, P.getCols()), N(notzero_lines_in_P, masked_P.getCols(), numeric_limits<double>::quiet_NaN());
+    Matrix2D<double> masked_P(notzero_lines_in_P, P.getCols(), 0), N(notzero_lines_in_P, masked_P.getCols(), numeric_limits<double>::quiet_NaN());
     masked_P.applyVectorMask(P, allNonZeroLines);
 
     //create [-d:d] vector and initialize it. It is needed inside the for loop
@@ -497,7 +499,7 @@ void getBorderNormals(Matrix2D<bool> mask, Border& border)
         }
 
         //compute patch matrix
-        Matrix2D<bool> patch(2*d + 1, 2*d + 1);
+        Matrix2D<bool> patch(2*d + 1, 2*d + 1, 0);
         for(int idx = 0; idx < patch.getRows(); idx++)
             for(int idy = 0; idy < patch.getCols(); idy++)
         {
@@ -511,17 +513,17 @@ void getBorderNormals(Matrix2D<bool> mask, Border& border)
         patch.vFindIndeces(ii, jj, 1, Equal);
 
         //start computing 'a' matrix
-        Matrix2D<bool> a(patch.getDim(), patch.getDim(), 0), temp_a(no_nonzeros_in_patch, no_nonzeros_in_patch);
+        Matrix2D<bool> a(patch.getDim(), patch.getDim(), false), temp_a(no_nonzeros_in_patch, no_nonzeros_in_patch, false);
         //convert patch to vector
         vector<bool> vector_patch(patch.getDim());
         patch.reshapeToVector(vector_patch);
 
         //calculate bsxfun substractions
-        Matrix2D<int> substract_ii(no_nonzeros_in_patch, no_nonzeros_in_patch), substract_jj(no_nonzeros_in_patch, no_nonzeros_in_patch);
+        Matrix2D<int> substract_ii(no_nonzeros_in_patch, no_nonzeros_in_patch, 0), substract_jj(no_nonzeros_in_patch, no_nonzeros_in_patch, 0);
         vectorOpItsTranspose(ii, substract_ii, Substract);
         vectorOpItsTranspose(jj, substract_jj, Substract);
         //square up the above matrices' elements
-        Matrix2D<int> sq_substract_ii(no_nonzeros_in_patch, no_nonzeros_in_patch), sq_substract_jj(no_nonzeros_in_patch, no_nonzeros_in_patch);
+        Matrix2D<int> sq_substract_ii(no_nonzeros_in_patch, no_nonzeros_in_patch, 0), sq_substract_jj(no_nonzeros_in_patch, no_nonzeros_in_patch, 0);
         substract_ii.elementsOperation(sq_substract_ii,  2, Pow);
         substract_jj.elementsOperation(sq_substract_jj,  2, Pow);
         //add the precedently computed and store the result in sq_substract_ii (overwrite tis values)
@@ -570,7 +572,7 @@ void getBorderNormals(Matrix2D<bool> mask, Border& border)
         N.setMatrixValue(i, 1, n[1]);
     }
 
-    Matrix2D<double> T(N.getRows(), N.getCols());
+    Matrix2D<double> T(N.getRows(), N.getCols(), 0);
     for(int idx = 0; idx< T.getRows(); idx++)
     {
         //T's first column is N's 2nd column * -1

@@ -9,7 +9,7 @@ void libs_version_info()
     //Upper case are macros defined in both libs which show the compile time versions.
     //The lower case are globals which show versions at the time when they run.
     cout<<"[Reading input image] Libpng compile time version: "<<PNG_LIBPNG_VER_STRING<<" running version: "<<png_libpng_ver<<endl;
-    cout<<"[Reading input image] Zlib compile time version: "<<ZLIB_VERSION<<" running version: "<<zlibVersion<<endl;
+    cout<<"[Reading input image] Zlib compile time version: "<<ZLIB_VERSION<<" running version: "<<zlibVersion()<<endl;
 }
 
 Matrix2D<double> read_png_file()
@@ -25,9 +25,7 @@ Matrix2D<double> read_png_file()
     //pointer to png byte pointer used for storing image values.
     png_bytep *row_pointers;
     //number of channels
-    png_uint_32  rowbytes, channels;
-    //store the image data as 'double'
-    double **grayscaled_values;
+    png_uint_32  rowbytes;
     double  scaled_sum = 0.0;
 
     //cout<<"[Reading input image] Insert file's name"<<endl;
@@ -90,7 +88,7 @@ Matrix2D<double> read_png_file()
     height = png_get_image_height(png_struct_pointer, info_struct_pointer);
     color_type = png_get_color_type(png_struct_pointer, info_struct_pointer);
     bit_depth  = png_get_bit_depth(png_struct_pointer, info_struct_pointer);
-    channels = png_get_channels(png_struct_pointer, info_struct_pointer);
+    //channels = png_get_channels(png_struct_pointer, info_struct_pointer);
 
     //allocate memory for grayscaled image, which will have input's image dimensions
     Matrix2D<double> grayImage(height, width);

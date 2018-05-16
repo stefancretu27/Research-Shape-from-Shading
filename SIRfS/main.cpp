@@ -13,7 +13,6 @@
 #include "block_A1/prior.h"
 #include "block_A1/read_input_image_libpng.h"
 #include "block_A2/SIRfS_Functions.h"
-#include "helpers/validation.h"
 
 using namespace std;
 

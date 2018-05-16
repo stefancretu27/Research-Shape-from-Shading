@@ -12,6 +12,7 @@
 #include "../matlab/matlab_matrix.h"
 #include "../templates/dataFile.h"
 #include "../block_A1/data_class/border.h"
+#include "../helpers/validation.h"
 
 //This header contains the signatures of SIRfS functions
 void conv2mat(int maskRows, int maskCols, Matrix2D<int> input_filter, Matrix2D<KeysValue<double> >** output);

@@ -1,5 +1,7 @@
 CC := g++
-CFLAGS := -std=c++11 -g -W
+CFLAGS := -std=c++11 -g -Wall
+LIBS := -lm -lz -lpng -lmatio
+
 BLOCKA2_SRCS := $(wildcard block_A2/*.cpp)
 MATLAB_SRCS := $(wildcard matlab/*.cpp)
 REFLECTANCE_SRCS := $(wildcard reflectance/*.cpp)
@@ -13,7 +15,7 @@ all: linkall
 
 #link all object files
 linkall: blockA2
-	cd Obj; $(CC) $(CFLAGS) -o ../sirfs.o *.o -lpng -lmatio; cd .
+	cd Obj; $(CC) $(CFLAGS) -o ../sirfs.o *.o $(LIBS); cd .
 	
 blockA2: blockA1 	
 	$(CC) $(CFLAGS) -c main.cpp $(BLOCKA2_SRCS); mv *.o Obj 

@@ -176,8 +176,6 @@ Matrix2D<Type>& Matrix2D<Type>::operator=(const Matrix2D<Type>& operand_matrix)
 template <class Type>
 Matrix2D<Type>& Matrix2D<Type>::operator+(const Matrix2D<Type>& operand_matrix)
 {
-    Type sum = 0;
-
     if(this->getRows() != operand_matrix.getRows() || this->getCols() != operand_matrix.getCols())
     {
         cout<<"Couldn't add matrices. They have different dimensions"<<endl;
@@ -348,8 +346,6 @@ void Matrix2D<Type>::insertNaNValues(Matrix2D<bool>& mask)
 template <class Type>
 void Matrix2D<Type>::compareValuesToTreshold(Matrix2D<bool>& result, Type treshold, Comparison comp)
 {
-    int i, j;
-
     switch(comp)
     {
         case 0:
@@ -1112,8 +1108,6 @@ void Matrix2D<Type>::vFindIndecesAndValues(std::vector<int>& x, std::vector<int>
 template <class Type>
 void Matrix2D<Type>::elementsOperation(Matrix2D<Type>& result, Type value, Operation op)
 {
-    int i, j;
-
     switch(op)
     {
     case 0:

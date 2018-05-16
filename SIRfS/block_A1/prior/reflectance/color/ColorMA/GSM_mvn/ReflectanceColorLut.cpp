@@ -45,7 +45,7 @@ void ReflectanceColorLut::initializeLutReflectanceColorData(StructNode& color_ma
 
 #ifdef TEST_PRIOR_REFLECTANCE
             cout<<"Test for reading priors on reflectance: "<<color_ma_gsm_lut_metadata.getStructureP()->name<<"->"<<nodes6[vi]->getStructureP()->name<<"  "<<\
-                        test_vectors("block_A1/prior/reflectance/color/colorMA/GSM_mvn/F16.txt", this->F, Double)<<endl<<endl;
+                        test_vectors("block_A1/prior/reflectance/color/ColorMA/GSM_mvn/F16.txt", this->F, Double)<<endl<<endl;
 #endif // TEST_PRIOR_REFLECTANCE
         }
     }

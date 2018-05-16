@@ -16,7 +16,7 @@ void GrayWhitenParams::initializeGrayWhitenParamsData(StructNode &gray_wp_metada
             //get dimension of the vector
             int dim  = nodes5[v]->getStructureP()->dims[0] * nodes5[v]->getStructureP()->dims[1];
             //use pointer to the first and the last element in the array as iterators
-            //this->mean.assign(raw_data, raw_data + dim);
+            this->mean.assign(raw_data, raw_data + dim);
         }
 
         if(strcmp(nodes5[v]->getStructureP()->name, "map") == 0)

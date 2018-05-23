@@ -1,6 +1,6 @@
 CC := g++
 CFLAGS := -std=c++11 -g -Wall
-LIBS := -lm -lz -lpng -lmatio
+LIBS := -lm -lz -lpng -lmatio -lpthread
 
 BLOCKA2_SRCS := $(wildcard block_A2/*.cpp)
 MATLAB_SRCS := $(wildcard matlab/*.cpp)

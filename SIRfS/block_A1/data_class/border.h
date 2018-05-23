@@ -16,15 +16,32 @@ public:
     //contructor initializes matrixes to point to one element. They get resized when new matrixesare assigned to them
     Border():Position(), Normal(),Tangent(){};
     //getters
-    inline std::vector<double>& getIdx(){return this->Idx;};
-    inline Matrix2D<double>& getPosition(){return this->Position;};
-    inline Matrix2D<double>& getNormal(){return this->Normal;};
-    inline Matrix2D<double>& getTangent(){return this->Tangent;};
+    inline std::vector<double>& getIdx() {return this->Idx;};
+    inline Matrix2D<double>& getPosition() {return this->Position;};
+    inline Matrix2D<double>& getNormal() {return this->Normal;};
+    inline Matrix2D<double>& getTangent() {return this->Tangent;};
     //setters
     inline void setIdx(std::vector<double>& in){this->Idx = in;};
     inline void setPosition(Matrix2D<double>& in){this->Position = in;};
     inline void setNormal(Matrix2D<double>& in){this->Normal = in;};
     inline void setTangent(Matrix2D<double>& in){this->Tangent = in;};
+    
+    Border(const Border& new_data)
+    {
+        this->Idx = new_data.Idx;
+        this->Position = new_data.Position;
+        this->Normal = new_data.Normal;
+        this->Tangent = new_data.Tangent;
+    }
+    //operators overloading
+    Border& operator=(const Border& new_data)
+    {
+        this->Idx = new_data.Idx;
+        this->Position = new_data.Position;
+        this->Normal = new_data.Normal;
+        this->Tangent = new_data.Tangent;
+        return *this;
+    };
 };
 
 #endif // BORDER_H_INCLUDED

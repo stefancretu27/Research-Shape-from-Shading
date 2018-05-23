@@ -40,6 +40,37 @@ public:
     //setters
     inline void setValid(Matrix2D<bool> &input){this->valid = input;};
     inline void setPrior(Prior &input){this->prior = input;};
+    inline void setBorder(Border &input){this->border = input;};
+    inline void setDataTrue(DataTrue &input){this->dt = input;};
+    inline void setZMedianFilterMat(Matrix2D<double>* input){this->ZMedianFilterMat = input;};
+    inline void setAMedianFilterMat(Matrix2D<double>* input){this->AMedianFilterMat = input;};
+    inline void setZMedianFilterMatT(Matrix2D<double>* input){this->ZMedianFilterMatT = input;};
+    inline void setAMedianFilterMatT(Matrix2D<double>* input){this->AMedianFilterMatT = input;};
+    
+    Data(const Data& new_data)
+    {
+        this->dt = new_data.dt;
+        this->border = new_data.border;
+        this->prior = new_data.prior;
+        this->ZMedianFilterMat = new_data.ZMedianFilterMat;
+        this->AMedianFilterMat = new_data.AMedianFilterMat;
+        this->ZMedianFilterMatT = new_data.ZMedianFilterMatT;
+        this->AMedianFilterMatT = new_data.AMedianFilterMatT;
+        this->valid = new_data.valid;
+    }
+    //operators overloading
+    Data& operator=(const Data& new_data)
+    {
+        this->dt = new_data.dt;
+        this->border = new_data.border;
+        this->prior = new_data.prior;
+        this->ZMedianFilterMat = new_data.ZMedianFilterMat;
+        this->AMedianFilterMat = new_data.AMedianFilterMat;
+        this->ZMedianFilterMatT = new_data.ZMedianFilterMatT;
+        this->AMedianFilterMatT = new_data.AMedianFilterMatT;
+        this->valid = new_data.valid;
+        return *this;
+    };
 };
 
 #endif // DATA_H_INCLUDED

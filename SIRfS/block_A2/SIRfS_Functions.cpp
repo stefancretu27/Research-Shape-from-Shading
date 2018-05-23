@@ -187,8 +187,17 @@ void conv2mat(int maskRows, int maskCols, Matrix2D<int> input_filter, Matrix2D<K
 /*
 Compute median filter
 */
+#ifdef USE_CPU_PTHREAD
+void* medianFilterMatMask(void* args)
+{
+	//convert the void* argument to a pointer to the structure that holds the arguments' data
+	medianfilter_thread_args *thread_args = (medianfilter_thread_args*) args;
+	Matrix2D<bool>& input_mask = thread_args->mask;
+	int half_width = thread_args->half_width;
+#else
 void medianFilterMatMask(Matrix2D<bool>& input_mask, int half_width, Matrix2D<double>** output)
 {
+#endif
     int width = 2*half_width + 1;
     int fs_size = width*width - 1;
     Matrix2D<int> *fs = new Matrix2D<int>[fs_size];
@@ -382,7 +391,22 @@ void medianFilterMatMask(Matrix2D<bool>& input_mask, int half_width, Matrix2D<do
             }
         }
     }
-
+#ifdef USE_CPU_PTHREAD
+	Matrix2D<double>* output = new Matrix2D<double>(temp_rows_nr , keysVal_output->getCols()*3);
+	
+	//add 1 to indeces values, as MATLAB uses 1-based indexing
+    for(int idx = 0; idx < (*output).getRows(); idx++)
+    {
+        (*output)(idx, 0) = idx+1;
+        (*output)(idx, 1) = (*keysVal_output)(idx, 0).getKeyY() +1;
+        (*output)(idx, 2) = (*keysVal_output)(idx, 0).getValue();
+        (*output)(idx, 3) = idx + 1;
+        (*output)(idx, 4) = (*keysVal_output)(idx, 1).getKeyY() + 1;
+        (*output)(idx, 5) = (*keysVal_output)(idx, 1).getValue();
+    }
+    
+    return output;
+#else
     *output = new Matrix2D<double>(temp_rows_nr , keysVal_output->getCols()*3);
 
     //add 1 to indeces values, as MATLAB uses 1-based indexing
@@ -395,11 +419,21 @@ void medianFilterMatMask(Matrix2D<bool>& input_mask, int half_width, Matrix2D<do
         (**output)(idx, 4) = (*keysVal_output)(idx, 1).getKeyY() + 1;
         (**output)(idx, 5) = (*keysVal_output)(idx, 1).getValue();
     }
+#endif
 }
 
-//outputs 4 matrices stored in Border object
+//outputs 3 matrices and 1 vector stored in Border class object
+#ifdef USE_CPU_PTHREAD
+void* getBorderNormals(void* args)
+{
+	//convert the void* argument to a pointer to the structure that holds the arguments' data
+	Matrix2D<bool> mask = *(Matrix2D<bool>*) args;
+	//store the output vector and matrices in a pointer to Border class, returned by the thread function
+	Border *border = new Border();
+#else
 void getBorderNormals(Matrix2D<bool> mask, Border& border)
 {
+#endif
     int d = 5;
 
     //build filter as a matrix of booleans
@@ -486,7 +520,7 @@ void getBorderNormals(Matrix2D<bool> mask, Border& border)
         d_vector[i] = i - d;
     }
 
-    //P matrix has only 2 columns
+    //P matrix has only 2 columns, so only iterate through its rows
     for(int i = 0; i < P.getRows(); i++)
     {
         //vectors of indeces used ot get submatrix of mask input
@@ -593,8 +627,17 @@ void getBorderNormals(Matrix2D<bool> mask, Border& border)
     //since masked_P stores indexes, they have to be incremented by 1 due to 1-based Matlab indexing
     masked_P.elementsOperation(masked_P, 1, Sum);
 
+#ifdef USE_CPU_PTHREAD
+    border->setIdx(idx);
+    border->setPosition(masked_P);
+    border->setNormal(N);
+    border->setTangent(T);
+    
+    return border;
+#else
     border.setIdx(idx);
     border.setPosition(masked_P);
     border.setNormal(N);
     border.setTangent(T);
+#endif //USE_CPU_PTHREAD
 }

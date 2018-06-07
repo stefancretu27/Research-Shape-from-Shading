@@ -38,8 +38,8 @@ int main()
     //set SIRfS parameters. This method replaces PARAMETERS file from Matlab.
     if(!params.setParameters())
     {
-        cout<<"[SIRfS]  SIRfS parameters could not be set. The program will exit."<<endl;
-        exit(0);
+        perror("[SIRfS]  SIRfS parameters could not be set. The program will exit.");
+        exit(1);
     }
     cout<<"Time taken for initialize params: "<<(double)(clock() - initialize_params)/CLOCKS_PER_SEC<<endl<<endl;
 
@@ -52,12 +52,11 @@ int main()
     matfp = Mat_Open("prior.mat", MAT_ACC_RDONLY);
     if ( NULL == matfp )
     {
-        cout<<"Error opening MAT file: "<<"prior.mat"<<endl;
+        perror("Error opening MAT file: prior.mat");
+        exit(1);
     }
-    else
-    {
-        prior.initializePriorData(matfp);
-    }
+    prior.initializePriorData(matfp);
+    
     cout<<"Time taken for loading priors: "<<(double)(clock() - load_priors)/CLOCKS_PER_SEC<<endl<<endl;
 
     cout<<"[SIRfS] Priors loaded. Building 'data' class"<<endl;
@@ -91,12 +90,12 @@ int main()
     //the output matrices are written at the address given as input
     clock_t clock_median_filter = clock();
     medianFilterMatMask(negated_valid,  params.getZMedianHalfwidth(), data.getZMedianFilterMatAddress());
-    /*medianFilterMatMask(negated_valid,  params.getAMedianHalfwidth(), data.getAMedianFilterMatAddress());
+    medianFilterMatMask(negated_valid,  params.getAMedianHalfwidth(), data.getAMedianFilterMatAddress());
 
     //compute transposes for the above matrices. Since they store they KeysValue they might not be necessary, as the original can be used, but keep them till determining their usefulness
     data.getZMedianFilterMat()->getTranspose(data.getZMedianFilterMatTAddress());
     data.getAMedianFilterMat()->getTranspose(data.getAMedianFilterMatTAddress());
-    * */
+    
     cout<<"Time taken for median filter: "<<(double)(clock() - clock_median_filter)/CLOCKS_PER_SEC<<endl;
 
 #ifdef TEST_BLOCK_A2

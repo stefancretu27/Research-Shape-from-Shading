@@ -1,5 +1,4 @@
 #include "read_input_image_libpng.h"
-#include "../templates/matrix2D.cpp"
 
 using namespace std;
 

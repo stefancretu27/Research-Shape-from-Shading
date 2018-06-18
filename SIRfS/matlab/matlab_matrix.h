@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include "../templates/matrix2D.h"
+#include "../templates/matrix2D_cuda.h"
 #include "../templates/keyValue.h"
 
 //matrix operations

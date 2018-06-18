@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include "../templates/matrix2D.h"
+#include "../templates/matrix2D_cuda.h"
 
 //vector operations
 template <class Type> void createVectorMask(std::vector<Type>& source, std::vector<bool>& mask, int treshold);

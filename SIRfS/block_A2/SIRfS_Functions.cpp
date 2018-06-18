@@ -1,6 +1,5 @@
 #include "SIRfS_Functions.h"
 
-#include "../templates/matrix2D.cpp"
 #include "../matlab/matlab_vector.cpp"
 
 using namespace std;
@@ -172,7 +171,7 @@ void conv2mat(int maskRows, int maskCols, Matrix2D<int> input_filter, Matrix2D<K
 
 		//for each column in idxsMat_noNaN, m values are stored in mask_matrix_linear_size sized array, where m <= mask_matrix_linear_size
 		//the values do not necessarily start with 0, as they might start indexing from 502, for instance
-		for(x = 0; x < 100 /*m*/; x++)
+		for(x = 0; x < m; x++)
 		{
 			temp_idx = idxsMat_noNaN(x, col);
 			//the values from filter fs are stored in the vector sparse_vec at the index shown by idxsMat_noNan

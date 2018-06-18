@@ -3,7 +3,6 @@
 
 #include "gaussian.h"
 #include "whitenParams.h"
-//#include "../../../../helpers/prior_struct_node.h"
 
 class GrayNatural
 {

@@ -2,8 +2,7 @@
 #define GSM_MVN_H_INCLUDED
 
 #include "GSM_mvn/ReflectanceColorLut.h"
-#include "../../../../../templates/matrix2D.h"
-#include "../../../../../templates/matrix2D.cpp"
+#include "../../../../../templates/matrix2D_cuda.h"
 
 class GSM_mvn
 {

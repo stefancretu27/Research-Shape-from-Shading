@@ -1,6 +1,6 @@
 CC := g++
 CFLAGS := -std=c++11 -g -Wall
-LIBS := -lm -lz -lpng -lmatio
+LIBS := -lm -lz -lpng -lmatio -L/usr/local/cuda-7.5/lib64 -lcuda -lcudart 
 
 BLOCKA2_SRCS := $(wildcard block_A2/*.cpp)
 MATLAB_SRCS := $(wildcard matlab/*.cpp)
@@ -33,7 +33,9 @@ helpers: templts
 	$(CC) $(CFLAGS) -c $(HELPERS_SRCS); mv *.o Obj 
 
 templts:
-	$(CC) $(CFLAGS) -c $(TEMPLATES_SRCS); mv *.o Obj 
+	nvcc -arch=sm_30 -std=c++11 -dc templates/cuda_matrix2D.cu
+	nvcc -arch=sm_30 -std=c++11 -dlink cuda_matrix2D.o -o templates_link.o -L/usr/local/cuda-7.5/lib64 -lcuda -lcudart 
+	$(CC) $(CFLAGS) -c templates/matrix3D.cpp; mv *.o Obj 
 
 #cudalink:cudacompile
 #	nvcc -arch=sm_20 -dlink cudaCode.o -o link.o

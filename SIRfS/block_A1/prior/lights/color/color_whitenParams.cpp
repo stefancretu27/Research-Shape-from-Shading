@@ -1,5 +1,4 @@
 #include "whitenParams.h"
-//#include "../../../../templates/matrix2D.cpp"
 
 using namespace std;
 

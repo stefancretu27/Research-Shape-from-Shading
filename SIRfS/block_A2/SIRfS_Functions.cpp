@@ -1,6 +1,12 @@
 #include "SIRfS_Functions.h"
 
 #include "../matlab/matlab_vector.cpp"
+#ifndef TEST_BLOCK_A2
+//#include "../matlab/matlab_matrix.cpp"
+#endif
+
+//extern void applyMaskOnKeysValueMatrix(std::vector<bool> &mask, Matrix2D<KeysValue<double> >** source, Matrix2D<KeysValue<double> > *dest);
+//extern void meshgrid(int x_min, int x_max, int y_min, int y_max, Matrix2D<double>& result_X, Matrix2D<double>& result_Y);
 
 using namespace std;
 
@@ -10,23 +16,59 @@ using namespace std;
 void conv2mat(int maskRows, int maskCols, Matrix2D<int> input_filter, Matrix2D<KeysValue<double>  >** output)
 {
     int x, y, col, index, counter_dim = 0;
-    int mask_matrix_linear_size = maskRows*maskCols;                         //also referred as n in matlab code
+    int mask_matrix_linear_size = (int) maskRows*maskCols;                         //also referred as n in matlab code
     Matrix2D<int> F(input_filter.getRows(), input_filter.getCols(), 0);
 
     //reverse values from the input_filter and store them in F matrix
     F.reverseMatrix(input_filter);
 
-    //vectors used to store indeces before applying filter
-    vector<int> i0(mask_matrix_linear_size, 0), j0( mask_matrix_linear_size, 0), idx0(mask_matrix_linear_size, 0);
+	//vectors used to store indeces before applying filter
+    int* i0 = (int*)calloc(sizeof(int), mask_matrix_linear_size);
+    if(i0 == nullptr)
+    {
+		cout<<"Couldn't allocate memory in file "<<__FILE__<<" at line "<<__LINE__<<endl;
+	}
+    int* j0 = (int*)calloc(sizeof(int), mask_matrix_linear_size);
+    if(j0 == nullptr)
+    {
+		cout<<"Couldn't allocate memory in file "<<__FILE__<<" at line "<<__LINE__<<endl;
+	}
+    int* idx0 = (int*)calloc(sizeof(int), mask_matrix_linear_size);
+    if(idx0 == nullptr)
+    {
+		cout<<"Couldn't allocate memory in file "<<__FILE__<<" at line "<<__LINE__<<endl;
+	}
+    
     //vectors used to store indeces after applying filter
-    vector<int> i(mask_matrix_linear_size, 0), j( mask_matrix_linear_size, 0), idx(mask_matrix_linear_size, 0);
+	int* idx = (int*)calloc(sizeof(int), mask_matrix_linear_size);
+    if(idx == nullptr)
+    {
+		cout<<"Couldn't allocate memory in file "<<__FILE__<<" at line "<<__LINE__<<endl;
+	}
+    int* i = (int*)calloc(sizeof(int), mask_matrix_linear_size);
+    if(i == nullptr)
+    {
+		cout<<"Couldn't allocate memory in file "<<__FILE__<<" at line "<<__LINE__<<endl;
+	}
+    int* j = (int*)calloc(sizeof(int), mask_matrix_linear_size);
+    if(j == nullptr)
+    {
+		cout<<"Couldn't allocate memory in file "<<__FILE__<<" at line "<<__LINE__<<endl;
+	}
+	bool *keep;
+    keep = (bool*)calloc(sizeof(bool), mask_matrix_linear_size);
+    if(keep == nullptr)
+    {
+		cout<<"Couldn't allocate memory in file "<<__FILE__<<" at line "<<__LINE__<<endl;
+	}
+
+	/* vectors whose sizes are not known and have to be determined */
     //this vector stores non zero values from each input_filter(F)
     vector<int> fs;
     //for each such a non-zero value, store how many values do not fit in the range when computing the vector containing indeces
     vector<int> count_out_of_range_indeces;
-    vector<bool> keep(mask_matrix_linear_size, 0);
     //vector that contains for each filter F a vector of NaN of  matrix_linear_size dimensions each (250x200)
-    vector< vector<int> > idxs;
+    vector< int* > idxs;
 
     //indeces of non-zero elements in a matrix that contains only logical ones . The indeces are stored in 2 vectors. They are used as follows A(i0[0], j0[0])
     for(x = 0; x < maskRows; x++)
@@ -48,6 +90,9 @@ void conv2mat(int maskRows, int maskCols, Matrix2D<int> input_filter, Matrix2D<K
             //for each non zero value in the reversed input filter compute an array of indeces
             if(F.getMatrixValue(oi, oj) != 0)
             {
+//#ifdef CUDA_KERNELS
+//				launch_conv2mat_kernel(&i0, &j0, oi, oj, maskRows, maskCols, &idx);
+//#else
                 //used to count how many 0 values will be in idx array. It is reset to 0 for each new non-zero value of F matrix
                 count_out_of_range_indeces.push_back(0);
 
@@ -77,7 +122,7 @@ void conv2mat(int maskRows, int maskCols, Matrix2D<int> input_filter, Matrix2D<K
                 //replace 0 values in idx with -1. Normally, there should be NaN values, but since they represent indeces, negative values work as well in order to distinguish them
                 if(count_out_of_range_indeces[counter_dim] != 0)
                 {
-                    for(unsigned int k = 0; k < idx.size(); k++)
+                    for(int k = 0; k < mask_matrix_linear_size; k++)
                     {
                         if(idx[k] == 0)
                         {
@@ -85,16 +130,16 @@ void conv2mat(int maskRows, int maskCols, Matrix2D<int> input_filter, Matrix2D<K
                         }
                     }
                 }
-
+                
+                //count how many non zero values are in the reversed input filter F
+                counter_dim++;
+//#endif 
                 //store the newly computed vector (the new idx) in the vector of vectors
                 idxs.push_back(idx);
                 //store each non zero value found in the reversed input filter (F)
                 fs.push_back(F.getMatrixValue(oi, oj)) ;
                 //store the size of each newly computed vector (idx).
-                //If all updated indeces are within mask matrix range, the size of idx vector will be mask_matrix_linear_size. Otherwise, it will be less, depending
-                //dims.push_back(idx.size() - count_out_of_range_indeces[counter_dim]);
-                //count how many non zero values are in the reversed input filter F
-                counter_dim++;
+                //If all updated indeces are within mask matrix range, the size of idx vector will be mask_matrix_linear_size. Otherwise, it will be less
             }
         }
 	}
@@ -103,12 +148,11 @@ void conv2mat(int maskRows, int maskCols, Matrix2D<int> input_filter, Matrix2D<K
 	Matrix2D<int> idxsMat( mask_matrix_linear_size, idxs.size());
 	//convertVectorOfVectorsToMatrix(idxs, idxsMat);
 	for(unsigned int i = 0; i < idxs.size(); i ++)
-		for(unsigned int j = 0; j < idxs[i].size(); j++)
+		for(int j = 0; j < mask_matrix_linear_size; j++)
 		{
 			//put a vector's elements on the same column, not on the same line
 			idxsMat.setMatrixValue(j, i, idxs[i][j]);
 		}
-
 
 	//a new matrix is computed. It stores all the lines in the idxsMat that do not have a Nan (-1) value.
 	//Thus, it's number of lines equals the number of lines of the vectors in idxs with the most Nan values (-1)
@@ -181,6 +225,9 @@ void conv2mat(int maskRows, int maskCols, Matrix2D<int> input_filter, Matrix2D<K
 			(**output)(x, y) .setKeysValue(x, temp_idx, sparse_vec[temp_idx]);
 		}
 	}
+	
+	free(i0); free(j0); free(idx0);
+	free(idx); free(i); free(j); free(keep);
 }
 
 /*
@@ -188,7 +235,7 @@ Compute median filter
 */
 void medianFilterMatMask(Matrix2D<bool>& input_mask, int half_width, Matrix2D<double>** output)
 {
-    int width = 2*half_width + 1;
+	int width = 2*half_width + 1;
     int fs_size = width*width - 1;
     Matrix2D<int> *fs = new Matrix2D<int>[fs_size];
 
@@ -196,8 +243,8 @@ void medianFilterMatMask(Matrix2D<bool>& input_mask, int half_width, Matrix2D<do
     Matrix2D<int>  f(width, width);
     int i, j, fs_index, x_first, x_last, y_first, y_last;
 
-   for(i = -half_width; i <= half_width; i++)
-   {
+	for(i = -half_width; i <= half_width; i++)
+    {
         for(j = -half_width; j<= half_width; j++)
         {
 			if ((i == 0) && (j == 0))
@@ -245,7 +292,7 @@ void medianFilterMatMask(Matrix2D<bool>& input_mask, int half_width, Matrix2D<do
             //2D convolution product between absi and absj only if the kernel's size can fit in the input matrix
             if(fs[i].getRows() >= fs[j].getRows() && fs[i].getCols() >= fs[j].getCols())
             {
-                C.conv2DValid(absj, absi);
+                C.conv2DValid(absj, absi, false);
                 C.anyGreater(res, 1, 1);
             }
             else
@@ -286,14 +333,12 @@ void medianFilterMatMask(Matrix2D<bool>& input_mask, int half_width, Matrix2D<do
             fs[k].compareValuesToTreshold(bool_f, 0, NonEqual);
             //convert into double
             Matrix2D<double> f( fs[k].getRows(), fs[k].getCols(), 0);
-            //convertBoolToDoubleMatrix2D(bool_f, f);
             for(int idx = 0; idx < bool_f.getDim(); idx++)
             {
                 f.setMatrixValue(idx, (double) bool_f.getMatrixValue(idx));
             }
 			
             //convert matrix input_mask to double
-            //convertBoolToDoubleMatrix2D(input_mask, d_input_mask);
             for(int idx = 0; idx < input_mask.getDim(); idx++)
             {
                 d_input_mask.setMatrixValue(idx,  (double) input_mask.getMatrixValue(idx));
@@ -301,43 +346,27 @@ void medianFilterMatMask(Matrix2D<bool>& input_mask, int half_width, Matrix2D<do
 
             //Apply convolution between filter f and input_mask (after converted to double). Store the result in the matrix conv_res
             Matrix2D<double> conv_res( abs(d_input_mask.getRows() - f.getRows() + 1), abs(d_input_mask.getCols() - f.getCols() + 1), 0);
-            conv_res.conv2DValid(f, d_input_mask);
+            conv_res.conv2DValid(f, d_input_mask, true);
 
             //reshape conv_res matrix to vector R. R's dimension should be equal to A.getRows()
             vector<double> R((*A).getRows(), 0);
             conv_res.reshapeToVector(R);
 
             //compute 'keep' mask vector
-            vector<bool>  keep(R.size(), false);
+            vector<bool> keep(R.size(), false);
             createVectorMask(R, keep, 0);
             int notnull_lines_in_A = count(keep.begin(), keep.end(), true);
-
 			
             //temp_A stores the lines in A corresponding to true values in keep mask
             Matrix2D<KeysValue<double> > temp_A(notnull_lines_in_A,  (*A).getCols());
             //apply mask to A and  store in temp_A
-            applyMaskOnKeysValueMatrix(keep, &A,  &temp_A);
-            
-            //int t_idx = 0;
-            //mask.getRows = source.getRows. For each line, check if mask is 1, then iterate through cols,  then set the values
-            /*for(int idx = 0; idx < A->getRows(); idx++)
-            {
-                if(keep[idx] == true)
-                {
-                    for( int idy = 0; idy < A->getCols(); idy++)
-                    {
-                        temp_A(t_idx,idy).setKeysValue(t_idx,  (*A)(idx, idy).getKeyY(), (*A)(idx, idy).getValue());
-                    }
-                    t_idx++;
-                }
-            }*/
-			
+            applyMaskOnKeysValueMatrix(keep, &A,  &temp_A);		
 
-             //store temp_A in the vector of matrixes
-             matrices_vector.push_back(temp_A);
+            //store temp_A in the vector of matrixes
+            matrices_vector.push_back(temp_A);
+            
         }
     }
-	
 	
     int temp_rows_nr = 0;
     //All matrixes from the vector of matrixes Av are concatenated by putting the 2nd one's first row after the 1st ones last row and so on.
@@ -421,7 +450,8 @@ void getBorderNormals(Matrix2D<bool> mask, Border& border)
     }
 
     //convolution result: conv_same returns a result with the same size as the input (calller)
-    conv_same.conv2DSame(reversed_filter, d_negated_mask);
+    conv_same.conv2DSame(reversed_filter, d_negated_mask, true);
+
     //once convolution is computed, it checks which values are greater than 0, creating a bolean matrix storing the results (1 if greater, 0 else)
     conv_same.compareValuesToTreshold(conv_greater_than, 0, GreaterThan);
     //Calculate B: the obtained boolean matrix and the input mask perform a logical and operation, storing the result in B and returning the number of non zero elements
@@ -438,6 +468,7 @@ void getBorderNormals(Matrix2D<bool> mask, Border& border)
         P.setMatrixValue(idx, (double) int_P.getMatrixValue(idx));
     }
 
+
     //create meshgrid
     Matrix2D<double>X_meshgrid(2*d +1, 2*d + 1, 0), Y_meshgrid(2*d + 1, 2*d +1, 0), pow_X_meshgrid(2*d +1, 2*d + 1, 0), pow_Y_meshgrid(2*d + 1, 2*d +1, 0);
     meshgrid(-d, d, -d, d, X_meshgrid, Y_meshgrid);
@@ -453,6 +484,23 @@ void getBorderNormals(Matrix2D<bool> mask, Border& border)
     //finally, compute gaussian
     factorized_sum_of_powered_meshgrids.elementsOperation(gaussian, 0, Exp);
 
+	//no_nonzeros_in_B = 521
+	int notzero_lines_in_P = 0;
+	bool *allNonZeroLines; 
+#ifdef CUDA_KERNELS
+    cudaError_t code = cudaHostAlloc((void**)&allNonZeroLines, sizeof(bool) * P.getRows(), cudaHostAllocMapped);
+    if(code != cudaSuccess)
+		printf("GPUassert: %s %s %d\n", cudaGetErrorString(code), __FILE__, __LINE__);
+		
+	launch_borderNormals_compute_maskedP(P, allNonZeroLines, &notzero_lines_in_P, mask.getRows(), mask.getCols());
+
+#else
+	allNonZeroLines = (bool*)calloc(sizeof(bool), P.getRows());
+	if(allNonZeroLines == nullptr)
+	{
+		cout<<"Couldn't allocate memory in file "<<__FILE__<<" at line "<<__LINE__<<endl;
+	}
+
     //compute inner operations needed for the new P
     Matrix2D<double>P_plus_d(no_nonzeros_in_B, 2, 0), P_minus_d(no_nonzeros_in_B, 2, 0);
     P.elementsOperation(P_plus_d, d, Sum);
@@ -461,37 +509,93 @@ void getBorderNormals(Matrix2D<bool> mask, Border& border)
     //compute the  masks for the above matrices, afterwards perform logical and on them
     Matrix2D<bool>P_plus_d_mask(no_nonzeros_in_B, 2, false), P_minus_d_mask(no_nonzeros_in_B, 2, false), and_P_masks(no_nonzeros_in_B, 2, false);
     //create size vector containing V's dimensions, needed for comparison
-    vector<double>size_mask(2);
+    double* size_mask = new double[2];
     size_mask[0] = mask.getRows(); size_mask[1] =  mask.getCols();
     //compute the bsxfun operations, which return boolean matrices
-    P_plus_d.compareMatrixColumnsToVector(P_plus_d_mask, size_mask, LessThanOrEqual);
+    P_plus_d.compareMatrixColumnsToVector(P_plus_d_mask, size_mask, 2, LessThanOrEqual);
     P_minus_d.compareValuesToTreshold(P_minus_d_mask, 1, GreaterThanOrEqual);
     //logical AND between the above resulted boolean matrices
     P_plus_d_mask.logicalAnd(and_P_masks, P_minus_d_mask);
 
     //check rows that contain at least one 0 value
-    vector<bool>allNonZeroLines(and_P_masks.getRows());
+    //vector<bool> allNonZeroLines(P.getRows());
     and_P_masks.allNonZero(allNonZeroLines, 2);
     //count the number of 1 values in the above computed mask. It will tell how many rows from P will be kept. In comparison to the Matlab ones, P's values are always  lower by 1 (0 vs 1 base indexing)
-    int notzero_lines_in_P = count(allNonZeroLines.begin(), allNonZeroLines.end(), true);
+    //notzero_lines_in_P = count(allNonZeroLines.begin(), allNonZeroLines.end(), true);
+    for(int i = 0; i < P.getRows(); i++)
+		if(allNonZeroLines[i] !=0)
+			notzero_lines_in_P++;
+#endif
+
     //declare N, matrix for storing normal's values computed in the for loop. Also, masked_P stores values from P kept after applying mask
-    Matrix2D<double> masked_P(notzero_lines_in_P, P.getCols(), 0), N(notzero_lines_in_P, masked_P.getCols(), numeric_limits<double>::quiet_NaN());
+    Matrix2D<double> masked_P(notzero_lines_in_P, P.getCols(), 0);
     masked_P.applyVectorMask(P, allNonZeroLines);
 
+	Matrix2D<double>  N(notzero_lines_in_P, masked_P.getCols(), numeric_limits<double>::quiet_NaN());
     //create [-d:d] vector and initialize it. It is needed inside the for loop
-    vector<int>d_vector(2*d + 1);
-    for(unsigned int i = 0; i < d_vector.size(); i++)
+    int* d_vector = (int*)calloc(sizeof(int), 2*d + 1);
+    if(d_vector == nullptr)
+    {
+		cout<<"Couldn't allocate memory in file "<<__FILE__<<" at line "<<__LINE__<<endl;
+	}
+    for(int i = 0; i < 2*d + 1; i++)
     {
         d_vector[i] = i - d;
     }
+    
+#if (defined ONE_KERNEL_IN_LOOP) || defined (TWO_KERNELS_IN_LOOP)
+	vector<Matrix2D<bool> > patch_vector(P.getRows(), Matrix2D<bool> (2*d + 1, 2*d + 1));
+	int* array_nonzeros_in_patch = (int*)calloc(sizeof(int), P.getRows());
+    if(array_nonzeros_in_patch == nullptr)
+    {
+		cout<<"Couldn't allocate memory in file "<<__FILE__<<" at line "<<__LINE__<<endl;
+	}
+    launch_getBorderNormals_computePatch(mask, P, &d_vector, patch_vector, &array_nonzeros_in_patch, P.getRows(), mask.getRows(), mask.getCols());
+#endif
 
     //P matrix has only 2 columns
     for(int i = 0; i < P.getRows(); i++)
     {
-        //vectors of indeces used ot get submatrix of mask input
-        vector<int> mask_x(2*d + 1), mask_y(2*d + 1);
+#ifdef ONE_KERNEL_IN_LOOP
+        int no_nonzeros_in_patch = array_nonzeros_in_patch[i];
+        //store the indeces of nonzero elements in this matrix. In comparison to the Matlab ones, they'll always  lower by 1 (0 vs 1 base indexing)
+        int* ii = (int*)calloc(sizeof(int), no_nonzeros_in_patch);
+		if(ii == nullptr)
+		{
+			cout<<"Couldn't allocate memory in file "<<__FILE__<<" at line "<<__LINE__<<endl;
+		}
+		int* jj = (int*)calloc(sizeof(int), no_nonzeros_in_patch);
+		if(jj == nullptr)
+		{
+			cout<<"Couldn't allocate memory in file "<<__FILE__<<" at line "<<__LINE__<<endl;
+		}
+        patch_vector[i].vFindIndeces(ii, jj, no_nonzeros_in_patch, 1, Equal);
+
+        //start computing 'a' matrix
+        Matrix2D<bool> a(patch_vector[i].getDim(), patch_vector[i].getDim(), false), temp_a(no_nonzeros_in_patch, no_nonzeros_in_patch, false);
+        //convert patch to vector
+        vector<bool> vector_patch(patch_vector[i].getDim());
+        patch_vector[i].reshapeToVector(vector_patch);
+#ifdef TWO_KERNELS_IN_LOOP
+        //calculate bsxfun substractions
+		launch_borderNormals_compute_temp_a(&ii, &jj, no_nonzeros_in_patch, temp_a);
+#endif
+#else //CPU version
+		
+		//vectors of indeces used ot get submatrix of mask input
+		int* mask_x = (int*)calloc(sizeof(int), 2*d + 1);
+		if(mask_x == nullptr)
+		{
+			cout<<"Couldn't allocate memory in file "<<__FILE__<<" at line "<<__LINE__<<endl;
+		}
+		int* mask_y = (int*)calloc(sizeof(int), 2*d + 1);
+		if(mask_y == nullptr)
+		{
+			cout<<"Couldn't allocate memory in file "<<__FILE__<<" at line "<<__LINE__<<endl;
+		}
+
         //compute indeces by adding the current matrix values (for the current line) to d_vector computed before the loop
-        for(unsigned int j = 0;  j < mask_x.size(); j++)
+        for(int j = 0;  j < 2*d + 1; j++)
         {
             mask_x[j] = d_vector[j] + P.getMatrixValue(i, 0);
             mask_y[j] = d_vector[j] + P.getMatrixValue(i, 1);
@@ -500,27 +604,39 @@ void getBorderNormals(Matrix2D<bool> mask, Border& border)
         //compute patch matrix
         Matrix2D<bool> patch(2*d + 1, 2*d + 1, 0);
         for(int idx = 0; idx < patch.getRows(); idx++)
-            for(int idy = 0; idy < patch.getCols(); idy++)
         {
-            patch.setMatrixValue(idx, idy, mask.getMatrixValue(mask_x[idx], mask_y[idy]));
-        }
+            for(int idy = 0; idy < patch.getCols(); idy++)
+			{
+				patch.setMatrixValue(idx, idy, mask.getMatrixValue(mask_x[idx], mask_y[idy]));
+			}
+		}
 
         int no_nonzeros_in_patch = 0;
         no_nonzeros_in_patch = patch.countValuesDifferentFromInput(0);
+        
         //store the indeces of nonzero elements in this matrix. In comparison to the Matlab ones, they'll always  lower by 1 (0 vs 1 base indexing)
-        vector<int> ii(no_nonzeros_in_patch), jj(no_nonzeros_in_patch);
-        patch.vFindIndeces(ii, jj, 1, Equal);
+        int* ii = (int*)calloc(sizeof(int), no_nonzeros_in_patch);
+		if(ii == nullptr)
+		{
+			cout<<"Couldn't allocate memory in file "<<__FILE__<<" at line "<<__LINE__<<endl;
+		}
+		int* jj = (int*)calloc(sizeof(int), no_nonzeros_in_patch);
+		if(jj == nullptr)
+		{
+			cout<<"Couldn't allocate memory in file "<<__FILE__<<" at line "<<__LINE__<<endl;
+		}
+        patch.vFindIndeces(ii, jj, no_nonzeros_in_patch, 1, Equal);
 
-        //start computing 'a' matrix
+		//start computing 'a' matrix
         Matrix2D<bool> a(patch.getDim(), patch.getDim(), false), temp_a(no_nonzeros_in_patch, no_nonzeros_in_patch, false);
         //convert patch to vector
         vector<bool> vector_patch(patch.getDim());
         patch.reshapeToVector(vector_patch);
-
+        
         //calculate bsxfun substractions
         Matrix2D<int> substract_ii(no_nonzeros_in_patch, no_nonzeros_in_patch, 0), substract_jj(no_nonzeros_in_patch, no_nonzeros_in_patch, 0);
-        vectorOpItsTranspose(ii, substract_ii, Substract);
-        vectorOpItsTranspose(jj, substract_jj, Substract);
+        vectorOpItsTranspose(ii, no_nonzeros_in_patch, substract_ii, Substract);
+        vectorOpItsTranspose(jj, no_nonzeros_in_patch, substract_jj, Substract);
         //square up the above matrices' elements
         Matrix2D<int> sq_substract_ii(no_nonzeros_in_patch, no_nonzeros_in_patch, 0), sq_substract_jj(no_nonzeros_in_patch, no_nonzeros_in_patch, 0);
         substract_ii.elementsOperation(sq_substract_ii,  2, Pow);
@@ -528,16 +644,61 @@ void getBorderNormals(Matrix2D<bool> mask, Border& border)
         //add the precedently computed and store the result in sq_substract_ii (overwrite tis values)
         sq_substract_ii + sq_substract_jj;
         sq_substract_ii.compareValuesToTreshold(temp_a, 2, LessThanOrEqual);
+#endif  
         a.applyDoubleVectorMask(temp_a, vector_patch, vector_patch);
+        
+#if defined (ONE_KERNEL_IN_LOOP) && not defined (TWO_KERNELS_IN_LOOP)
+        //calculate bsxfun substractions
+        Matrix2D<int> substract_ii(no_nonzeros_in_patch, no_nonzeros_in_patch, 0), substract_jj(no_nonzeros_in_patch, no_nonzeros_in_patch, 0);
+        vectorOpItsTranspose(ii, no_nonzeros_in_patch, substract_ii, Substract);
+        vectorOpItsTranspose(jj, no_nonzeros_in_patch, substract_jj, Substract);
+        //square up the above matrices' elements
+        Matrix2D<int> sq_substract_ii(no_nonzeros_in_patch, no_nonzeros_in_patch, 0), sq_substract_jj(no_nonzeros_in_patch, no_nonzeros_in_patch, 0);
+        substract_ii.elementsOperation(sq_substract_ii,  2, Pow);
+        substract_jj.elementsOperation(sq_substract_jj,  2, Pow);
+        //add the precedently computed and store the result in sq_substract_ii (overwrite tis values)
+        sq_substract_ii + sq_substract_jj;
+        sq_substract_ii.compareValuesToTreshold(temp_a, 2, LessThanOrEqual);
+#endif
 
+#if defined (ONE_KERNEL_IN_LOOP) || defined (TWO_KERNELS_IN_LOOP)
         //apply patch mask to the gaussian
-        Matrix2D<double> d_patch(patch.getRows(), patch.getCols(), 0);
-        d_patch.applyMatrixMask(gaussian, patch);
+        Matrix2D<double> d_patch(patch_vector[i].getRows(), patch_vector[i].getCols(), 0);
+        d_patch.applyMatrixMask(gaussian, patch_vector[i]);
+#else
+        //apply patch mask to the gaussian
+		Matrix2D<double> d_patch(patch.getRows(), patch.getCols(), 0);
+		d_patch.applyMatrixMask(gaussian, patch);
+#endif
         //then, get indeces and values of non zeros in d_patch
         int no_nonzeros_in_d_patch = 0;
         no_nonzeros_in_d_patch = d_patch.countValuesDifferentFromInput(0);
-        vector<int>patch_i(no_nonzeros_in_d_patch), patch_j(no_nonzeros_in_d_patch);
-        vector<double> v(no_nonzeros_in_d_patch), d_patch_i(no_nonzeros_in_d_patch), d_patch_j(no_nonzeros_in_d_patch);
+        int* patch_i = (int*)calloc(sizeof(int), no_nonzeros_in_d_patch);
+		if(patch_i == nullptr)
+		{
+			cout<<"Couldn't allocate memory in file "<<__FILE__<<" at line "<<__LINE__<<endl;
+		}
+		int* patch_j = (int*)calloc(sizeof(int), no_nonzeros_in_d_patch);
+		if(patch_j == nullptr)
+		{
+			cout<<"Couldn't allocate memory in file "<<__FILE__<<" at line "<<__LINE__<<endl;
+		}
+		double* v = (double*)calloc(sizeof(double), no_nonzeros_in_d_patch);
+		if(v == nullptr)
+		{
+			cout<<"Couldn't allocate memory in file "<<__FILE__<<" at line "<<__LINE__<<endl;
+		}
+		double* d_patch_i = (double*)calloc(sizeof(double), no_nonzeros_in_d_patch);
+		if(d_patch_i == nullptr)
+		{
+			cout<<"Couldn't allocate memory in file "<<__FILE__<<" at line "<<__LINE__<<endl;
+		}
+		double* d_patch_j = (double*)calloc(sizeof(double), no_nonzeros_in_d_patch);
+		if(d_patch_j == nullptr)
+		{
+			cout<<"Couldn't allocate memory in file "<<__FILE__<<" at line "<<__LINE__<<endl;
+		}
+
         d_patch.vFindIndecesAndValues(patch_i, patch_j, v, 0, NonEqual);
         //substract d+1 from the above index vectors/ Actually, substract only d, since the indeces are already lower by 1
         for(int idx = 0; idx < no_nonzeros_in_d_patch; idx++)
@@ -558,7 +719,7 @@ void getBorderNormals(Matrix2D<bool> mask, Border& border)
             sum_i += d_patch_i[idx];
             sum_j += d_patch_j[idx];
         }
-        vector<double>n(2);
+        double n[2];
         double sqrt_sum_squared_n;
         n[0] = -sum_i/no_nonzeros_in_d_patch;
         n[1] = -sum_j/no_nonzeros_in_d_patch;
@@ -569,6 +730,7 @@ void getBorderNormals(Matrix2D<bool> mask, Border& border)
         //store final results in matrix N
         N.setMatrixValue(i, 0, n[0]);
         N.setMatrixValue(i, 1, n[1]);
+     
     }
 
     Matrix2D<double> T(N.getRows(), N.getCols(), 0);

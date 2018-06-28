@@ -3,8 +3,9 @@
 
 #include <vector>
 
-#include "../../../../templates/dataFile.h"
 #include "../../../../helpers/prior_struct_node.h"
+//needed for natural and laboratory
+#include "../../../../templates/dataFile.h"
 #include "../../../../helpers/validation.h"
 
 class GrayGaussian

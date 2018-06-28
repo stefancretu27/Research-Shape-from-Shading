@@ -1,7 +1,7 @@
 #ifndef MATRIX3D_H_INCLUDED
 #define MATRIX3D_H_INCLUDED
 
-#include "matrix2D_cuda.h"
+#include "matrix2D.h"
 
 template <class Type>
 class Matrix3D

@@ -7,12 +7,22 @@
 #include <iterator>
 #include <string>
 #include <sstream>
+#include <time.h>
 
 #include "../matlab/matlab_vector.h"
 #include "../matlab/matlab_matrix.h"
 #include "../templates/dataFile.h"
 #include "../block_A1/data_class/border.h"
 #include "../helpers/validation.h"
+
+#include "kernels_wrappers.h"
+
+#define CUDA_KERNELS
+
+#ifdef CUDA_KERNELS
+//#define ONE_KERNEL_IN_LOOP
+//#define TWO_KERNELS_IN_LOOP
+#endif
 
 //This header contains the signatures of SIRfS functions
 void conv2mat(int maskRows, int maskCols, Matrix2D<int> input_filter, Matrix2D<KeysValue<double> >** output);

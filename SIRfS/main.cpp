@@ -18,6 +18,9 @@ using namespace std;
 
 int main()
 {
+	//enable flags for cuda mapped memory
+	cudaSetDeviceFlags(cudaDeviceMapHost);
+	
     //declare object to refer the input image
     Matrix2D<double> grayImage;
     //read input image
@@ -90,18 +93,18 @@ int main()
     //the output matrices are written at the address given as input
     clock_t clock_median_filter = clock();
     medianFilterMatMask(negated_valid,  params.getZMedianHalfwidth(), data.getZMedianFilterMatAddress());
-    medianFilterMatMask(negated_valid,  params.getAMedianHalfwidth(), data.getAMedianFilterMatAddress());
+    //medianFilterMatMask(negated_valid,  params.getAMedianHalfwidth(), data.getAMedianFilterMatAddress());
 
     //compute transposes for the above matrices. Since they store they KeysValue they might not be necessary, as the original can be used, but keep them till determining their usefulness
-    data.getZMedianFilterMat()->getTranspose(data.getZMedianFilterMatTAddress());
-    data.getAMedianFilterMat()->getTranspose(data.getAMedianFilterMatTAddress());
+    //data.getZMedianFilterMat()->getTranspose(data.getZMedianFilterMatTAddress());
+    //data.getAMedianFilterMat()->getTranspose(data.getAMedianFilterMatTAddress());
     
     cout<<"Time taken for median filter: "<<(double)(clock() - clock_median_filter)/CLOCKS_PER_SEC<<endl;
 
 #ifdef TEST_BLOCK_A2
     //first 2 values represent indexes and need to be incremented by 1 as MATLAB indexing is 1-based
-    cout<<"Test ZMedianFilterMatMask: "<<test_matrix2D("block_A2/ZM.txt", *data.getZMedianFilterMat(), Double)<<endl;
-    cout<<"Test AMedianFilterMatMask: "<<test_matrix2D("block_A2/AM.txt", *data.getAMedianFilterMat(), Double)<<endl;
+    cout<<"Test ZMedianFilterMatMask: "<<test_matrix2D("block_A2/verification_files/ZM.txt", *data.getZMedianFilterMat(), Double)<<endl;
+    cout<<"Test AMedianFilterMatMask: "<<test_matrix2D("block_A2/verification_files/AM.txt", *data.getAMedianFilterMat(), Double)<<endl;
 #endif
 
     cout<<"[SIRfS] Building border normals"<<endl;
@@ -110,10 +113,10 @@ int main()
     cout<<"Time taken for  border normals: "<<(double)(clock() - clock_border_normals)/CLOCKS_PER_SEC<<endl<<endl;
 
 #ifdef TEST_BLOCK_A2
-    cout<<"Test Border.idx: "<<test_vectors("block_A2/IdxM.txt", data.getBorder().getIdx(), Double)<<endl;
-    cout<<"Test Border.position: "<<test_matrix2D("block_A2/PositionM.txt", data.getBorder().getPosition(), Double)<<endl;
-    cout<<"Test Border.normal: "<<test_matrix2D("block_A2/NormalM.txt", data.getBorder().getNormal(), Double)<<endl;
-    cout<<"Test Border.tangent: "<<test_matrix2D("block_A2/TangentM.txt", data.getBorder().getTangent(), Double)<<endl;
+    cout<<"Test Border.idx: "<<test_vectors("block_A2/verification_files/IdxM.txt", data.getBorder().getIdx(), Double)<<endl;
+    cout<<"Test Border.position: "<<test_matrix2D("block_A2/verification_files/PositionM.txt", data.getBorder().getPosition(), Double)<<endl;
+    cout<<"Test Border.normal: "<<test_matrix2D("block_A2/verification_files/NormalM.txt", data.getBorder().getNormal(), Double)<<endl;
+    cout<<"Test Border.tangent: "<<test_matrix2D("block_A2/verification_files/TangentM.txt", data.getBorder().getTangent(), Double)<<endl;
 
 #endif
 

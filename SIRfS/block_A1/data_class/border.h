@@ -2,7 +2,7 @@
 #define BORDER_H_INCLUDED
 
 #include <vector>
-#include "../../templates/matrix2D_cuda.h"
+#include "../../templates/matrix3D.h"
 
 class Border
 {

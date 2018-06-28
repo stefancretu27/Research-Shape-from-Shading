@@ -1,4 +1,5 @@
-#include "matrix2D_cuda.h"
+#include "matrix2D.h"
+//#include "matrix2D_cuda.h"
 
 #define BLOCK_SIZE 16
 
@@ -80,58 +81,6 @@ template<class Type> cudaError_t operator_multiply(Type* device_A, Type* device_
 template cudaError_t operator_multiply<double>(double* device_A, double* device_B, double *result, dim3 grid_dim, dim3 block_dim, int A_rows, int B_rows, int B_cols);
 template cudaError_t operator_multiply<float>(float* device_A, float* device_B, float *result, dim3 grid_dim, dim3 block_dim, int A_rows, int B_rows, int B_cols);
 template cudaError_t operator_multiply<int>(int* device_A, int* device_B, int *result, dim3 grid_dim, dim3 block_dim, int A_rows, int B_rows, int B_cols);
-
-template<class Type>
-__global__ void matrix_add(Type* A, Type* B, int matrix_dim)
-{
-	//int row = threadIdx.y + blockIdx.y*blockDim.y;
-	int col = threadIdx.x + blockIdx.x*blockDim.x;
-	
-	if(col < matrix_dim)
-	{
-		A[col] += B[col];	
-	}
-}
-
-//wrapper for callin the above kernel
-template<class Type>
-cudaError_t operator_add(Type* A, Type* B, int grid_dim, int block_dim, int matrix_dim)
-{
-	matrix_add <<<grid_dim, block_dim>>> (A, B, matrix_dim);
-	
-	cudaDeviceSynchronize();
-	return cudaGetLastError();
-}
-//specialization
-template cudaError_t operator_add<double>(double* A, double* B, int grid_dim, int block_dim, int matrix_dim);
-template cudaError_t operator_add<float>(float* A, float* B, int grid_dim, int block_dim, int matrix_dim);
-template cudaError_t operator_add<int>(int* A, int* B, int grid_dim, int block_dim, int matrix_dim);
-
-template<class Type>
-__global__ void matrix_substract(Type* A, Type* B, int matrix_dim)
-{
-	//int row = threadIdx.y + blockIdx.y*blockDim.y;
-	int col = threadIdx.x + blockIdx.x*blockDim.x;
-	
-	if(col < matrix_dim)
-	{
-		A[col] -= B[col];
-	}
-}
-
-//wrapper for callin the above kernel
-template<class Type>
-cudaError_t operator_substract(Type* A, Type* B, int grid_dim, int block_dim, int matrix_dim)
-{
-	matrix_substract <<<grid_dim, block_dim>>> (A, B, matrix_dim);
-	
-	cudaDeviceSynchronize();
-	return cudaGetLastError();
-}
-//specializations
-template cudaError_t operator_substract<double>(double* A, double* B, int grid_dim, int block_dim, int matrix_dim);
-template cudaError_t operator_substract<float>(float* A, float* B, int grid_dim, int block_dim, int matrix_dim);
-template cudaError_t operator_substract<int>(int* A, int* B, int grid_dim, int block_dim, int matrix_dim);
 
 /* convolution */
 template<class Type>

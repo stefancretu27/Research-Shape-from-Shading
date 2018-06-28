@@ -1,7 +1,7 @@
 #ifndef DATATRUE_H_INCLUDED
 #define DATATRUE_H_INCLUDED
 
-#include "../../templates/matrix2D_cuda.h"
+#include "../../templates/matrix3D.h"
 
 class DataTrue
 {

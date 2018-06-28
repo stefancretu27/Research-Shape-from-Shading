@@ -2,7 +2,7 @@
 #define WHITENPARAMS_H_INCLUDED
 
 #include <vector>
-#include "../../../../templates/matrix2D_cuda.h"
+#include "../../../../templates/matrix3D.h"
 #include "../../../../helpers/prior_struct_node.h"
 
 
